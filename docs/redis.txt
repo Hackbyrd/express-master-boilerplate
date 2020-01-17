@@ -1,0 +1,15 @@
+After downloading redis, set it up by running these commands:
+cd redis-x.x.x
+make
+make test
+
+Rename folder by removing the version number to just "redis"
+Then create a new file inside the "redis" folder vMAJOR.MINOR.PATCH to keep track of what version you have
+
+Start Server:
+yarn redis
+or
+src/redis-server
+
+Stop Server:
+src/redis-cli shutdown

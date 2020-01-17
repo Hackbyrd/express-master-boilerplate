@@ -1,0 +1,3 @@
+nvm list
+nvm use v10.16.13
+nvm alias default 10.16.13

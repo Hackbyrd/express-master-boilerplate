@@ -1,0 +1,57 @@
+-- Folder names have dashes
+All code variables are camelCase
+ex. var myHome
+
+Tables are plural and PascalCase
+ex. Users
+
+Table cols are camelCase
+ex. Users.myBirthday
+
+ENUM names are ALL CAPS WITH NO UNDERSCORES, SPACES OR DASHES
+ENUM values are ALL CAPS WITH UNDERSCORES AND NO SPACES AND NO DASHES
+ex. Users.gender GENDERTYPE (IS_MALE, IS_FEMALE, OTHER)
+
+Global Constant names in constants.js are ALL CAPS WITH UNDERSCORES AND NO SPACES AND NO DASHES
+ex. GENDER_LIST: ['MALE', 'FEMALE']
+
+.env environment variables are all uppercase with underscores
+ex. DATABASE_URL
+
+URLs for API requests are no space no dash no underscore and no camelCase "thisisaurl"
+ex. https://mywebsite.com/api/v1/calculateage
+
+URLS for pages will be spaced using dashes and all lowercased
+ex. https://mywebsite.com/home-page
+
+App Features are singular and PascalCase
+
+Versioning: MAJOR.MINOR.PATCH (Ex. v2.3.2)
+
+package.json Versioning on update
+~1.2.3 will match all 1.2.x versions but will miss 1.3.0.
+^1.2.3 will match any 1.x.x release including 1.3.0, but will hold off on 2.0.0.
+
+Commonly Used Variables Names:
+err = error
+req = request
+res = response
+result = result
+args = arguments
+
+Request (req):
+1. req.args // arguments from req.body and req.query
+2. req.user, req.admin // attached during auth phase
+3. req.query.lang / req.body.lang // if there is a language setting in the request
+
+Response (res):
+1. All in JSON
+2. format: {
+  // both success and errors
+  status: 200,
+  success: true / false,
+
+  // only for errors
+  error: ERROR_CODES.UNAUTHORIZED.code
+  message: ERROR_CODES.UNAUTHORIZED.message
+}

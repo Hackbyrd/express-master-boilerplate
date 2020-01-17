@@ -1,0 +1,111 @@
+/**
+ * ADMIN V1UpdateEmail SERVICE
+ */
+
+'use strict';
+
+// ENV variables
+const { NODE_ENV, REDIS_URL, ADMIN_CLIENT_HOST } = process.env;
+
+// third-party
+const _ = require('lodash');
+const Op = require('sequelize').Op; // for operator aliases like $gte, $eq
+const io = require('socket.io-emitter')(REDIS_URL); // to emit real-time events to client
+const joi = require('@hapi/joi'); // validations
+const async = require('async');
+const moment = require('moment-timezone');
+const passport = require('passport');
+
+// services
+const email = require('../../../services/email');
+
+// models
+const models = require('../../../models');
+
+//helpers
+const { getOffset, getOrdering, convertStringListToWhereStmt } = require('../../../helpers/cruqd');
+const { errRes, joiErrors, ERROR_CODES } = require('../../../helpers/error');
+const { randomString, createJwtToken } = require('../../../helpers/logic');
+const { listIntRegex } = require('../../../helpers/constants');
+
+// methods
+module.exports = {
+  V1UpdateEmail
+};
+
+/**
+ * Update email of admin
+ *
+ * GET  /v1/admins/updateemail
+ * POST /v1/admins/updateemail
+ *
+ * Must be logged in
+ * Roles: ['admin']
+ *
+ * req.params = {}
+ * req.args = {
+ *   id - (NUMBER - OPTIONAL): The id of the admin
+ *   newEmail - (STRING - REQUIRED): - the new email to update the current email to
+ * }
+ *
+ * Success: Return a true.
+ * Errors:
+ *   400: BAD_REQUEST_INVALID_ARGUMENTS
+ *   500: INTERNAL_SERVER_ERROR
+ */
+function V1UpdateEmail(req, callback) {
+  const schema = joi.object({
+    id: joi
+      .number()
+      .integer()
+      .min(1)
+      .optional(),
+    newEmail: joi
+      .string()
+      .min(3)
+      .trim()
+      .lowercase()
+      .email()
+      .required()
+  });
+
+  // validate
+  const { err, value } = schema.validate(req.args);
+  if (err) return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, joiErrors(err)));
+  req.args = value; // updated arguments with type conversion
+
+  //checks if the new email is different from the existing one
+  if (req.args.newEmail === req.admin.email)
+    return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, req.__('New email cannot be the same as the current email.')));
+
+  //checks if any other admin is using the new email
+  models.admin
+    .findOne({
+      where: {
+        email: req.args.newEmail
+      }
+    })
+    .then(result => {
+      if (result) return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, req.__('The new email is already being used.')));
+
+      models.admin
+        .update(
+          {
+            email: req.args.newEmail
+          },
+          {
+            where: {
+              id: req.admin.id
+            }
+          }
+        )
+        .then(() => {
+          return callback(null, {
+            status: 200,
+            success: true
+          });
+        })
+        .catch(err => callback(err)); // END update
+    })
+    .catch(err => callback(err)); // END findOne
+} // END V1UpdateEmail

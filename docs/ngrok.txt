@@ -1,0 +1,13 @@
+Authenticate ngrok so there is not expiration:
+yarn ngrok:auth YOUR_AUTH_TOKEN
+
+Run ngrok with the command below:
+yarn ngrok
+
+---------------------------
+
+Manual Download
+https://ngrok.com/download
+
+Manually start ngrok without yarn:
+./ngrok http 8000

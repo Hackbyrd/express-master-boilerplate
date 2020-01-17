@@ -1,0 +1,6 @@
+MacOS:
+System Preferences
+Security & Privacy
+Privacy Tab
+Full Disk Access
+Add iTerm or Terminal

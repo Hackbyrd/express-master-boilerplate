@@ -1,0 +1,116 @@
+1. Set Up Text Editor Config
+  "tab_size": 2,
+  "translate_tabs_to_spaces": true,
+  "trim_trailing_white_space_on_save": true,
+  "eof_newline": true
+
+  Create Symlink:
+    sudo mkdir -p /usr/local/bin
+    echo 'export PATH=/usr/local/bin:$PATH' >> ~/.bash_profile
+    source ~/.bash_profile
+    sudo ln -s /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl /usr/local/bin/subl
+
+  Modify Crontab Editor (Optional: only to view):
+    Add the following to ~/.bash_profile
+    export VISUAL=/usr/local/bin/subl
+    export EDITOR=/usr/local/bin/subl
+    source ~/.bash_profile
+
+2. Install Homebrew & Node Version Manager (NVM)
+  Install Homebrew (http://brew.sh):
+  /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+
+  https://github.com/creationix/nvm
+  Install nvm (http://stackoverflow.com/questions/28017374/what-is-the-suggested-way-to-install-brew-node-js-io-js-nvm-npm-on-os-x) or http://lifeonubuntu.com/nvm-error-nvm-is-not-compatible-with-the-npm-config-prefix-option/:
+    brew update
+    brew install nvm
+    mkdir ~/.nvm
+    echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bash_profile && echo '. "$(brew --prefix nvm)/nvm.sh"' >> ~/.bash_profile
+    source ~/.bash_profile
+
+  Install node (Whatever version in package.json)
+    nvm install v12.13.0
+
+3. Download Yarn Package Manager
+  @1.12.3
+  brew install yarn --ignore-dependencies
+
+4. Install ImageMagick & GraphicsMagick
+  brew install imagemagick
+  brew install graphicsmagick
+
+5. Download PostgreSQL App
+  https://postgresapp.com/
+  Open the postgresapp up and click "Initialize"
+
+  Add to ~/.bash_profile to use 'psql' command: [!!NOTE you MUST add psql into your $PATH before you run "npm install" or else it will crash!]
+  sudo subl ~/.bash_profile
+  export PATH=$PATH:/Applications/Postgres.app/Contents/Versions/latest/bin
+
+  Set Timezone to UTC:
+    Run in Terminal:
+      PGTZ=UTC psql -c 'show timezone'
+      http://stackoverflow.com/questions/11779293/how-to-set-timezone-for-postgres-psql/11779417#11779417
+    postgresql.conf
+      subl ~/Library/Application\ Support/Postgres/var-[YOUR_VERSION]/postgresql.conf
+      Inside postgresql.conf change the following:
+        log_timezone = 'US/Eastern' --> log_timezone = 'UTC'
+        timezone = 'US/Eastern' --> timezone = 'UTC'
+
+6. Install Postico PostgreSQL Client App
+  https://eggerapps.at/postico/
+
+7. Download Redis In Memory Database
+  http://try.redis.io/
+  change to redis directory
+  make
+  make test
+  src/redis-server
+
+  Rename folder by removing the version number to just "redis"
+  Then create a new file inside the "redis" folder vMAJOR.MINOR.PATCH to keep track of what version you have
+
+8. Install all node modules dependencies
+  yarn install
+
+9. Set up Configurations
+  express-master-boilerplate/config
+
+10. Set up sequelize-cli
+  node_modules/.bin/sequelize init
+
+11. Install ngrok for development webhooks
+  yarn ngrok:auth YOUR_AUTH_TOKEN
+
+12. Add cronjobs from /scripts/cronjobs.js comments:
+  crontab -e
+
+13. (Optional) Set Up Dynamic Domains on LocalHost
+  open /etc/hosts
+
+  Add the line below to have all subdomains redirect to localhost
+  127.0.0.1 *.mixbowl.localhost
+  127.0.0.1 *.order.mixbowl.localhost
+
+14. Download Heroku Toolbelt
+  brew install heroku/brew/heroku
+
+15. Create Databases on local computer
+  create database name 'APPNAME_dev' and 'APPNAME_test'
+  yarn mg
+
+16. Set up languages / locales
+  Add .json files corresponding to the language in the ./locales folder
+  Add more locales to the i18n.configure method locales option in the server.js
+
+17. Set Up Kafka
+  http://kafka.apache.org/documentation.html#quickstart
+  Rename folder by removing the version number to just "kafka"
+  Then create a new file inside the "kafka" folder vMAJOR.MINOR.PATCH to keep track of what version you have
+
+  Run yarn zoo
+  If you don't have Java go to
+  https://www.oracle.com/technetwork/java/javase/downloads/jdk13-downloads-5672538.html
+
+  Add this to ~/.bash_profile
+  export JAVA_HOME=$(/usr/libexec/java_home)

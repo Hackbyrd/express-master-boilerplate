@@ -1,0 +1,42 @@
+Download PostgreSQL App:
+  http://postgresapp.com/
+  open 'postgresapp' to start server
+
+Add to ~/.bash_profile to use 'psql' command: [!!NOTE you MUST add psql into your $PATH before you run "npm install" or else it will crash!]
+  sudo subl ~/.bash_profile
+  export PATH=$PATH:/Applications/Postgres.app/Contents/Versions/latest/bin
+
+Set Timezone to UTC:
+  PSQL:
+    PGTZ=UTC psql -c 'show timezone'
+    http://stackoverflow.com/questions/11779293/how-to-set-timezone-for-postgres-psql/11779417#11779417
+  postgresql.conf
+    subl ~/Library/Application\ Support/Postgres/var-9.6/postgresql.conf
+    Inside postgresql.conf change the following:
+      log_timezone = 'US/Eastern' --> log_timezone = 'UTC'
+      timezone = 'US/Eastern' --> timezone = 'UTC'
+
+Create Database:
+  run "psql" without quotes to open up psql terminal
+  CREATE DATABASE pathover_api_dev;
+  CREATE DATABASE pathover_api_test;
+  Add credentials into your cfg_dev.yml (username and password)
+
+PSQL Database Commands:
+
+\l                     -> list all databases
+\c [DB_NAME]           -> connect and use database
+\d                     -> list all tables
+\d+ <table_name>       -> show column information for database
+\q                     -> quit psql connection
+CREATE DATABASE testdb -> create a database
+DROP DATABASE testdb   -> delete a database
+GRANT ALL PRIVILEGES ON DATABASE testdb to user; -> grant permissions for testdb to user
+
+Rebuild a single index:
+  REINDEX INDEX my_index;
+Rebuild all the indexes on the table my_table:
+  REINDEX TABLE my_table;
+
+JSONB Queries
+https://hackernoon.com/how-to-query-jsonb-beginner-sheet-cheat-4da3aa5082a3

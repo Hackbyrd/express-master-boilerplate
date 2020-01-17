@@ -1,0 +1,8 @@
+HTTP/HTTPS Status Codes:
+200 - OK Success
+201 - Created Success, something was created
+202 - Accepted but still processing
+400 - Bad Request, invalid data
+401 - Unauthorized, do not have permissions
+500 - Server error
+501 - Server is in process of shutting down or restarting and cannot accept requests at the moment

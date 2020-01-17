@@ -1,0 +1,17 @@
+Using: i18n
+Docs: https://github.com/mashpie/i18n-node
+Language Codes: https://github.com/nodejs/i18n
+
+Set Up:
+1. Add .json files corresponding to the language in the ./locales folder
+ - IMPORTANT: JSON file must be a VALID json file. DO NOT have trailing commas at the end of file. Otherwise, it won't work.
+2. Add more locales to the i18n.configure method locales option in the server.js
+
+Three Ways we grab language settings:
+1. First we look at the browser cookies using i18n.init in server.js. This sets the default language
+2. Next, we check req.body.lang or req.query.lang and set and override the default language.
+3. The third step is in auth middleware method "verifyJWTAuth" we check if the user is logged in, if they are we take the locale they set and set the default language
+4. The final step is to save the language in the res.cookie in "verifyJWTAuth" so the browser and server remember what the language is regardless of whether the user is logged in or out
+5. In the browser, you should read the cookie and set the language
+
+Note: Point 4 overrides Point 3 which overrides Point 2 which overrides Point 1!

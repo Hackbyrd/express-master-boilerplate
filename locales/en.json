@@ -1,0 +1,17 @@
+{
+  "Hello": "Hello",
+  "Hello World": "Hello World",
+  "You do not have permission to make this request.": "You do not have permission to make this request.",
+  "Invalid password reset token or reset token has expired.": "Invalid password reset token or reset token has expired.",
+  "The passwords you entered do not match.": "The passwords you entered do not match.",
+  "You must agree to Terms of Service.": "You must agree to Terms of Service.",
+  "An account with this email already exists, please try again email.": "An account with this email already exists, please try again email.",
+  "Time zone is invalid.": "Time zone is invalid.",
+  "One or more request arguments are invalid.": "One or more request arguments are invalid.",
+  "Login failed. Account is inactive.": "Login failed. Account is inactive.",
+  "Login failed. Account has been deleted.": "Login failed. Account has been deleted.",
+  "Account does not exist.": "Account does not exist.",
+  "New email cannot be the same as the current email.": "New email cannot be the same as the current email.",
+  "The new email is already being used.": "The new email is already being used.",
+  "Original password is incorrect, please try again.": "Original password is incorrect, please try again."
+}

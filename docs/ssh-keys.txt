@@ -1,0 +1,15 @@
+1. Check for existing SSH keys
+  ls -al ~/.ssh
+
+2. Generate SSH Key
+  ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+  Press "Enter" on for all questions they ask with blank answer (So you don't have to enter a password)
+
+3. Ensure ssh-agent is enabled
+  eval "$(ssh-agent -s)"
+
+4. Add your SSH key to the ssh-agent
+  ssh-add ~/.ssh/id_rsa
+
+5. Go to https://github.com/settings/keys and add your .ssh key
+  pbcopy < ~/.ssh/id_rsa.pub

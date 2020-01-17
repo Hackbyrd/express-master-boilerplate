@@ -1,0 +1,18 @@
+Why Pub-sub or Event-driven or Producer-Consumer?
+https://thatcoder.space/microservices-event-driven-architecture/
+
+Example:
+https://thatcoder.space/getting-started-with-kafka-and-node-js-with-example/
+
+Quickstart:
+http://kafka.apache.org/documentation.html#quickstart
+
+Rename folder by removing the version number to just "kafka"
+Then create a new file inside the "kafka" folder vMAJOR.MINOR.PATCH to keep track of what version you have
+
+Run yarn zoo
+If you don't have Java go to
+https://www.oracle.com/technetwork/java/javase/downloads/jdk13-downloads-5672538.html
+
+Add this to ~/.bash_profile
+export JAVA_HOME=$(/usr/libexec/java_home)
