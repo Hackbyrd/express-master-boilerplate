@@ -40,3 +40,6 @@ Rebuild all the indexes on the table my_table:
 
 JSONB Queries
 https://hackernoon.com/how-to-query-jsonb-beginner-sheet-cheat-4da3aa5082a3
+
+Delete postmaster.pid:
+rm ~/Library/Application\ Support/Postgres/var-10/postmaster.pid
