@@ -53,7 +53,7 @@ module.exports = {
  *   400: BAD_REQUEST_INVALID_ARGUMENTS
  *   500: INTERNAL_SERVER_ERROR
  */
-function V1UpdateEmail(req, callback) {
+async function V1UpdateEmail(req, callback) {
   const schema = joi.object({
     id: joi
       .number()
@@ -72,40 +72,40 @@ function V1UpdateEmail(req, callback) {
   // validate
   const { err, value } = schema.validate(req.args);
   if (err) return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, joiErrors(err)));
+
   req.args = value; // updated arguments with type conversion
 
   //checks if the new email is different from the existing one
   if (req.args.newEmail === req.admin.email)
     return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, req.__('New email cannot be the same as the current email.')));
 
-  //checks if any other admin is using the new email
-  models.admin
-    .findOne({
+  try {
+    // checks if any other admin is using the new email
+    let findAdmin = await models.admin.findOne({
       where: {
         email: req.args.newEmail
       }
-    })
-    .then(result => {
-      if (result) return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, req.__('The new email is already being used.')));
+    });
 
-      models.admin
-        .update(
-          {
-            email: req.args.newEmail
-          },
-          {
-            where: {
-              id: req.admin.id
-            }
-          }
-        )
-        .then(() => {
-          return callback(null, {
-            status: 200,
-            success: true
-          });
-        })
-        .catch(err => callback(err)); // END update
-    })
-    .catch(err => callback(err)); // END findOne
+    if (findAdmin) return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, req.__('The new email is already being used.')));
+
+    // update admin
+    await models.admin.update(
+      {
+        email: req.args.newEmail
+      },
+      {
+        where: {
+          id: req.admin.id
+        }
+      }
+    );
+
+    return callback(null, {
+      status: 200,
+      success: true
+    });
+  } catch (err) {
+    return callback(err);
+  }
 } // END V1UpdateEmail

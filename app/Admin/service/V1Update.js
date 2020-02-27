@@ -58,7 +58,7 @@ module.exports = {
  *   401: unauthorized
  *   500: Sequelize Error.
  */
-function V1Update(req, callback) {
+async function V1Update(req, callback) {
   const schema = joi.object({
     timezone: joi
       .string()
@@ -90,27 +90,26 @@ function V1Update(req, callback) {
   if (req.args.timezone && !isValidTimezone(req.args.timezone))
     return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, req.__('Time zone is invalid.')));
 
-  // update admin
-  models.admin
-    .update(req.args, {
+  try {
+    // update admin
+    await models.admin.update(req.args, {
       where: {
         id: req.admin.id
       }
-    })
-    .then(() => {
-      // grab updated admin
-      return models.admin.findByPk(req.admin.id, {
-        attributes: {
-          exclude: models.admin.getSensitiveData() // remove sensitive data
-        }
-      });
-    })
-    .then(getAdmin => {
-      return callback(null, {
-        status: 200,
-        success: true,
-        admin: getAdmin.dataValues
-      });
-    })
-    .catch(err => callback(err)); // END update
+    });
+
+    let findAdmin = await models.admin.findByPk(req.admin.id, {
+      attributes: {
+        exclude: models.admin.getSensitiveData() // remove sensitive data
+      }
+    });
+
+    return callback(null, {
+      status: 200,
+      success: true,
+      admin: getAdmin.dataValues
+    });
+  } catch (err) {
+    return callback(err);
+  }
 } // END V1Update

@@ -61,7 +61,7 @@ module.exports = {
  *   400: BAD_REQUEST_INVALID_ARGUMENTS
  *   500: INTERNAL_SERVER_ERROR
  */
-function V1Create(req, callback) {
+async function V1Create(req, callback) {
   const schema = joi.object({
     name: joi
       .string()
@@ -113,55 +113,52 @@ function V1Create(req, callback) {
   if (!req.args.acceptedTerms)
     return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, req.__('You must agree to Terms of Service.')));
 
-  // check if admin email already exists
-  models.admin
-    .findOne({
+  try {
+    // check if admin email already exists
+    let duplicateAdmin = await models.admin.findOne({
       where: {
         email: req.args.email
       }
-    })
-    .then(duplicateAdmin => {
-      // check of duplicate admin user
-      if (duplicateAdmin) return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, 1));
+    });
 
-      // check timezone
-      if (!isValidTimezone(req.args.timezone))
-        return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, req.__('Time zone is invalid.')));
+    // check of duplicate admin user
+    if (duplicateAdmin) return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, 1));
 
-      // create admin
-      models.admin
-        .create({
-          timezone: req.args.timezone,
-          locale: req.args.locale,
-          name: req.args.name,
-          active: req.args.active,
-          email: req.args.email,
-          phone: req.args.phone,
-          password: req.args.password,
-          acceptedTerms: req.args.acceptedTerms
-        })
-        .then(newAdmin => {
-          // grab admin without sensitive data
-          models.admin
-            .findByPk(newAdmin.id, {
-              attributes: {
-                exclude: models.admin.getSensitiveData() // remove sensitive data
-              }
-            })
-            .then(returnAdmin => {
-              // return
-              return callback(null, {
-                status: 201,
-                success: true,
-                admin: returnAdmin
-              });
-            })
-            .catch(err => {
-              newAdmin.destroy(); // destroy if error
-              return callback(err);
-            }); // END grab partner without sensitive data
-        })
-        .catch(err => callback(err)); // END create admin
-    })
-    .catch(err => callback(err)); // END check if admin email already exists
+    // check timezone
+    if (!isValidTimezone(req.args.timezone))
+      return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, req.__('Time zone is invalid.')));
+
+    // create admin
+    let newAdmin = await models.admin.create({
+      timezone: req.args.timezone,
+      locale: req.args.locale,
+      name: req.args.name,
+      active: req.args.active,
+      email: req.args.email,
+      phone: req.args.phone,
+      password: req.args.password,
+      acceptedTerms: req.args.acceptedTerms
+    });
+
+    // grab admin without sensitive data
+    let returnAdmin = await models.admin
+      .findByPk(newAdmin.id, {
+        attributes: {
+          exclude: models.admin.getSensitiveData() // remove sensitive data
+        }
+      })
+      .catch(err => {
+        newAdmin.destroy(); // destroy if error
+        return callback(err);
+      }); // END grab partner without sensitive data
+
+    // return
+    return callback(null, {
+      status: 201,
+      success: true,
+      admin: returnAdmin
+    });
+  } catch (err) {
+    return callback(err);
+  }
 } // END V1Create

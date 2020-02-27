@@ -56,7 +56,7 @@ module.exports = {
  *   400: BAD_REQUEST_INVALID_ARGUMENTS
  *   500: INTERNAL_SERVER_ERROR
  */
-function V1ResetPassword(req, callback) {
+async function V1ResetPassword(req, callback) {
   const schema = joi.object({
     email: joi
       .string()
@@ -82,72 +82,70 @@ function V1ResetPassword(req, callback) {
   if (msg !== true) return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, req.__(msg)));
 
   // grab admin with this email
-  models.admin
-    .findOne({
+  try {
+    let findAdmin = await models.admin.findOne({
       where: {
         email: req.args.email
       }
-    })
-    .then(admin => {
-      // if admin cannot be found
-      if (!admin) return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST));
+    });
 
-      // hash new password
-      const newPassword = bcrypt.hashSync(req.args.password1, admin.salt);
+    // if admin cannot be found
+    if (!findAdmin) return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST));
 
-      // preparing for reset
-      const passwordResetToken = randomString();
-      const passwordResetExpire = moment.tz('UTC').add(6, 'hours'); // add 6 hours from now
-      req.args.password = newPassword; // set hashed password
+    // hash new password
+    const newPassword = bcrypt.hashSync(req.args.password1, findAdmin.salt);
 
-      // update admin
-      models.admin
-        .update(
-          {
-            resetPassword: req.args.password,
-            passwordResetToken: passwordResetToken,
-            passwordResetExpire: passwordResetExpire
-          },
-          {
-            fields: ['resetPassword', 'passwordResetToken', 'passwordResetExpire'], // only these fields
-            where: {
-              email: req.args.email
-            }
-          }
-        )
-        .then(() => {
-          // var resetLink = cfg.host.hostname + '/users/confirmpassword?passwordResetToken= + passwordResetToken; // create URL DONT DELETE THIS LINE
-          const resetLink = `${ADMIN_CLIENT_HOST}/confirm-password?passwordResetToken=${passwordResetToken}`; // create URL using front end url
+    // preparing for reset
+    const passwordResetToken = randomString();
+    const passwordResetExpire = moment.tz('UTC').add(6, 'hours'); // add 6 hours from now
+    req.args.password = newPassword; // set hashed password
 
-          // send confirmation email
-          email.mail(
-            {
-              from: email.emails.support.address,
-              name: email.emails.support.name,
-              subject: 'Your password has been changed. Please confirm.',
-              template: 'AdminResetPassword',
-              tos: [req.args.email],
-              ccs: null,
-              bccs: null,
-              args: {
-                resetPasswordConfirmationLink: resetLink,
-                expires: '6 hours'
-              }
-            },
-            (err, result) => {
-              if (err) return callback(err);
+    // update admin
+    await models.admin.update(
+      {
+        resetPassword: req.args.password,
+        passwordResetToken: passwordResetToken,
+        passwordResetExpire: passwordResetExpire
+      },
+      {
+        fields: ['resetPassword', 'passwordResetToken', 'passwordResetExpire'], // only these fields
+        where: {
+          email: req.args.email
+        }
+      }
+    );
 
-              // return success
-              return callback(null, {
-                status: 200,
-                success: true,
-                message: 'An email has been sent to ' + req.args.email + '. Please check your email to confirm your new password change.',
-                resetLink: NODE_ENV === 'test' ? resetLink : null // only return reset link in dev and test env for testing purposes
-              });
-            }
-          ); // END send email
-        })
-        .catch(err => callback(err)); // END update admin
-    })
-    .catch(err => callback(err)); // END find admin
+    // var resetLink = cfg.host.hostname + '/users/confirmpassword?passwordResetToken= + passwordResetToken; // create URL DONT DELETE THIS LINE
+    const resetLink = `${ADMIN_CLIENT_HOST}/confirm-password?passwordResetToken=${passwordResetToken}`; // create URL using front end url
+
+    // send confirmation email
+    email.mail(
+      {
+        from: email.emails.support.address,
+        name: email.emails.support.name,
+        subject: 'Your password has been changed. Please confirm.',
+        template: 'AdminResetPassword',
+        tos: [req.args.email],
+        ccs: null,
+        bccs: null,
+        args: {
+          resetPasswordConfirmationLink: resetLink,
+          expires: '6 hours'
+        }
+      },
+      (err, result) => {
+        if (err) return callback(err);
+
+        // return success
+        return callback(null, {
+          status: 200,
+          success: true,
+          message: 'An email has been sent to ' + req.args.email + '. Please check your email to confirm your new password change.',
+          resetLink: NODE_ENV === 'test' ? resetLink : null // only return reset link in dev and test env for testing purposes
+        });
+      }
+    ); // END send email
+  } catch (err) {
+    return callback(err);
+  }
 } // END V1ResetPassword

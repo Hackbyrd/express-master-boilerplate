@@ -5,19 +5,18 @@
 'use strict';
 
 // require third-party node modules
-const async = require('async');
-var LocalStrategy = require('passport-local');
-var JwtStrategy = require('passport-jwt').Strategy;
-var ExtractJwt = require('passport-jwt').ExtractJwt;
+const LocalStrategy = require('passport-local');
+const JwtStrategy = require('passport-jwt').Strategy;
+const ExtractJwt = require('passport-jwt').ExtractJwt;
 
 // require custom node modules
-var models = require('../models');
+const models = require('../models');
 
 // extract env variables
 const { SESSION_SECRET } = process.env;
 
 // set up passport
-module.exports = passport => {
+module.exports = async passport => {
   /**********************************************/
   /******************** USER ********************/
   /**********************************************/
@@ -36,32 +35,33 @@ module.exports = passport => {
         passwordField: 'password',
         passReqToCallback: true
       },
-      (req, email, password, done) => {
+      async (req, email, password, done) => {
         email = email.toLowerCase().trim(); // lowercase email
 
-        process.nextTick(() => {
-          models.user
-            .findOne({
+        process.nextTick(async () => {
+          try {
+            let getUser = await models.user.findOne({
               where: {
                 email: email
               }
-            })
-            .then(getUser => {
-              // check if user email is not found
-              if (!getUser) return done(null, false);
+            });
 
-              // check password
-              models.user.validatePassword(password, getUser.password, (err, result) => {
-                if (err) return done(err, null);
+            // check if user email is not found
+            if (!getUser) return done(null, false);
 
-                // if password is invalid
-                if (!result) return done(null, null);
+            // check password
+            models.user.validatePassword(password, getUser.password, async (err, result) => {
+              if (err) return done(err, null);
 
-                // if password is valid, return user
-                return done(null, getUser);
-              });
-            })
-            .catch(err => done(err, null));
+              // if password is invalid
+              if (!result) return done(null, null);
+
+              // if password is valid, return user
+              return done(null, getUser);
+            });
+          } catch (err) {
+            return done(err, null);
+          }
         });
       }
     )
@@ -81,17 +81,20 @@ module.exports = passport => {
         jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('jwt-user'), // must be from auth header for HTTPS to work, should NOT use fromHeader because it is only applied to http
         secretOrKey: SESSION_SECRET
       },
-      (payload, done) => {
-        process.nextTick(() => {
-          // check if user id is not found
-          models.user
-            .findOne({
+      async (payload, done) => {
+        process.nextTick(async () => {
+          try {
+            // check if user id is not found
+            let findUser = await models.user.findOne({
               where: {
                 id: payload.sub // subject or id of user
               }
-            })
-            .then(user => done(null, user ? user : false))
-            .catch(err => done(err, null));
+            });
+
+            return done(null, findUser ? findUser : false);
+          } catch (err) {
+            return done(err, null);
+          }
         });
       }
     )
@@ -115,32 +118,33 @@ module.exports = passport => {
         passwordField: 'password',
         passReqToCallback: true
       },
-      (req, email, password, done) => {
+      async (req, email, password, done) => {
         email = email.toLowerCase().trim(); // lowercase email
 
-        process.nextTick(() => {
-          models.admin
-            .findOne({
+        process.nextTick(async () => {
+          try {
+            let getAdmin = await models.admin.findOne({
               where: {
                 email: email
               }
-            })
-            .then(getAdmin => {
-              // check if admin email is not found
-              if (!getAdmin) return done(null, false);
+            });
 
-              // check password
-              models.admin.validatePassword(password, getAdmin.password, (err, result) => {
-                if (err) return done(err, null);
+            // check if admin email is not found
+            if (!getAdmin) return done(null, false);
 
-                // if password is invalid
-                if (!result) return done(null, null);
+            // check password
+            models.admin.validatePassword(password, getAdmin.password, async (err, result) => {
+              if (err) return done(err, null);
 
-                // if password is valid, return admin
-                return done(null, getAdmin);
-              });
-            })
-            .catch(err => done(err, null));
+              // if password is invalid
+              if (!result) return done(null, null);
+
+              // if password is valid, return admin
+              return done(null, getAdmin);
+            });
+          } catch (err) {
+            return done(err, null);
+          }
         });
       }
     )
@@ -160,17 +164,20 @@ module.exports = passport => {
         jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('jwt-admin'), // must be from auth header for HTTPS to work, should NOT use fromHeader because it is only applied to http
         secretOrKey: SESSION_SECRET
       },
-      (payload, done) => {
-        process.nextTick(() => {
-          // check if admin id is not found
-          models.admin
-            .findOne({
+      async (payload, done) => {
+        process.nextTick(async () => {
+          try {
+            // check if admin id is not found
+            let findAdmin = await models.admin.findOne({
               where: {
                 id: payload.sub // subject or id of admin
               }
-            })
-            .then(admin => done(null, admin ? admin : false))
-            .catch(err => done(err, null));
+            });
+
+            return done(null, findAdmin ? findAdmin : false);
+          } catch (err) {
+            return done(err, null);
+          }
         });
       }
     )

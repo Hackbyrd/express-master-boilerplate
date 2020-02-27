@@ -160,9 +160,9 @@ module.exports = function(sequelize, DataTypes) {
   };
 
   // check if valid password
-  Admin.validatePassword = (password, secret, callback) => {
+  Admin.validatePassword = async (password, secret, callback) => {
     // compare both, result is either true or false
-    bcrypt.compare(password, secret, (err, result) => callback(err, result));
+    bcrypt.compare(password, secret, async (err, result) => callback(err, result));
   };
 
   return Admin;

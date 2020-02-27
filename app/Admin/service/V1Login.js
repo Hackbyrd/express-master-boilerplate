@@ -55,9 +55,9 @@ module.exports = {
  *   400: BAD_REQUEST_ACCOUNT_DELETED
  *   500: INTERNAL_SERVER_ERROR
  */
-function V1Login(req, res, callback) {
+async function V1Login(req, res, callback) {
   // login admin WITHOUT SESSION
-  passport.authenticate('JWTAdminLogin', { session: false }, (err, admin, info) => {
+  passport.authenticate('JWTAdminLogin', { session: false }, async (err, admin, info) => {
     if (err) return callback(err);
 
     // check if admin exists
@@ -70,8 +70,8 @@ function V1Login(req, res, callback) {
     if (admin.deletedAt) return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_ACCOUNT_DELETED));
 
     // update login count and last login
-    models.admin
-      .update(
+    try {
+      let updatedAdmin = await models.admin.update(
         {
           loginCount: admin.loginCount + 1,
           lastLogin: moment.tz('UTC')
@@ -81,23 +81,23 @@ function V1Login(req, res, callback) {
             id: admin.id
           }
         }
-      )
-      .then(() => {
-        // find admin
-        return models.admin.findByPk(admin.id, {
-          attributes: {
-            exclude: models.admin.getSensitiveData() // remove sensitive data
-          }
-        });
-      })
-      .then(getAdmin => {
-        return callback(null, {
-          status: 201,
-          success: true,
-          token: createJwtToken(getAdmin, ADMIN_CLIENT_HOST),
-          admin: getAdmin.dataValues
-        });
-      })
-      .catch(err => callback(err));
+      );
+
+      // find admin
+      let findAdmin = await models.admin.findByPk(admin.id, {
+        attributes: {
+          exclude: models.admin.getSensitiveData() // remove sensitive data
+        }
+      });
+
+      return callback(null, {
+        status: 201,
+        success: true,
+        token: createJwtToken(findAdmin, ADMIN_CLIENT_HOST),
+        admin: findAdmin.dataValues
+      });
+    } catch (err) {
+      return callback(err);
+    }
   })(req, res, null);
 } // END V1Login

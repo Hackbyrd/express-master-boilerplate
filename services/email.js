@@ -109,7 +109,7 @@ const emailObj = {
  * ** NOTE: ARGS must be all STRING values!!
  * @callback: (FUNCTION) callback(err, result) --> result.statusCode, result.body, result.headers
  */
-function mail({ from, name, subject, template, tos, ccs, bccs, args }, callback) {
+async function mail({ from, name, subject, template, tos, ccs, bccs, args }, callback) {
   // validate from, subject, template
   if (typeof from !== 'string' || typeof name !== 'string' || typeof subject !== 'string' || typeof template !== 'string')
     return callback(new Error('Email must have a from, name, subject, and template in order to send.'));

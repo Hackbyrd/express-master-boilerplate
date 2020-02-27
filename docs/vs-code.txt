@@ -1,0 +1,19 @@
+Launch VS Code from Terminal:
+Open the Command Palette (Shift+Cmd+p) and type 'shell command' to find the Shell Command: Install 'code' command in PATH command.
+
+Extensions:
+1. Prettier
+Search "Prettier - Code Formatter"
+Install It
+Command + ,
+Search "format on save"
+Check the box
+Search Prettier
+Add config path if you have one
+2. Better Comments
+3. Auto Rename Tag
+4. Bracket Pair Colorizer 2
+
+Commands:
+Toggle Terminal: Control + `
+Show Sidebar: Command + B

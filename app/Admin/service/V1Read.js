@@ -53,7 +53,7 @@ module.exports = {
  *   400: BAD_REQUEST_INVALID_ARGUMENTS
  *   500: INTERNAL_SERVER_ERROR
  */
-function V1Read(req, callback) {
+async function V1Read(req, callback) {
   const schema = joi.object({
     id: joi
       .number()
@@ -68,21 +68,22 @@ function V1Read(req, callback) {
   req.args = value; // updated arguments with type conversion
 
   // find admin
-  models.admin
-    .findByPk(req.args.id, {
+  try {
+    let findAdmin = await models.admin.findByPk(req.args.id, {
       attributes: {
         exclude: models.admin.getSensitiveData() // remove sensitive data
       }
-    })
-    .then(getAdmin => {
-      // check if admin exists
-      if (!getAdmin) return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST));
+    });
 
-      return callback(null, {
-        status: 200,
-        success: true,
-        admin: getAdmin.dataValues
-      });
-    })
-    .catch(err => callback(err));
+    // check if admin exists
+    if (!findAdmin) return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST));
+
+    return callback(null, {
+      status: 200,
+      success: true,
+      admin: findAdmin.dataValues
+    });
+  } catch (err) {
+    return callback(err);
+  }
 } // END V1Read

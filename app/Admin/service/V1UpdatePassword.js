@@ -56,7 +56,7 @@ module.exports = {
  *   400: BAD_REQUEST_INVALID_ARGUMENTS
  *   500: INTERNAL_SERVER_ERROR
  */
-function V1UpdatePassword(req, callback) {
+async function V1UpdatePassword(req, callback) {
   const schema = joi.object({
     password: joi
       .string()
@@ -81,7 +81,7 @@ function V1UpdatePassword(req, callback) {
   if (msg !== true) return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, req.__(msg)));
 
   // check password
-  models.admin.validatePassword(req.args.password, req.admin.password, (err, result) => {
+  models.admin.validatePassword(req.args.password, req.admin.password, async (err, result) => {
     if (err) return callback(err);
 
     // if password is incorrect
@@ -91,8 +91,8 @@ function V1UpdatePassword(req, callback) {
     // hash new password
     const newPassword = bcrypt.hashSync(req.args.password1, req.admin.salt);
 
-    models.admin
-      .update(
+    try {
+      await models.admin.update(
         {
           password: newPassword
         },
@@ -102,14 +102,15 @@ function V1UpdatePassword(req, callback) {
             id: req.admin.id
           }
         }
-      )
-      .then(() => {
-        // return success
-        return callback(null, {
-          status: 200,
-          success: true
-        });
-      })
-      .catch(err => callback(err)); // END update admin
+      );
+
+      // return success
+      return callback(null, {
+        status: 200,
+        success: true
+      });
+    } catch (err) {
+      return callback(err);
+    }
   }); // END validPassword
 } // END V1UpdatePassword

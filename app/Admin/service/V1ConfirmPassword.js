@@ -52,10 +52,10 @@ module.exports = {
  * Errors:
  *   400: Argument Validation Errors.
  *   400: User not found.
- *   401: unauthorized
+ *   401: Unauthorized
  *   500: Sequelize Error.
  */
-function V1ConfirmPassword(req, callback) {
+async function V1ConfirmPassword(req, callback) {
   const schema = joi.object({
     passwordResetToken: joi.string().required()
   });
@@ -63,47 +63,49 @@ function V1ConfirmPassword(req, callback) {
   // validate
   const { err, value } = schema.validate(req.args);
   if (err) return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, joiErrors(err)));
+
   req.args = value; // updated arguments with type conversion
 
-  // find admin
-  models.admin
-    .findOne({
+  try {
+    // grab admin
+    let getAdmin = await models.admin.findOne({
       where: {
         passwordResetToken: req.args.passwordResetToken,
         passwordResetExpire: {
           [Op.gte]: new Date() // has not expired yet
         }
       }
-    })
-    .then(getAdmin => {
-      if (!getAdmin)
-        return callback(
-          null,
-          errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, req.__('Invalid password reset token or reset token has expired.'))
-        );
+    });
 
-      // update new password
-      models.admin
-        .update(
-          {
-            password: getAdmin.resetPassword, // set to resetPassword
-            resetPassword: null,
-            passwordResetToken: null
-          },
-          {
-            fields: ['password', 'resetPassword', 'passwordResetToken'], // only these fields
-            where: {
-              id: getAdmin.id
-            }
-          }
-        )
-        .then(() => {
-          return callback(null, {
-            status: 200,
-            success: true
-          });
-        })
-        .catch(err => callback(err)); // END update
-    })
-    .catch(err => callback(err)); // END findOne
+    // if admin does not exists
+    if (!getAdmin) {
+      return callback(
+        null,
+        errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, req.__('Invalid password reset token or reset token has expired.'))
+      );
+    }
+
+    // update new password
+    await models.admin.update(
+      {
+        password: getAdmin.resetPassword, // set to resetPassword
+        resetPassword: null,
+        passwordResetToken: null
+      },
+      {
+        fields: ['password', 'resetPassword', 'passwordResetToken'], // only these fields
+        where: {
+          id: getAdmin.id
+        }
+      }
+    );
+
+    // return success
+    return callback(null, {
+      status: 200,
+      success: true
+    });
+  } catch (err) {
+    return callback(err);
+  }
 } // END confirmPassword

@@ -56,7 +56,7 @@ module.exports = {
  *   400: BAD_REQUEST_INVALID_ARGUMENTS
  *   500: INTERNAL_SERVER_ERROR
  */
-function V1Query(req, callback) {
+async function V1Query(req, callback) {
   const schema = joi.object({
     active: joi.boolean().optional(),
 
@@ -101,25 +101,26 @@ function V1Query(req, callback) {
     whereStmt[key] = req.args[key];
   });
 
-  // get admin
-  models.admin
-    .findAndCountAll({
+  try {
+    // get admins
+    let result = await models.admin.findAndCountAll({
       where: whereStmt,
       limit: limit,
       offset: getOffset(page, limit),
       order: getOrdering(sort)
-    })
-    .then(result => {
-      // return success
-      return callback(null, {
-        status: 200,
-        success: true,
-        admins: result.rows, // all admins
-        page: page,
-        limit: limit,
-        total: result.count, // the total count
-        totalPages: Math.ceil(result.count / limit)
-      });
-    })
-    .catch(err => callback(err)); // end grab admins
+    });
+
+    // return success
+    return callback(null, {
+      status: 200,
+      success: true,
+      admins: result.rows, // all admins
+      page: page,
+      limit: limit,
+      total: result.count, // the total count
+      totalPages: Math.ceil(result.count / limit)
+    });
+  } catch (err) {
+    return callback(err);
+  }
 } // END V1Query
