@@ -29,5 +29,5 @@ module.exports = {
   LIST_STRING_REGEX_EMPTY: /^$|^(\w|\s)+([,](\w|\s)+)*$/, // regex for a list string 1,2,3,456,78 or ''
   LIST_STRING_AT_REGEX_EMPTY: /^$|^(\w|\s|@|\.)+([,](\w|\s|@|\.)+)*$/, // regex for a list string 1,2,3,456,@78 or ''
 
-  GENDER_LIST: ['Male', 'Female', 'Other']
+  GENDER_LIST: ['MALE', 'FEMALE', 'OTHER']
 };
