@@ -11,7 +11,7 @@
   "license": "MIT",
   "engines": {
     "node": "12.16.0",
-    "yarn": "1.19.0",
+    "yarn": "1.22.0",
     "npm": "6.13.4"
   },
   "scripts": {

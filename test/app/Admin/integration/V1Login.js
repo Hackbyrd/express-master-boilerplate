@@ -25,9 +25,11 @@ const models = require('../../../../models');
 const { expect } = require('chai');
 const request = require('supertest');
 
+// services
+const { errorResponse, ERROR_CODES } = require('../../../../services/error');
+
 // helpers
 const { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');
-const { errorResponse, ERROR_CODES } = require('../../../../services/error');
 
 describe('Admin - V1Login', () => {
   // grab fixtures here
