@@ -59,9 +59,7 @@ function V1Read(req, res, next) {
 
   // call correct method
   service[method](req, (err, result) => {
-    if (err) {
-      return next(err);
-    }
+    if (err) return next(err);
 
     return res.status(result.status).json(result);
   });
@@ -84,9 +82,7 @@ function V1Create(req, res, next) {
 
   // call correct method
   service[method](req, (err, result) => {
-    if (err) {
-      return next(err);
-    }
+    if (err) return next(err);
 
     return res.status(result.status).json(result);
   });
@@ -109,9 +105,7 @@ function V1Update(req, res, next) {
 
   // call correct method
   service[method](req, (err, result) => {
-    if (err) {
-      return next(err);
-    }
+    if (err) return next(err);
 
     return res.status(result.status).json(result);
   });
@@ -134,9 +128,7 @@ function V1Query(req, res, next) {
 
   // call correct method
   service[method](req, (err, result) => {
-    if (err) {
-      return next(err);
-    }
+    if (err) return next(err);
 
     return res.status(result.status).json(result);
   });
@@ -159,9 +151,7 @@ function V1UpdatePassword(req, res, next) {
 
   // call correct method
   service[method](req, (err, result) => {
-    if (err) {
-      return next(err);
-    }
+    if (err) return next(err);
 
     return res.status(result.status).json(result);
   });
@@ -180,9 +170,7 @@ function V1ResetPassword(req, res, next) {
 
   // call correct method
   service[method](req, (err, result) => {
-    if (err) {
-      return next(err);
-    }
+    if (err) return next(err);
 
     return res.status(result.status).json(result);
   });
@@ -201,9 +189,7 @@ function V1ConfirmPassword(req, res, next) {
 
   // call correct method
   service[method](req, (err, result) => {
-    if (err) {
-      return next(err);
-    }
+    if (err) return next(err);
 
     return res.status(result.status).json(result);
   });
@@ -226,9 +212,7 @@ function V1UpdateEmail(req, res, next) {
 
   // call correct method
   service[method](req, (err, result) => {
-    if (err) {
-      return next(err);
-    }
+    if (err) return next(err);
 
     return res.status(result.status).json(result);
   });
