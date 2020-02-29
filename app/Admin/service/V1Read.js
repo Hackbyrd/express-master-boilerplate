@@ -15,16 +15,18 @@ const joi = require('@hapi/joi'); // validations
 const async = require('async');
 const moment = require('moment-timezone');
 const passport = require('passport');
+const currency = require('currency.js');
 
 // services
 const email = require('../../../services/email');
+const { SOCKET_ROOMS, SOCKET_EVENTS } = require('../../../services/socket');
+const { errorResponse, joiErrorsMessage, ERROR_CODES } = require('../../../services/error');
 
 // models
 const models = require('../../../models');
 
-//helpers
+// helpers
 const { getOffset, getOrdering, convertStringListToWhereStmt } = require('../../../helpers/cruqd');
-const { errRes, joiErrors, ERROR_CODES } = require('../../../helpers/error');
 const { randomString, createJwtToken } = require('../../../helpers/logic');
 const { listIntRegex } = require('../../../helpers/constants');
 
@@ -49,8 +51,9 @@ module.exports = {
  *
  * Success: Return a admin.
  * Errors:
- *   400: BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST
  *   400: BAD_REQUEST_INVALID_ARGUMENTS
+ *   400: ADMIN_BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST
+ *   401: UNAUTHORIZED
  *   500: INTERNAL_SERVER_ERROR
  */
 async function V1Read(req, callback) {
@@ -64,7 +67,7 @@ async function V1Read(req, callback) {
 
   // validate
   const { err, value } = schema.validate(req.args);
-  if (err) return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, joiErrors(err)));
+  if (err) return callback(null, errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(err)));
   req.args = value; // updated arguments with type conversion
 
   // find admin
@@ -76,7 +79,7 @@ async function V1Read(req, callback) {
     });
 
     // check if admin exists
-    if (!findAdmin) return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST));
+    if (!findAdmin) return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST));
 
     return callback(null, {
       status: 200,

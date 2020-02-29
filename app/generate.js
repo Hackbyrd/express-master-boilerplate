@@ -34,10 +34,10 @@ function generate() {
   }
 
   // names
-  var upperName = newDir.toUpperCase();
-  var lowerName = newDir.toLowerCase();
-  var pascalName = newDir[0].toUpperCase() + '' + newDir.substring(1);
-  var camelName = newDir[0].toLowerCase() + '' + newDir.substring(1);
+  const upperName = newDir.toUpperCase();
+  const lowerName = newDir.toLowerCase();
+  const pascalName = newDir[0].toUpperCase() + '' + newDir.substring(1);
+  const camelName = newDir[0].toLowerCase() + '' + newDir.substring(1);
 
   // make directory
   fs.mkdirSync(newDirPath);
@@ -45,34 +45,34 @@ function generate() {
   /****************************/
   /***** Create App Files *****/
   /****************************/
-  var fd = null; // file descriptor
+  let fd = null; // file descriptor
 
-  // controller
+  /***** Controller *****/
   fd = fs.openSync(path.join(newDirPath, 'controller.js'), 'w');
   fs.writeSync(
     fd,
-    `/**\n * ${upperName} CONTROLLER\n */\n\n'use strict';\n\n// helpers\nconst { errRes, ERROR_CODES } = require('../../helpers/error');\n\n// service\nconst service = require('./service');\n\nmodule.exports = {}\n`,
+    `/**\n * ${upperName} CONTROLLER\n */\n\n'use strict';\n\n// helpers\nconst { errorResponse, ERROR_CODES } = require('../../services/error');\n\n// service\nconst service = require('./service');\n\nmodule.exports = {}\n`,
     0,
     'utf-8'
   );
   fs.closeSync(fd);
 
-  // helper
+  /***** Helper *****/
   fd = fs.openSync(path.join(newDirPath, 'helper.js'), 'w');
   fs.writeSync(fd, `/**\n * ${upperName} HELPER\n */\n\n'use strict';\n\nmodule.exports = {}\n`, 0, 'utf-8');
   fs.closeSync(fd);
 
-  // model
+  /***** Model *****/
   fd = fs.openSync(path.join(newDirPath, 'model.js'), 'w');
   fs.writeSync(
     fd,
-    `/* ${newDir} Model\n\nFind Table Schema Here: "/database/schema.sql"\n\n*/\n\n'use strict';\n\n// require custom node modules\nconst constants = require('../../helpers/constants');\n\nmodule.exports = function(sequelize, DataTypes) {\n  let ${pascalName} = sequelize.define('${camelName}', {\n\n    // All foreign keys are added in associations\n\n    example1: {\n      type: DataTypes.BOOLEAN,\n      allowNull: false,\n      defaultValue: true\n    },\n\n    example2: {\n      type: DataTypes.INTEGER,\n      allowNull: false,\n      defaultValue: true,\n      validate: {\n        isInt: true\n      }\n    },\n\n    example3: {\n      type: DataTypes.DECIMAL(4, 2),\n      allowNull: false,\n      defaultValue: true,\n      validate: {\n        isDecimal: true\n      }\n    },\n\n    example4: {\n      type: DataTypes.STRING,\n      allowNull: false,\n      defaultValue: 'four'\n    },\n\n    example5: {\n      type: DataTypes.ENUM(constants.someList),\n      allowNull: true,\n      defaultValue: null\n    },\n\n    example6: {\n      type: DataTypes.DATE,\n      allowNull: false,\n      defaultValue: DataTypes.NOW, // now\n      validate: {\n        isDate: true\n      }\n    },\n\n    example7: {\n      type: DataTypes.JSONB,\n      allowNull: true,\n      defaultValue: null\n    },\n\n    example8: {\n      type: DataTypes.TEXT,\n      allowNull: true,\n      defaultValue: null\n    }\n  }, {\n    timestamps: true, // allows sequelize to create timestamps automatically\n    freezeTableName: true, // allows sequelize to pluralize the model name\n    tableName: 'MAKE ${upperName} PLURAL', // set table name\n    hooks: {},\n    indexes: []\n  });\n\n  return ${pascalName};\n}\n`,
+    `/* ${newDir} Model\n\nFind Table Schema Here: "/database/schema.sql"\n\n*/\n\n'use strict';\n\n// require custom node modules\nconst constants = require('../../helpers/constants');\n\nmodule.exports = function(sequelize, DataTypes) {\n  let ${pascalName} = sequelize.define('${camelName}', {\n\n    // All foreign keys are added in associations\n\n    example1: {\n      type: DataTypes.BOOLEAN,\n      allowNull: false,\n      defaultValue: true\n    },\n\n    example2: {\n      type: DataTypes.INTEGER,\n      allowNull: false,\n      defaultValue: 0,\n      validate: {\n        isInt: true\n      }\n    },\n\n    example3: {\n      type: DataTypes.DECIMAL(4, 2),\n      allowNull: false,\n      defaultValue: 0.00,\n      validate: {\n        isDecimal: true\n      }\n    },\n\n    example4: {\n      type: DataTypes.STRING,\n      allowNull: false,\n      defaultValue: 'foo'\n    },\n\n    example5: {\n      type: DataTypes.ENUM(constants.someList),\n      allowNull: true,\n      defaultValue: null\n    },\n\n    example6: {\n      type: DataTypes.DATE,\n      allowNull: false,\n      defaultValue: DataTypes.NOW, // now\n      validate: {\n        isDate: true\n      }\n    },\n\n    example7: {\n      type: DataTypes.JSONB,\n      allowNull: true,\n      defaultValue: null\n    },\n\n    example8: {\n      type: DataTypes.TEXT,\n      allowNull: true,\n      defaultValue: null\n    }\n  }, {\n    timestamps: true, // allows sequelize to create timestamps automatically\n    freezeTableName: true, // allows sequelize to pluralize the model name\n    tableName: 'MAKE ${upperName} PLURAL', // set table name\n    hooks: {},\n    indexes: []\n  });\n\n  return ${pascalName};\n}\n`,
     0,
     'utf-8'
   );
   fs.closeSync(fd);
 
-  // routes
+  /***** Routes *****/
   fd = fs.openSync(path.join(newDirPath, 'routes.js'), 'w');
   fs.writeSync(
     fd,
@@ -82,7 +82,17 @@ function generate() {
   );
   fs.closeSync(fd);
 
-  // service
+  /***** Error *****/
+  fd = fs.openSync(path.join(newDirPath, 'error.js'), 'w');
+  fs.writeSync(
+    fd,
+    `/**\n * ${pascalName} Error Service:\n *\n * For Better Client 4xx Error Handling For ${pascalName} Feature\n * Gets exported to /services/error.js and put in variable ERROR_CODES\n */\n\n'use strict';\n\n/**\n * ${pascalName} Local Error Codes\n */\nconst LOCAL_ERROR_CODES = {\n  /* Place error codes below. Remember to prepend ${upperName} to the key and error value  */\n  // ${upperName}_BAD_REQUEST_ACCOUNT_INACTIVE: {\n  //   error: '${upperName}.BAD_REQUEST_ACCOUNT_INACTIVE',\n  //   status: 401,\n  //   messages: ['${pascalName} account is inactive.']\n  // }\n};\n\nmodule.exports = LOCAL_ERROR_CODES;\n`,
+    0,
+    'utf-8'
+  );
+  fs.closeSync(fd);
+
+  /***** Service *****/
   fs.mkdirSync(path.join(newDirPath, 'service'));
 
   // service index
@@ -94,7 +104,7 @@ function generate() {
   fd = fs.openSync(path.join(newDirPath, 'service/V1Method.js'), 'w');
   fs.writeSync(
     fd,
-    `/**\n * ${upperName} V1Method SERVICE\n */\n\n'use strict';\n\n// ENV variables\nconst { NODE_ENV, REDIS_URL } = process.env;\n\n// third-party\nconst _ = require('lodash');\nconst Op = require('sequelize').Op; // for operator aliases like $gte, $eq\nconst io = require('socket.io-emitter')(REDIS_URL); // to emit real-time events to client\nconst joi = require('@hapi/joi'); // validations\nconst async = require('async');\nconst moment = require('moment-timezone');\nconst passport = require('passport');\n\n// services\nconst email = require('../../../services/email');\n\n// models\nconst models = require('../../../models');\n\n//helpers\nconst { getOffset, getOrdering, convertStringListToWhereStmt } = require('../../../helpers/cruqd');\nconst { errRes, joiErrors, ERROR_CODES } = require('../../../helpers/error');\nconst { randomString } = require('../../../helpers/logic');\nconst { listIntRegex } = require('../../../helpers/constants');\n\n// methods\nmodule.exports = {}\n`,
+    `/**\n * ${upperName} V1Method SERVICE\n */\n\n'use strict';\n\n// ENV variables\nconst { NODE_ENV, REDIS_URL } = process.env;\n\n// third-party\nconst _ = require('lodash');\nconst Op = require('sequelize').Op; // for operator aliases like $gte, $eq\nconst io = require('socket.io-emitter')(REDIS_URL); // to emit real-time events to client\nconst joi = require('@hapi/joi'); // validations\nconst async = require('async');\nconst moment = require('moment-timezone');\nconst passport = require('passport');\nconst currency = require('currency.js');\n\n// services\nconst email = require('../../../services/email');\nconst { SOCKET_ROOMS, SOCKET_EVENTS } = require('../../../services/socket');\nconst { errorResponse, joiErrorsMessage, ERROR_CODES } = require('../../../services/error');\n\n// models\nconst models = require('../../../models');\n\n// helpers\nconst { getOffset, getOrdering, convertStringListToWhereStmt } = require('../../../helpers/cruqd');\nconst { randomString } = require('../../../helpers/logic');\nconst { listIntRegex } = require('../../../helpers/constants');\n\n// methods\nmodule.exports = {}\n`,
     0,
     'utf-8'
   );
@@ -112,7 +122,7 @@ function generate() {
   fd = fs.openSync(path.join(newTestDirPath, 'integration/V1Method.js'), 'w');
   fs.writeSync(
     fd,
-    `/**\n * TEST ${newDir.toUpperCase()} V1Method METHOD\n */\n\n'use strict';\n\n// build-in node modules\nconst path = require('path');\n\n// load test env\nrequire('dotenv').config({ path: path.join(__dirname, '../../../../config/.env.test') });\n\n// ENV variables\nconst { NODE_ENV } = process.env;\n\n// third party\nconst moment = require('moment-timezone');\nconst i18n = require('i18n');\n\n// server & models\nconst app = require('../../../../server');\nconst models = require('../../../../models');\n\n// assertion library\nconst { expect } = require('chai');\nconst request = require('supertest');\n\n// helpers\nconst { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');\nconst { errRes, ERROR_CODES } = require('../../../../helpers/error');\n\n// services\n\ndescribe('${pascalName} - V1Method', () => {\n  // grab fixtures here\n  const adminFix = require('../../../fixtures/fix1/admin');\n  const userFix = require('../../../fixtures/fix1/user');\n\n  // url of the api method we are testing\n  const routeVersion = '/v1';\n  const routePrefix = '/MAKE ${upperName} PLURAL';\n  const routeMethod = '/method';\n  const routeUrl = \`\${routeVersion}\${routePrefix}\${routeMethod}\`;\n\n  // clear database\n  beforeEach(done => {\n    reset(done);\n  });\n\n  // Logged Out\n  describe('Role: Logged Out', () => {\n    // populate database with fixtures\n    beforeEach(done => {\n      populate('fix1', done);\n    });\n\n    it('should test something', done => {\n      done();\n    }); // END should test something\n  }); // END Role: Logged Out\n\n  // Role: Admin\n  describe('Role: Admin', () => {\n    const jwt = 'jwt-admin';\n\n    // populate database with fixtures\n    beforeEach(done => {\n      populate('fix1', done);\n    });\n\n    it('should test something', done => {\n      done();\n    }); // END should test something\n  }); // END Role: Admin\n\n  // Role: User\n  describe('Role: User', () => {\n    const jwt = 'jwt-user';\n\n    // populate database with fixtures\n    beforeEach(done => {\n      populate('fix1', done);\n    });\n\n    it('should test something', done => {\n      done();\n    }); // END should test something\n  }); // END Role: User\n}); // END ${upperName}\n`,
+    `/**\n * TEST ${newDir.toUpperCase()} V1Method METHOD\n */\n\n'use strict';\n\n// build-in node modules\nconst path = require('path');\n\n// load test env\nrequire('dotenv').config({ path: path.join(__dirname, '../../../../config/.env.test') });\n\n// ENV variables\nconst { NODE_ENV } = process.env;\n\n// third party\nconst moment = require('moment-timezone');\nconst i18n = require('i18n');\n\n// server & models\nconst app = require('../../../../server');\nconst models = require('../../../../models');\n\n// assertion library\nconst { expect } = require('chai');\nconst request = require('supertest');\n\n// helpers\nconst { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');\nconst { errorResponse, ERROR_CODES } = require('../../../../services/error');\n\n// services\n\ndescribe('${pascalName} - V1Method', () => {\n  // grab fixtures here\n  const adminFix = require('../../../fixtures/fix1/admin');\n  const userFix = require('../../../fixtures/fix1/user');\n\n  // url of the api method we are testing\n  const routeVersion = '/v1';\n  const routePrefix = '/MAKE ${upperName} PLURAL';\n  const routeMethod = '/method';\n  const routeUrl = \`\${routeVersion}\${routePrefix}\${routeMethod}\`;\n\n  // clear database\n  beforeEach(done => {\n    reset(done);\n  });\n\n  // Logged Out\n  describe('Role: Logged Out', () => {\n    // populate database with fixtures\n    beforeEach(done => {\n      populate('fix1', done);\n    });\n\n    it('should test something', done => {\n      done();\n    }); // END should test something\n  }); // END Role: Logged Out\n\n  // Role: Admin\n  describe('Role: Admin', () => {\n    const jwt = 'jwt-admin';\n\n    // populate database with fixtures\n    beforeEach(done => {\n      populate('fix1', done);\n    });\n\n    it('should test something', done => {\n      done();\n    }); // END should test something\n  }); // END Role: Admin\n\n  // Role: User\n  describe('Role: User', () => {\n    const jwt = 'jwt-user';\n\n    // populate database with fixtures\n    beforeEach(done => {\n      populate('fix1', done);\n    });\n\n    it('should test something', done => {\n      done();\n    }); // END should test something\n  }); // END Role: User\n}); // END ${upperName}\n`,
     0,
     'utf-8'
   );

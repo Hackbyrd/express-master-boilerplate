@@ -15,15 +15,20 @@ const { NODE_ENV } = process.env;
 // the rooms for sockets
 const SOCKET_ROOMS = {
   GLOBAL: 'GLOBAL', // a global room
-  ROOM: 'ROOM-' // add dash here so you can append a unique number for the room
+  ROOM: 'ROOM-', // add dash here so you can append a unique number for the room
+  ADMIN: 'ADMIN-' // admin room
 
   // add more socket rooms here
 };
 
 // the events the socket can emit
 const SOCKET_EVENTS = {
+  // ADMIN EVENTS
   ADMIN_CREATED: 'ADMIN_CREATED',
-  USER_CREATED: 'USER_CREATED'
+  ADMIN_UPDATED: 'ADMIN_UPDATED'
+
+  // USER EVENTS
+  // USER_CREATED: 'USER_CREATED'
 
   // add more socket events here
 };
@@ -47,6 +52,9 @@ function connect(socket) {
 
   // join the correct room for a feature
   if (socket.handshake.query.room) socket.join(`${SOCKET_ROOMS.ROOM}${socket.handshake.query.room}`);
+
+  // join the admin room for a feature
+  if (socket.handshake.query.admin) socket.join(`${SOCKET_ROOMS.ADMIN}${socket.handshake.query.admin}`);
 
   // add more rooms here
 

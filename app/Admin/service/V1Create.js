@@ -15,16 +15,18 @@ const joi = require('@hapi/joi'); // validations
 const async = require('async');
 const moment = require('moment-timezone');
 const passport = require('passport');
+const currency = require('currency.js');
 
 // services
 const email = require('../../../services/email');
+const { SOCKET_ROOMS, SOCKET_EVENTS } = require('../../../services/socket');
+const { errorResponse, joiErrorsMessage, ERROR_CODES } = require('../../../services/error');
 
 // models
 const models = require('../../../models');
 
-//helpers
+// helpers
 const { getOffset, getOrdering, convertStringListToWhereStmt } = require('../../../helpers/cruqd');
-const { errRes, joiErrors, ERROR_CODES } = require('../../../helpers/error');
 const { randomString, createJwtToken } = require('../../../helpers/logic');
 const { checkPasswords, isValidTimezone } = require('../../../helpers/validate');
 const { listIntRegex } = require('../../../helpers/constants');
@@ -59,6 +61,8 @@ module.exports = {
  * Success: Return an admin
  * Errors:
  *   400: BAD_REQUEST_INVALID_ARGUMENTS
+ *   400: ADMIN_BAD_REQUEST_INVALID_ARGUMENTS
+ *   401: UNAUTHORIZED
  *   500: INTERNAL_SERVER_ERROR
  */
 async function V1Create(req, callback) {
@@ -101,17 +105,17 @@ async function V1Create(req, callback) {
 
   // validate
   const { err, value } = schema.validate(req.args);
-  if (err) return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, joiErrors(err)));
+  if (err) return callback(null, errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(err)));
   req.args = value; // updated arguments with type conversion
 
   // check passwords
   const msg = checkPasswords(req.args.password1, req.args.password2, 8);
-  if (msg !== true) return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, req.__(msg)));
+  if (msg !== true) return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__(msg)));
   req.args.password = req.args.password1; // set password
 
   // check terms of service
   if (!req.args.acceptedTerms)
-    return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, req.__('You must agree to Terms of Service.')));
+    return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__('You must agree to Terms of Service.')));
 
   try {
     // check if admin email already exists
@@ -122,11 +126,11 @@ async function V1Create(req, callback) {
     });
 
     // check of duplicate admin user
-    if (duplicateAdmin) return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, 1));
+    if (duplicateAdmin) return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, 1));
 
     // check timezone
     if (!isValidTimezone(req.args.timezone))
-      return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, req.__('Time zone is invalid.')));
+      return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__('Time zone is invalid.')));
 
     // create admin
     let newAdmin = await models.admin.create({
@@ -151,6 +155,11 @@ async function V1Create(req, callback) {
         newAdmin.destroy(); // destroy if error
         return callback(err);
       }); // END grab partner without sensitive data
+
+    // SOCKET EMIT EVENT
+    let data = { admin: returnAdmin };
+    io.to(`${SOCKET_ROOMS.GLOBAL}`).emit(SOCKET_EVENTS.ADMIN_CREATED, data);
+    io.to(`${SOCKET_ROOMS.ADMIN}${returnAdmin.id}`).emit(SOCKET_EVENTS.ADMIN_CREATED, data);
 
     // return
     return callback(null, {

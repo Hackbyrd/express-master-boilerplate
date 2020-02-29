@@ -15,16 +15,18 @@ const joi = require('@hapi/joi'); // validations
 const async = require('async');
 const moment = require('moment-timezone');
 const passport = require('passport');
+const currency = require('currency.js');
 
 // services
 const email = require('../../../services/email');
+const { SOCKET_ROOMS, SOCKET_EVENTS } = require('../../../services/socket');
+const { errorResponse, joiErrorsMessage, ERROR_CODES } = require('../../../services/error');
 
 // models
 const models = require('../../../models');
 
-//helpers
+// helpers
 const { getOffset, getOrdering, convertStringListToWhereStmt } = require('../../../helpers/cruqd');
-const { errRes, joiErrors, ERROR_CODES } = require('../../../helpers/error');
 const { randomString, createJwtToken } = require('../../../helpers/logic');
 const { listIntRegex } = require('../../../helpers/constants');
 
@@ -50,9 +52,9 @@ module.exports = {
  *
  * Success: Return an admin and JWT token.
  * Errors:
- *   400: BAD_REQUEST_LOGIN_FAILED
- *   400: BAD_REQUEST_ACCOUNT_INACTIVE
- *   400: BAD_REQUEST_ACCOUNT_DELETED
+ *   400: ADMIN_BAD_REQUEST_INVALID_CREDENTIALS
+ *   400: ADMIN_BAD_REQUEST_ACCOUNT_INACTIVE
+ *   400: ADMIN_BAD_REQUEST_ACCOUNT_DELETED
  *   500: INTERNAL_SERVER_ERROR
  */
 async function V1Login(req, res, callback) {
@@ -61,13 +63,13 @@ async function V1Login(req, res, callback) {
     if (err) return callback(err);
 
     // check if admin exists
-    if (!admin) return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_CREDENTIALS));
+    if (!admin) return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_CREDENTIALS));
 
     // return error message if admin is inactive
-    if (!admin.active) return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_ACCOUNT_INACTIVE));
+    if (!admin.active) return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_INACTIVE));
 
     // return error message if admin is deleted
-    if (admin.deletedAt) return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_ACCOUNT_DELETED));
+    if (admin.deletedAt) return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_DELETED));
 
     // update login count and last login
     try {

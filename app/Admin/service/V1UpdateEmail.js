@@ -15,16 +15,18 @@ const joi = require('@hapi/joi'); // validations
 const async = require('async');
 const moment = require('moment-timezone');
 const passport = require('passport');
+const currency = require('currency.js');
 
 // services
 const email = require('../../../services/email');
 
 // models
 const models = require('../../../models');
+const { SOCKET_ROOMS, SOCKET_EVENTS } = require('../../../services/socket');
+const { errorResponse, joiErrorsMessage, ERROR_CODES } = require('../../../services/error');
 
-//helpers
+// helpers
 const { getOffset, getOrdering, convertStringListToWhereStmt } = require('../../../helpers/cruqd');
-const { errRes, joiErrors, ERROR_CODES } = require('../../../helpers/error');
 const { randomString, createJwtToken } = require('../../../helpers/logic');
 const { listIntRegex } = require('../../../helpers/constants');
 
@@ -51,6 +53,8 @@ module.exports = {
  * Success: Return a true.
  * Errors:
  *   400: BAD_REQUEST_INVALID_ARGUMENTS
+ *   400: ADMIN_BAD_REQUEST_INVALID_ARGUMENTS
+ *   401: UNAUTHORIZED
  *   500: INTERNAL_SERVER_ERROR
  */
 async function V1UpdateEmail(req, callback) {
@@ -71,13 +75,13 @@ async function V1UpdateEmail(req, callback) {
 
   // validate
   const { err, value } = schema.validate(req.args);
-  if (err) return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, joiErrors(err)));
+  if (err) return callback(null, errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(err)));
 
   req.args = value; // updated arguments with type conversion
 
   //checks if the new email is different from the existing one
   if (req.args.newEmail === req.admin.email)
-    return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, req.__('New email cannot be the same as the current email.')));
+    return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__('New email cannot be the same as the current email.')));
 
   try {
     // checks if any other admin is using the new email
@@ -87,7 +91,7 @@ async function V1UpdateEmail(req, callback) {
       }
     });
 
-    if (findAdmin) return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, req.__('The new email is already being used.')));
+    if (findAdmin) return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__('The new email is already being used.')));
 
     // update admin
     await models.admin.update(

@@ -16,16 +16,18 @@ const async = require('async');
 const bcrypt = require('bcrypt');
 const moment = require('moment-timezone');
 const passport = require('passport');
+const currency = require('currency.js');
 
 // services
 const email = require('../../../services/email');
+const { SOCKET_ROOMS, SOCKET_EVENTS } = require('../../../services/socket');
+const { errorResponse, joiErrorsMessage, ERROR_CODES } = require('../../../services/error');
 
 // models
 const models = require('../../../models');
 
-//helpers
+// helpers
 const { getOffset, getOrdering, convertStringListToWhereStmt } = require('../../../helpers/cruqd');
-const { errRes, joiErrors, ERROR_CODES } = require('../../../helpers/error');
 const { randomString, createJwtToken } = require('../../../helpers/logic');
 const { checkPasswords, isValidTimezone } = require('../../../helpers/validate');
 const { listIntRegex } = require('../../../helpers/constants');
@@ -52,8 +54,9 @@ module.exports = {
  *
  * Success: Return true
  * Errors:
- *   400: BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST
  *   400: BAD_REQUEST_INVALID_ARGUMENTS
+ *   400: ADMIN_BAD_REQUEST_INVALID_ARGUMENTS
+ *   400: ADMIN_BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST
  *   500: INTERNAL_SERVER_ERROR
  */
 async function V1ResetPassword(req, callback) {
@@ -75,11 +78,11 @@ async function V1ResetPassword(req, callback) {
 
   // validate
   const { err, value } = schema.validate(req.args);
-  if (err) return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, joiErrors(err)));
+  if (err) return callback(null, errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(err)));
 
   // check password1 and password2 equality
   const msg = checkPasswords(req.args.password1, req.args.password2, 8);
-  if (msg !== true) return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, req.__(msg)));
+  if (msg !== true) return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__(msg)));
 
   // grab admin with this email
   try {
@@ -90,7 +93,7 @@ async function V1ResetPassword(req, callback) {
     });
 
     // if admin cannot be found
-    if (!findAdmin) return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST));
+    if (!findAdmin) return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST));
 
     // hash new password
     const newPassword = bcrypt.hashSync(req.args.password1, findAdmin.salt);

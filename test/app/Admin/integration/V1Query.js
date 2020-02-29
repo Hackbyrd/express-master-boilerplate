@@ -27,7 +27,7 @@ const request = require('supertest');
 
 // helpers
 const { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');
-const { errRes, ERROR_CODES } = require('../../../../helpers/error');
+const { errorResponse, ERROR_CODES } = require('../../../../services/error');
 
 describe('Admin - V1Query', () => {
   // grab fixtures here
@@ -63,7 +63,7 @@ describe('Admin - V1Query', () => {
         .end((err, res) => {
           expect(err).to.be.null;
           expect(res.statusCode).to.equal(401);
-          expect(res.body).to.deep.equal(errRes(i18n, 401, ERROR_CODES.UNAUTHORIZED));
+          expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.UNAUTHORIZED));
           done();
         }); // END query request
     }); // END [logged-out] should fail to query user

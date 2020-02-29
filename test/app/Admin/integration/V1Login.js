@@ -27,7 +27,7 @@ const request = require('supertest');
 
 // helpers
 const { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');
-const { errRes, ERROR_CODES } = require('../../../../helpers/error');
+const { errorResponse, ERROR_CODES } = require('../../../../services/error');
 
 describe('Admin - V1Login', () => {
   // grab fixtures here
@@ -98,7 +98,7 @@ describe('Admin - V1Login', () => {
         .send(loginParams)
         .end((err, res) => {
           expect(res.statusCode).to.equal(400);
-          expect(res.body).to.deep.equal(errRes(i18n, 400, ERROR_CODES.BAD_REQUEST_INVALID_CREDENTIALS));
+          expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_CREDENTIALS));
           done();
         }); // END second request
     }); // END [logged-out] should fail to login admin email or password is incorrect
@@ -130,7 +130,7 @@ describe('Admin - V1Login', () => {
             .send(loginParams)
             .end((err, res) => {
               expect(res.statusCode).to.equal(400);
-              expect(res.body).to.deep.equal(errRes(i18n, 400, ERROR_CODES.BAD_REQUEST_ACCOUNT_INACTIVE));
+              expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_INACTIVE));
               done();
             }); // END second request
         });
@@ -163,7 +163,7 @@ describe('Admin - V1Login', () => {
             .send(loginParams)
             .end((err, res) => {
               expect(res.statusCode).to.equal(400);
-              expect(res.body).to.deep.equal(errRes(i18n, 400, ERROR_CODES.BAD_REQUEST_ACCOUNT_DELETED));
+              expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_DELETED));
               done();
             }); // END second request
         });

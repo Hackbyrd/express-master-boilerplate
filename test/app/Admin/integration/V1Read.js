@@ -27,7 +27,7 @@ const request = require('supertest');
 
 // helpers
 const { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');
-const { errRes, ERROR_CODES } = require('../../../../helpers/error');
+const { errorResponse, ERROR_CODES } = require('../../../../services/error');
 
 describe('Admin - V1Read', () => {
   // grab fixtures here
@@ -59,7 +59,7 @@ describe('Admin - V1Read', () => {
         .end((err, res) => {
           expect(err).to.be.null;
           expect(res.statusCode).to.equal(401);
-          expect(res.body).to.deep.equal(errRes(i18n, 401, ERROR_CODES.UNAUTHORIZED));
+          expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.UNAUTHORIZED));
           done();
         }); // END read request
     }); // END [logged-out] should fail to read admin
@@ -139,7 +139,7 @@ describe('Admin - V1Read', () => {
           .end((err, res) => {
             expect(err).to.be.null;
             expect(res.statusCode).to.equal(400);
-            expect(res.body).to.deep.equal(errRes(i18n, 400, ERROR_CODES.BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST));
+            expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST));
             done();
           }); // END read request
       }); // END login admin

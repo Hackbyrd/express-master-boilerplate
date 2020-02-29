@@ -27,7 +27,7 @@ const request = require('supertest');
 
 // helpers
 const { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');
-const { errRes, ERROR_CODES } = require('../../../../helpers/error');
+const { errorResponse, ERROR_CODES } = require('../../../../services/error');
 
 describe('Admin - V1Create', () => {
   // grab fixtures here
@@ -59,7 +59,7 @@ describe('Admin - V1Create', () => {
         .end((err, res) => {
           expect(err).to.be.null;
           expect(res.statusCode).to.equal(401);
-          expect(res.body).to.deep.equal(errRes(i18n, 401, ERROR_CODES.UNAUTHORIZED));
+          expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.UNAUTHORIZED));
           done();
         }); // END read request
     }); // END [logged-out] should fail to create admin
@@ -163,7 +163,7 @@ describe('Admin - V1Create', () => {
           .end((err, res) => {
             expect(res.statusCode).to.equal(400);
             expect(res.body).to.deep.equal(
-              errRes(i18n, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, i18n.__('The passwords you entered do not match.'))
+              errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('The passwords you entered do not match.'))
             );
             done();
           });
@@ -193,7 +193,9 @@ describe('Admin - V1Create', () => {
           .send(params)
           .end((err, res) => {
             expect(res.statusCode).to.equal(400);
-            expect(res.body).to.deep.equal(errRes(i18n, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, i18n.__('You must agree to Terms of Service.')));
+            expect(res.body).to.deep.equal(
+              errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('You must agree to Terms of Service.'))
+            );
             done();
           });
       }); // END login admin
@@ -222,7 +224,7 @@ describe('Admin - V1Create', () => {
           .send(params)
           .end((err, res) => {
             expect(res.statusCode).to.equal(400);
-            expect(res.body).to.deep.equal(errRes(i18n, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, 1));
+            expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, 1));
             done();
           });
       }); // END login admin
@@ -251,7 +253,7 @@ describe('Admin - V1Create', () => {
           .send(params)
           .end((err, res) => {
             expect(res.statusCode).to.equal(400);
-            expect(res.body).to.deep.equal(errRes(i18n, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, i18n.__('Time zone is invalid.')));
+            expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('Time zone is invalid.')));
             done();
           });
       }); // END login admin

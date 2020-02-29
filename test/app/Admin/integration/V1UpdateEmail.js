@@ -28,7 +28,7 @@ const request = require('supertest');
 
 // helpers
 const { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');
-const { errRes, ERROR_CODES } = require('../../../../helpers/error');
+const { errorResponse, ERROR_CODES } = require('../../../../services/error');
 
 describe('Admin - V1UpdateEmail', () => {
   // grab fixtures here
@@ -60,7 +60,7 @@ describe('Admin - V1UpdateEmail', () => {
         .end((err, res) => {
           expect(err).to.be.null;
           expect(res.statusCode).to.equal(401);
-          expect(res.body).to.deep.equal(errRes(i18n, 401, ERROR_CODES.UNAUTHORIZED));
+          expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.UNAUTHORIZED));
           done();
         }); // END update request
     }); // END [logged-out] should fail to update email
@@ -121,7 +121,7 @@ describe('Admin - V1UpdateEmail', () => {
           .end((err, res) => {
             expect(res.statusCode).to.equal(400);
             expect(res.body).to.deep.equal(
-              errRes(i18n, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, i18n.__('New email cannot be the same as the current email.'))
+              errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('New email cannot be the same as the current email.'))
             );
             done();
           }); // END call update email
@@ -166,7 +166,7 @@ describe('Admin - V1UpdateEmail', () => {
               .end((err, res) => {
                 expect(res.statusCode).to.equal(400);
                 expect(res.body).to.deep.equal(
-                  errRes(i18n, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, i18n.__('The new email is already being used.'))
+                  errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('The new email is already being used.'))
                 );
                 done();
               }); // END call update email

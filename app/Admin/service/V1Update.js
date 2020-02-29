@@ -15,16 +15,18 @@ const joi = require('@hapi/joi'); // validations
 const async = require('async');
 const moment = require('moment-timezone');
 const passport = require('passport');
+const currency = require('currency.js');
 
 // services
 const email = require('../../../services/email');
+const { SOCKET_ROOMS, SOCKET_EVENTS } = require('../../../services/socket');
+const { errorResponse, joiErrorsMessage, ERROR_CODES } = require('../../../services/error');
 
 // models
 const models = require('../../../models');
 
-//helpers
+// helpers
 const { getOffset, getOrdering, convertStringListToWhereStmt } = require('../../../helpers/cruqd');
-const { errRes, joiErrors, ERROR_CODES } = require('../../../helpers/error');
 const { randomString, createJwtToken } = require('../../../helpers/logic');
 const { checkPasswords, isValidTimezone } = require('../../../helpers/validate');
 const { listIntRegex } = require('../../../helpers/constants');
@@ -53,10 +55,10 @@ module.exports = {
  *
  * Success: Return a admin.
  * Errors:
- *   400: Argument Validation Errors.
- *   400: Admin not found.
- *   401: unauthorized
- *   500: Sequelize Error.
+ *   400: BAD_REQUEST_INVALID_ARGUMENTS
+ *   400: ADMIN_BAD_REQUEST_INVALID_ARGUMENTS
+ *   401: UNAUTHORIZED
+ *   500: INTERNAL_SERVER_ERROR
  */
 async function V1Update(req, callback) {
   const schema = joi.object({
@@ -80,7 +82,7 @@ async function V1Update(req, callback) {
 
   // validate
   const { err, value } = schema.validate(req.args);
-  if (err) return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, joiErrors(err)));
+  if (err) return callback(null, errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(err)));
 
   // updated arguments with type conversion
   const oldArgs = req.args;
@@ -88,7 +90,7 @@ async function V1Update(req, callback) {
 
   // check timezone
   if (req.args.timezone && !isValidTimezone(req.args.timezone))
-    return callback(null, errRes(req, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, req.__('Time zone is invalid.')));
+    return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__('Time zone is invalid.')));
 
   try {
     // update admin
@@ -103,6 +105,11 @@ async function V1Update(req, callback) {
         exclude: models.admin.getSensitiveData() // remove sensitive data
       }
     });
+
+    // SOCKET EMIT EVENT
+    let data = { admin: findAdmin };
+    io.to(`${SOCKET_ROOMS.GLOBAL}`).emit(SOCKET_EVENTS.ADMIN_UPDATED, data);
+    io.to(`${SOCKET_ROOMS.ADMIN}${findAdmin.id}`).emit(SOCKET_EVENTS.ADMIN_UPDATED, data);
 
     return callback(null, {
       status: 200,

@@ -5,7 +5,7 @@
 'use strict';
 
 // helpers
-const { errRes, ERROR_CODES } = require('../../helpers/error');
+const { errorResponse, ERROR_CODES } = require('../../services/error');
 
 // service
 const service = require('./service');
@@ -54,7 +54,7 @@ function V1Read(req, res, next) {
 
   // which method to call
   if (req.admin) method = `V1Read`;
-  else return res.status(401).json(errRes(req, 401, ERROR_CODES.UNAUTHORIZED));
+  else return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
 
   // call correct method
   service[method](req, (err, result) => {
@@ -79,7 +79,7 @@ function V1Create(req, res, next) {
 
   // which method to call
   if (req.admin) method = `V1Create`;
-  else return res.status(401).json(errRes(req, 401, ERROR_CODES.UNAUTHORIZED));
+  else return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
 
   // call correct method
   service[method](req, (err, result) => {
@@ -104,7 +104,7 @@ function V1Update(req, res, next) {
 
   // which method to call
   if (req.admin) method = `V1Update`;
-  else return res.status(401).json(errRes(req, 401, ERROR_CODES.UNAUTHORIZED));
+  else return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
 
   // call correct method
   service[method](req, (err, result) => {
@@ -129,7 +129,7 @@ function V1Query(req, res, next) {
 
   // which method to call
   if (req.admin) method = `V1Query`;
-  else return res.status(401).json(errRes(req, 401, ERROR_CODES.UNAUTHORIZED));
+  else return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
 
   // call correct method
   service[method](req, (err, result) => {
@@ -154,7 +154,7 @@ function V1UpdatePassword(req, res, next) {
 
   // which method to call
   if (req.admin) method = `V1UpdatePassword`;
-  else return res.status(401).json(errRes(req, 401, ERROR_CODES.UNAUTHORIZED));
+  else return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
 
   // call correct method
   service[method](req, (err, result) => {
@@ -221,7 +221,7 @@ function V1UpdateEmail(req, res, next) {
 
   // which method to call
   if (req.admin) method = `V1UpdateEmail`;
-  else return res.status(401).json(errRes(req, 401, ERROR_CODES.UNAUTHORIZED));
+  else return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
 
   // call correct method
   service[method](req, (err, result) => {

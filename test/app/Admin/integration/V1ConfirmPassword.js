@@ -27,7 +27,7 @@ const request = require('supertest');
 
 // helpers
 const { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');
-const { errRes, ERROR_CODES } = require('../../../../helpers/error');
+const { errorResponse, ERROR_CODES } = require('../../../../services/error');
 
 describe('Admin - V1ConfirmPassword', () => {
   // grab fixtures here
@@ -135,7 +135,7 @@ describe('Admin - V1ConfirmPassword', () => {
                 .end((err, res) => {
                   expect(res.statusCode).to.equal(400);
                   expect(res.body).to.deep.equal(
-                    errRes(i18n, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, i18n.__('Invalid password reset token or reset token has expired.'))
+                    errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('Invalid password reset token or reset token has expired.'))
                   );
                   done();
                 }); // END call confirm password
@@ -190,7 +190,11 @@ describe('Admin - V1ConfirmPassword', () => {
                     .end((err, res) => {
                       expect(res.statusCode).to.equal(400);
                       expect(res.body).to.deep.equal(
-                        errRes(i18n, 400, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, null, i18n.__('Invalid password reset token or reset token has expired.'))
+                        errorResponse(
+                          i18n,
+                          ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS,
+                          i18n.__('Invalid password reset token or reset token has expired.')
+                        )
                       );
                       done();
                     }); // END call confirm password
