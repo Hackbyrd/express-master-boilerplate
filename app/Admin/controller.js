@@ -34,6 +34,7 @@ function V1Login(req, res, next) {
   let method = 'V1Login';
 
   // call correct method
+  // login has to include the "res" object for passport.authenticate
   service[method](req, res, (err, result) => {
     if (err) return next(err);
 
