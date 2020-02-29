@@ -37,8 +37,8 @@ function genTemplate(envFile = __dirname + '/' + process.argv[2], appName = __di
 
     // saves the existing config to an array
     stdout = stdout.substring(stdout.indexOf('\n') + 1);
-    var config = stdout.split('\n').map(line => line.substring(0, line.indexOf(':')));
-    var unset = config.join(' ');
+    const config = stdout.split('\n').map(line => line.substring(0, line.indexOf(':')));
+    const unset = config.join(' ');
 
     // clears the values of all existing configuration keys
     exec('heroku config:unset ' + unset + ' -a ' + appName, (error, stdout, stderr) => {
@@ -55,8 +55,8 @@ function updateConfig(envFile, appName) {
     if (err) return console.log(err);
 
     // skips comments and blank lines
-    var arr = data.split('\n').filter(line => line.substring(0, 1) !== '#' && line.length !== 0);
-    var cmd = arr.join(' ');
+    const arr = data.split('\n').filter(line => line.substring(0, 1) !== '#' && line.length !== 0);
+    const cmd = arr.join(' ');
 
     // sends the new configuration to heroku
     exec('heroku config:set ' + cmd + ' -a ' + appName, (error, stdout, stderr) => {

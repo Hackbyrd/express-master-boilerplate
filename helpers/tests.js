@@ -103,27 +103,15 @@ function reset(callback) {
 
 // populate all fixtures
 function populate(fixtureFolder, callback) {
-  var fixtures = []; // store array of fixture arrays
-  var files = []; // file names that coorespond to the fixtures
+  let fixtures = []; // store array of fixture arrays
+  let files = []; // file names that coorespond to the fixtures
 
   // turn off foreign key restrictions
   models.db.query('SET CONSTRAINTS ALL DEFERRED').spread((results, metadata) => {
-    // folder path to shared seed fixtures
-    // var sharedFixturesFolderPath = path.join(__dirname, '../test/fixtures', 'shared');
-
-    // // get fixtures from shared to insert
-    // fs.readdirSync(sharedFixturesFolderPath).filter(function(file) {
-    //   return file.indexOf('.js') >= 0; // only js files
-    // }).forEach(function(file) {
-    //   var data = require(path.join(sharedFixturesFolderPath, file));
-    //   fixtures.push(data);
-    //   files.push(file.replace('.js', '')); // remove '.js'
-    // });
-
     // load regular fixtures
     if (fixtureFolder !== null) {
       // folder path to test fixtures
-      var fixturesFolderPath = path.join(__dirname, '../test', 'fixtures', fixtureFolder);
+      const fixturesFolderPath = path.join(__dirname, '../test', 'fixtures', fixtureFolder);
 
       // get data to insert
       fs.readdirSync(fixturesFolderPath)
@@ -131,15 +119,15 @@ function populate(fixtureFolder, callback) {
           return file.indexOf('.js') >= 0; // only js files
         })
         .forEach(file => {
-          var data = require(path.join(fixturesFolderPath, file));
+          const data = require(path.join(fixturesFolderPath, file));
           fixtures.push(data);
           files.push(file.replace('.js', '')); // remove '.js'
         });
     } // end load regular fixtures
 
-    var idx = 0; // index
-    var orderedFixtures = [];
-    var orderedFiles = [];
+    let idx = 0; // index
+    const orderedFixtures = [];
+    const orderedFiles = [];
 
     // order the files
     for (let i = 0; i < seq.length; i++) {

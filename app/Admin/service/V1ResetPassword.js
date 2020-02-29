@@ -86,7 +86,7 @@ async function V1ResetPassword(req, callback) {
 
   // grab admin with this email
   try {
-    let findAdmin = await models.admin.findOne({
+    const findAdmin = await models.admin.findOne({
       where: {
         email: req.args.email
       }
@@ -118,7 +118,6 @@ async function V1ResetPassword(req, callback) {
       }
     );
 
-    // var resetLink = cfg.host.hostname + '/users/confirmpassword?passwordResetToken= + passwordResetToken; // create URL DONT DELETE THIS LINE
     const resetLink = `${ADMIN_CLIENT_HOST}/confirm-password?passwordResetToken=${passwordResetToken}`; // create URL using front end url
 
     // send confirmation email

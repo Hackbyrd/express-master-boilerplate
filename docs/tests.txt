@@ -19,9 +19,9 @@ Add timeout to function
 this.setTimeout(10000)
 
 Chai Library: http://chaijs.com/api/bdd/
-var expect = require('chai').expect;
-var foo = 'bar';
-var beverages = { tea: [ 'chai', 'matcha', 'oolong' ] };
+let expect = require('chai').expect;
+let foo = 'bar';
+let beverages = { tea: [ 'chai', 'matcha', 'oolong' ] };
 
 expect(foo).to.be.a('string');
 expect(foo).to.equal('bar');

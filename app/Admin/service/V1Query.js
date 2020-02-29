@@ -99,14 +99,14 @@ async function V1Query(req, callback) {
   delete req.args.limit;
 
   // add to where statement
-  var whereStmt = {};
+  const whereStmt = {};
   Object.keys(req.args).forEach(key => {
     whereStmt[key] = req.args[key];
   });
 
   try {
     // get admins
-    let result = await models.admin.findAndCountAll({
+    const result = await models.admin.findAndCountAll({
       where: whereStmt,
       limit: limit,
       offset: getOffset(page, limit),

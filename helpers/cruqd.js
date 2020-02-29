@@ -51,11 +51,11 @@ function getOffset(page, limit) {
  * return [[col, order], ...]
  */
 function getOrdering(cols) {
-  var colsArr = logic.removeAllWhiteSpace(cols).split(',');
-  var ordersArr = [];
+  const colsArr = logic.removeAllWhiteSpace(cols).split(',');
+  const ordersArr = [];
 
-  for (var i = 0; i < colsArr.length; i++) {
-    var order = 'ASC';
+  for (let i = 0; i < colsArr.length; i++) {
+    let order = 'ASC';
 
     // check for descending
     if (colsArr[i][0] === '-') {
@@ -115,15 +115,15 @@ function convertStringListToWhereStmt(whereStmt, args, list) {
  * }
  */
 function parseUrlQueryFilter(args) {
-  var newArgs = {};
+  const newArgs = {};
 
   // go through each argument key
   Object.keys(args).forEach(argKey => {
-    var hasFilter = false; // check if argument has filter
+    let hasFilter = false; // check if argument has filter
 
     // go through each filter
     OPERATORS.forEach(fil => {
-      var idx = argKey.indexOf('[' + fil + ']');
+      const idx = argKey.indexOf('[' + fil + ']');
 
       // if a filter exists
       if (idx > 0) {

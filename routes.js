@@ -12,14 +12,14 @@ const path = require('path');
 
 // require third-party modules
 const express = require('express');
-var router = express.Router();
+let router = express.Router();
 
 // variables
 const APP_DIR = './app'; // app directory
 const ROUTE_FILE = 'routes.js'; // the route file name
 
 // Store all app routes here
-var appRoutes = [];
+const appRoutes = [];
 
 // check if is directory and get directories
 const isDirectory = source => fs.lstatSync(source).isDirectory();

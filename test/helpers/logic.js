@@ -63,7 +63,7 @@ describe('helpers/logic.js', () => {
   // removeAllWhiteSpace
   describe('removeAllWhiteSpace', function() {
     it('should remove all white space, tabs and newlines successfully', done => {
-      var str = '  path\t\n   over  !   \t\n';
+      let str = '  path\t\n   over  !   \t\n';
       str = logic.removeAllWhiteSpace(str);
       expect(str).to.equal('pathover!');
       done();

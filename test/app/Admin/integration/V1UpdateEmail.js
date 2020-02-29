@@ -135,7 +135,7 @@ describe('Admin - V1UpdateEmail', () => {
 
       // login admin
       adminLogin(app, routeVersion, request, admin1, (err, res, token) => {
-        var params = {
+        let params = {
           name: 'Admin 3',
           active: true,
           email: 'admin-3@example.com',

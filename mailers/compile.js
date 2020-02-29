@@ -18,7 +18,6 @@ const async = require('async');
 function compile(callback) {
   // the file to compile
   const MAILER_FILE = 'index.ejs';
-  var mailers = []; // the mailer files
 
   // check if is directory and get directories
   const isDirectory = source => fs.lstatSync(source).isDirectory();
@@ -34,7 +33,7 @@ function compile(callback) {
     directories,
     (dir, next) => {
       // write html file
-      ejs.renderFile(path.join(dir, 'index.ejs'), {}, (err, rawHtml) => {
+      ejs.renderFile(path.join(dir, MAILER_FILE), {}, (err, rawHtml) => {
         if (err) {
           return next(err);
         }

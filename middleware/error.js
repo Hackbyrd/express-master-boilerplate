@@ -16,8 +16,8 @@ const moment = require('moment-timezone');
 const email = require('../services/email');
 
 module.exports = function(err, req, res, next) {
-  var userType = 'Logged Out';
-  var user = { id: 'N/A', email: 'logged@out.com' };
+  let userType = 'Logged Out';
+  let user = { id: 'N/A', email: 'logged@out.com' };
 
   // print out error
   console.log('---------- START: URGENT! 500 Server Error! ----------');

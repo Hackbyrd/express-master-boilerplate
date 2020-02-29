@@ -57,7 +57,7 @@ describe('Admin - V1ConfirmPassword', () => {
     it('[logged-out] should confirm password successfully', done => {
       const admin1 = adminFix[0];
 
-      var params = {
+      let params = {
         email: admin1.email,
         password1: 'NEWPASSWORD',
         password2: 'NEWPASSWORD'
@@ -109,7 +109,7 @@ describe('Admin - V1ConfirmPassword', () => {
     it('[logged-out] should fail to confirm password if token is invalid', done => {
       const admin1 = adminFix[0];
 
-      var params = {
+      let params = {
         email: admin1.email,
         password1: 'NEWPASSWORD',
         password2: 'NEWPASSWORD'
@@ -151,7 +151,7 @@ describe('Admin - V1ConfirmPassword', () => {
     it('[logged-out] should fail to confirm password if token has expired', done => {
       const admin1 = adminFix[0];
 
-      var params = {
+      let params = {
         email: admin1.email,
         password1: 'NEWPASSWORD',
         password2: 'NEWPASSWORD'

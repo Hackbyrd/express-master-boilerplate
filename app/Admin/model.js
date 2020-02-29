@@ -12,7 +12,7 @@ const bcrypt = require('bcrypt');
 const sensitiveData = ['salt', 'password', 'resetPassword', 'passwordResetToken'];
 
 module.exports = function(sequelize, DataTypes) {
-  var Admin = sequelize.define(
+  const Admin = sequelize.define(
     'admin',
     {
       // All foreign keys are added in associations

@@ -1,6 +1,6 @@
 -- Folder names have dashes
 All code variables are camelCase
-ex. var myHome
+ex. let myHome
 
 Tables are plural and PascalCase
 ex. Users

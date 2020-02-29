@@ -9,14 +9,14 @@ const fs = require('fs');
 const path = require('path');
 
 // require custom modules
-let conn = require('./database'); // grab db connection
+const conn = require('./database'); // grab db connection
 
 // variables
 const APP_DIR = './app'; // app directory
 const MODEL_FILE = 'model.js'; // the model file name
 
 // STORE ALL MODELS HERE
-var models = {};
+const models = {};
 
 // check if is directory and get directories
 const isDirectory = source => fs.lstatSync(source).isDirectory();

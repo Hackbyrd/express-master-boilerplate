@@ -9,7 +9,7 @@ argTwo
   <%= locals.isTestEmail ? isTestEmail : '' %><br/>
   Hi <%= locals.argOne ? argOne : 'none' %><br/>
 
-  <% for (var i = 0; i < 10; i++) { %>
+  <% for (let i = 0; i < 10; i++) { %>
     <strong><%= locals.argTwo ? argTwo : 'none' %></strong>
   <% } %>
 </h1>

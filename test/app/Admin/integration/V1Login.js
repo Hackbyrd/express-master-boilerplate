@@ -57,7 +57,7 @@ describe('Admin - V1Login', () => {
     it('[logged-out] should login admin successfully', done => {
       const admin1 = adminFix[0];
 
-      var loginParams = {
+      let loginParams = {
         email: admin1.email,
         password: admin1.password
       };
@@ -89,7 +89,7 @@ describe('Admin - V1Login', () => {
     }); // END [logged-out] should login admin successfully
 
     it('[logged-out] should fail to login admin email or password is incorrect', done => {
-      var loginParams = {
+      let loginParams = {
         email: 'random@email.com',
         password: '1029384756'
       };
@@ -108,7 +108,7 @@ describe('Admin - V1Login', () => {
     it('[logged-out] should fail to login admin if account is not active', done => {
       const admin1 = adminFix[0];
 
-      var loginParams = {
+      let loginParams = {
         email: admin1.email,
         password: admin1.password
       };
@@ -141,7 +141,7 @@ describe('Admin - V1Login', () => {
     it('[logged-out] should fail to login admin if account is deleted', done => {
       const admin1 = adminFix[0];
 
-      var loginParams = {
+      let loginParams = {
         email: admin1.email,
         password: admin1.password
       };

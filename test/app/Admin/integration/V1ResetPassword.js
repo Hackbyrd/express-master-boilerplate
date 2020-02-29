@@ -58,7 +58,7 @@ describe('Admin - V1ResetPassword', () => {
     it('[logged-out] should call reset password successfully', done => {
       const admin1 = adminFix[0];
 
-      var params = {
+      let params = {
         email: admin1.email,
         password1: 'NEWPASSWORD',
         password2: 'NEWPASSWORD'
@@ -98,7 +98,7 @@ describe('Admin - V1ResetPassword', () => {
     it('[logged-out] should fail to call reset password because email does not exist', done => {
       const admin1 = adminFix[0];
 
-      var params = {
+      let params = {
         email: 'noemail@email.com',
         password1: 'NEWPASSWORD',
         password2: 'NEWPASSWORD'
@@ -117,7 +117,7 @@ describe('Admin - V1ResetPassword', () => {
     it('[logged-out] should fail to call reset password if password1 and password2 are not the same', done => {
       const admin1 = adminFix[0];
 
-      var params = {
+      let params = {
         email: admin1.email,
         password1: 'NEWPASSWORD1',
         password2: 'NEWPASSWORD2'

@@ -81,7 +81,7 @@ describe('Admin - V1Create', () => {
 
       // login admin
       adminLogin(app, routeVersion, request, admin1, (err, res, token) => {
-        var params = {
+        let params = {
           name: 'Jonathan Chen',
           active: true,
           email: 'new-admin@example.com',
@@ -146,7 +146,7 @@ describe('Admin - V1Create', () => {
 
       // login admin
       adminLogin(app, routeVersion, request, admin1, (err, res, token) => {
-        var params = {
+        let params = {
           name: 'Jonathan Chen',
           active: true,
           email: 'new-admin@example.com',
@@ -177,7 +177,7 @@ describe('Admin - V1Create', () => {
 
       // login admin
       adminLogin(app, routeVersion, request, admin1, (err, res, token) => {
-        var params = {
+        let params = {
           name: 'Jonathan Chen',
           active: true,
           email: 'new-admin@example.com',
@@ -208,7 +208,7 @@ describe('Admin - V1Create', () => {
 
       // login admin
       adminLogin(app, routeVersion, request, admin1, (err, res, token) => {
-        var params = {
+        let params = {
           name: 'Jonathan Chen',
           active: true,
           email: admin1.email,
@@ -237,7 +237,7 @@ describe('Admin - V1Create', () => {
 
       // login admin
       adminLogin(app, routeVersion, request, admin1, (err, res, token) => {
-        var params = {
+        let params = {
           name: 'Jonathan Chen',
           active: true,
           email: 'new-partner-email@email.com',
