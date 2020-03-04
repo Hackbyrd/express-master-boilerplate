@@ -85,7 +85,7 @@ async function V1UpdateEmail(req, callback) {
 
   try {
     // checks if any other admin is using the new email
-    let findAdmin = await models.admin.findOne({
+    const findAdmin = await models.admin.findOne({
       where: {
         email: req.args.newEmail
       }

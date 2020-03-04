@@ -40,7 +40,7 @@ module.exports = async passport => {
 
         process.nextTick(async () => {
           try {
-            let getUser = await models.user.findOne({
+            const getUser = await models.user.findOne({
               where: {
                 email: email
               }
@@ -85,7 +85,7 @@ module.exports = async passport => {
         process.nextTick(async () => {
           try {
             // check if user id is not found
-            let findUser = await models.user.findOne({
+            const findUser = await models.user.findOne({
               where: {
                 id: payload.sub // subject or id of user
               }
@@ -123,7 +123,7 @@ module.exports = async passport => {
 
         process.nextTick(async () => {
           try {
-            let getAdmin = await models.admin.findOne({
+            const getAdmin = await models.admin.findOne({
               where: {
                 email: email
               }
@@ -168,7 +168,7 @@ module.exports = async passport => {
         process.nextTick(async () => {
           try {
             // check if admin id is not found
-            let findAdmin = await models.admin.findOne({
+            const findAdmin = await models.admin.findOne({
               where: {
                 id: payload.sub // subject or id of admin
               }

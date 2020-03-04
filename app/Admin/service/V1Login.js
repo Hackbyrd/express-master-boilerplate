@@ -73,7 +73,7 @@ async function V1Login(req, res, callback) {
 
     // update login count and last login
     try {
-      let updatedAdmin = await models.admin.update(
+      const updatedAdmin = await models.admin.update(
         {
           loginCount: admin.loginCount + 1,
           lastLogin: moment.tz('UTC')
@@ -86,7 +86,7 @@ async function V1Login(req, res, callback) {
       );
 
       // find admin
-      let findAdmin = await models.admin.findByPk(admin.id, {
+      const findAdmin = await models.admin.findByPk(admin.id, {
         attributes: {
           exclude: models.admin.getSensitiveData() // remove sensitive data
         }

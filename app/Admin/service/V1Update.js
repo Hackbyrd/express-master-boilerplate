@@ -100,14 +100,14 @@ async function V1Update(req, callback) {
       }
     });
 
-    let findAdmin = await models.admin.findByPk(req.admin.id, {
+    const findAdmin = await models.admin.findByPk(req.admin.id, {
       attributes: {
         exclude: models.admin.getSensitiveData() // remove sensitive data
       }
     });
 
     // SOCKET EMIT EVENT
-    let data = { admin: findAdmin };
+    const data = { admin: findAdmin };
     io.to(`${SOCKET_ROOMS.GLOBAL}`).emit(SOCKET_EVENTS.ADMIN_UPDATED, data);
     io.to(`${SOCKET_ROOMS.ADMIN}${findAdmin.id}`).emit(SOCKET_EVENTS.ADMIN_UPDATED, data);
 

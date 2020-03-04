@@ -119,7 +119,7 @@ async function V1Create(req, callback) {
 
   try {
     // check if admin email already exists
-    let duplicateAdmin = await models.admin.findOne({
+    const duplicateAdmin = await models.admin.findOne({
       where: {
         email: req.args.email
       }
@@ -133,7 +133,7 @@ async function V1Create(req, callback) {
       return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__('Time zone is invalid.')));
 
     // create admin
-    let newAdmin = await models.admin.create({
+    const newAdmin = await models.admin.create({
       timezone: req.args.timezone,
       locale: req.args.locale,
       name: req.args.name,
@@ -145,7 +145,7 @@ async function V1Create(req, callback) {
     });
 
     // grab admin without sensitive data
-    let returnAdmin = await models.admin
+    const returnAdmin = await models.admin
       .findByPk(newAdmin.id, {
         attributes: {
           exclude: models.admin.getSensitiveData() // remove sensitive data
@@ -157,7 +157,7 @@ async function V1Create(req, callback) {
       }); // END grab partner without sensitive data
 
     // SOCKET EMIT EVENT
-    let data = { admin: returnAdmin };
+    const data = { admin: returnAdmin };
     io.to(`${SOCKET_ROOMS.GLOBAL}`).emit(SOCKET_EVENTS.ADMIN_CREATED, data);
     io.to(`${SOCKET_ROOMS.ADMIN}${returnAdmin.id}`).emit(SOCKET_EVENTS.ADMIN_CREATED, data);
 

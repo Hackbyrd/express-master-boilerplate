@@ -72,7 +72,7 @@ async function V1Read(req, callback) {
 
   // find admin
   try {
-    let findAdmin = await models.admin.findByPk(req.args.id, {
+    const findAdmin = await models.admin.findByPk(req.args.id, {
       attributes: {
         exclude: models.admin.getSensitiveData() // remove sensitive data
       }

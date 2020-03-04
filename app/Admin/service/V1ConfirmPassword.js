@@ -70,7 +70,7 @@ async function V1ConfirmPassword(req, callback) {
 
   try {
     // grab admin
-    let getAdmin = await models.admin.findOne({
+    const getAdmin = await models.admin.findOne({
       where: {
         passwordResetToken: req.args.passwordResetToken,
         passwordResetExpire: {
