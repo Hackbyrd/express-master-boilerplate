@@ -97,7 +97,7 @@ function generate() {
 
   // service index
   fd = fs.openSync(path.join(newDirPath, 'service/index.js'), 'w');
-  fs.writeSync(fd, `/**\n * ${upperName} SERVICE\n */\n\n'use strict';\n\nmodule.exports = {\n  V1Method: require('./V1Method')\n}\n`, 0, 'utf-8');
+  fs.writeSync(fd, `/**\n * ${upperName} SERVICE\n */\n\n'use strict';\n\nmodule.exports = {\n  ...require('./V1Method')\n}\n`, 0, 'utf-8');
   fs.closeSync(fd);
 
   // service method
