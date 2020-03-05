@@ -114,7 +114,7 @@ async function V1Update(req, callback) {
     return callback(null, {
       status: 200,
       success: true,
-      admin: getAdmin.dataValues
+      admin: findAdmin.dataValues
     });
   } catch (err) {
     return callback(err);

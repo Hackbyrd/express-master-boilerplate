@@ -39,7 +39,7 @@ describe('Admin - V1Update', () => {
   // url of the api method we are testing
   const routeVersion = '/v1';
   const routePrefix = '/admins';
-  const routeMethod = '/read';
+  const routeMethod = '/update';
   const routeUrl = `${routeVersion}${routePrefix}${routeMethod}`;
 
   // clear database
@@ -75,39 +75,20 @@ describe('Admin - V1Update', () => {
     beforeEach(done => {
       populate('fix1', done);
     });
-    // TODO: start here
-    it('[admin] should read self successfully', done => {
+
+    it('[admin] should update self all fields successfully', done => {
       const admin1 = adminFix[0];
 
       // login admin
       adminLogin(app, routeVersion, request, admin1, (err, res, token) => {
-        // read request
-        request(app)
-          .get(routeUrl)
-          .set('authorization', `${jwt} ${token}`)
-          .end((err, res) => {
-            expect(err).to.be.null;
-            expect(res.statusCode).to.equal(200);
-            expect(res.body).to.have.property('success', true);
-            expect(res.body).to.have.property('admin');
-            expect(res.body.admin).to.have.property('id', admin1.id);
-            done();
-          }); // END read request
-      }); // END login admin
-    }); // END [admin] should read self successfully
-
-    it('[admin] should read another admin successfully', done => {
-      const admin1 = adminFix[0];
-      const admin2 = adminFix[1];
-
-      // login admin
-      adminLogin(app, routeVersion, request, admin1, (err, res, token) => {
-        // params
         const params = {
-          id: admin2.id
-        };
+          timezone: 'Africa/Cairo',
+          locale: 'ko',
+          name: 'New name',
+          phone: '+1240827485'
+        }
 
-        // read request
+        // update request
         request(app)
           .post(routeUrl)
           .set('authorization', `${jwt} ${token}`)
@@ -117,23 +98,30 @@ describe('Admin - V1Update', () => {
             expect(res.statusCode).to.equal(200);
             expect(res.body).to.have.property('success', true);
             expect(res.body).to.have.property('admin');
-            expect(res.body.admin).to.have.property('id', admin2.id);
-            done();
-          }); // END read request
-      }); // END login admin
-    }); // END [admin] should read another admin successfully
+            expect(res.body.admin).to.have.property('id', admin1.id);
 
-    it('[admin] should fail to read admin if admin does not exist', done => {
+            // find admin to see if he's updated
+            models.admin.findByPk(admin1.id).then(foundAdmin => {
+              expect(foundAdmin.timezone).to.equal(params.timezone);
+              expect(foundAdmin.locale).to.equal(params.locale);
+              expect(foundAdmin.phone).to.equal(params.phone);
+              expect(foundAdmin.name).to.equal(params.name);
+              done();
+            }); // END find admin
+          }); // END update request
+      }); // END login admin
+    }); // END [admin] should update self all fields successfully
+
+    it('[admin] should fail to update self if timezone is invalid', done => {
       const admin1 = adminFix[0];
 
       // login admin
       adminLogin(app, routeVersion, request, admin1, (err, res, token) => {
-        // params
         const params = {
-          id: 10000
-        };
+          timezone: 'randometimezone',
+        }
 
-        // read request
+        // update request
         request(app)
           .post(routeUrl)
           .set('authorization', `${jwt} ${token}`)
@@ -141,10 +129,10 @@ describe('Admin - V1Update', () => {
           .end((err, res) => {
             expect(err).to.be.null;
             expect(res.statusCode).to.equal(400);
-            expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST));
+            expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('Time zone is invalid.')));
             done();
-          }); // END read request
+          }); // END update request
       }); // END login admin
-    }); // END [admin] should fail to read admin if admin does not exist
+    }); // END [admin] should fail to update self if timezone is invalid
   }); // END Role: Admin
 }); // END Admin - V1Update
