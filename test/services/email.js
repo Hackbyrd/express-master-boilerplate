@@ -25,7 +25,7 @@ const logic = require('../../helpers/logic');
 const email = require('../../services/email');
 
 // !IMPORTANT only take out skip if you truely want to test EMAIL. We don't want to waste our emails
-describe('services/email', () => {
+describe('services/email.js', () => {
   // mail
   describe('mail', () => {
     it('should send mail successfully with only required arguments passed in.', done => {

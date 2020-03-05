@@ -31,7 +31,7 @@ const { errorResponse, ERROR_CODES } = require('../../../../services/error');
 // helpers
 const { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');
 
-describe('Admin - V1Query', () => {
+describe('Admin.V1Query', () => {
   // grab fixtures here
   const adminFix = require('../../../fixtures/fix1/admin');
   const userFix = require('../../../fixtures/fix1/user');
@@ -161,4 +161,4 @@ describe('Admin - V1Query', () => {
       }); // END login admin
     }); // END [admin] should query for admins successfully but return 0 admins
   }); // END Role: Admin
-}); // END Admin - V1Query
+}); // END Admin.V1Query

@@ -32,7 +32,7 @@ const { errorResponse, ERROR_CODES } = require('../../../../services/error');
 // helpers
 const { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');
 
-describe('Admin - V1UpdatePassword', () => {
+describe('Admin.V1UpdatePassword', () => {
   // grab fixtures here
   const adminFix = require('../../../fixtures/fix1/admin');
   const userFix = require('../../../fixtures/fix1/user');
@@ -174,4 +174,4 @@ describe('Admin - V1UpdatePassword', () => {
       }); // END login admin
     }); // END [admin] should fail to update password if password1 and password2 are not the same
   }); // END Role: Admin
-}); // END Admin - V1UpdatePassword
+}); // END Admin.V1UpdatePassword

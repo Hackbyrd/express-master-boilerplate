@@ -32,7 +32,7 @@ const { errorResponse, ERROR_CODES } = require('../../../../services/error');
 // helpers
 const { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');
 
-describe('Admin - V1ResetPassword', () => {
+describe('Admin.V1ResetPassword', () => {
   // grab fixtures here
   const adminFix = require('../../../fixtures/fix1/admin');
   const userFix = require('../../../fixtures/fix1/user');
@@ -135,4 +135,4 @@ describe('Admin - V1ResetPassword', () => {
         });
     }); // END [logged-out] should fail to call reset password because email does not exist
   }); // END Role: Logged Out
-}); // END Admin - V1ResetPassword
+}); // END Admin.V1ResetPassword

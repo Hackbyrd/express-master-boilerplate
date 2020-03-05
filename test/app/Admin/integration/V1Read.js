@@ -31,7 +31,7 @@ const { errorResponse, ERROR_CODES } = require('../../../../services/error');
 // helpers
 const { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');
 
-describe('Admin - V1Read', () => {
+describe('Admin.V1Read', () => {
   // grab fixtures here
   const adminFix = require('../../../fixtures/fix1/admin');
   const userFix = require('../../../fixtures/fix1/user');
@@ -147,4 +147,4 @@ describe('Admin - V1Read', () => {
       }); // END login admin
     }); // END [admin] should fail to read admin if admin does not exist
   }); // END Role: Admin
-}); // END Admin - V1Read
+}); // END Admin.V1Read

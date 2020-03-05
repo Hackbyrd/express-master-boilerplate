@@ -32,7 +32,7 @@ const { errorResponse, ERROR_CODES } = require('../../../../services/error');
 // helpers
 const { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');
 
-describe('Admin - V1UpdateEmail', () => {
+describe('Admin.V1UpdateEmail', () => {
   // grab fixtures here
   const adminFix = require('../../../fixtures/fix1/admin');
   const userFix = require('../../../fixtures/fix1/user');
@@ -176,4 +176,4 @@ describe('Admin - V1UpdateEmail', () => {
       }); // END login admin
     }); // END [admin] should not update email if the new email is already being used
   }); // END Role: Admin
-}); // END Admin - V1UpdateEmail
+}); // END Admin.V1UpdateEmail

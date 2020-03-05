@@ -31,7 +31,7 @@ const { errorResponse, ERROR_CODES } = require('../../../../services/error');
 // helpers
 const { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');
 
-describe('Admin - V1Create', () => {
+describe('Admin.V1Create', () => {
   // grab fixtures here
   const adminFix = require('../../../fixtures/fix1/admin');
   const userFix = require('../../../fixtures/fix1/user');
@@ -261,4 +261,4 @@ describe('Admin - V1Create', () => {
       }); // END login admin
     }); // END [admin] should not create new admin if timezone is invalid
   }); // END Role: Admin
-}); // END ADMIN
+}); // END Admin.V1Create

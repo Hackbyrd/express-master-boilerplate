@@ -31,7 +31,7 @@ const { errorResponse, ERROR_CODES } = require('../../../../services/error');
 // helpers
 const { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');
 
-describe('Admin - V1ConfirmPassword', () => {
+describe('Admin.V1ConfirmPassword', () => {
   // grab fixtures here
   const adminFix = require('../../../fixtures/fix1/admin');
   const userFix = require('../../../fixtures/fix1/user');
@@ -211,4 +211,4 @@ describe('Admin - V1ConfirmPassword', () => {
         }); // END call reset password
     }); // END [logged-out] should fail to confirm password if token is invalid
   }); // END Role: Logged Out
-}); // END Admin - V1ConfirmPassword
+}); // END Admin.V1ConfirmPassword
