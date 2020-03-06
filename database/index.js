@@ -19,7 +19,7 @@ const conn = new Sequelize(DATABASE_URL, {
   // only use this if trying to connect remotely
   ssl: NODE_ENV === 'production' ? true : false,
   dialectOptions: {
-    decimalNumbers: true,
+    decimalNumbers: true, // postgres returns string decimals, this will convert it to a decimal
     ssl: NODE_ENV === 'production' ? true : false
   },
 
