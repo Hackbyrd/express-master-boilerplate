@@ -13,7 +13,7 @@ else if (NODE_ENV === 'test')
 module.exports = {
   development: {
     use_env_variable: 'DATABASE_URL',
-    dialect: 'postgres'
+    dialect: 'postgres',
     dialectOptions: {
       decimalNumbers: true // postgres returns string decimals, this will convert it to a decimal
     }
@@ -21,7 +21,7 @@ module.exports = {
 
   test: {
     use_env_variable: 'DATABASE_URL',
-    dialect: 'postgres'
+    dialect: 'postgres',
     dialectOptions: {
       decimalNumbers: true // postgres returns string decimals, this will convert it to a decimal
     }
