@@ -19,6 +19,7 @@ const conn = new Sequelize(DATABASE_URL, {
   // only use this if trying to connect remotely
   ssl: NODE_ENV === 'production' ? true : false,
   dialectOptions: {
+    decimalNumbers: true,
     ssl: NODE_ENV === 'production' ? true : false
   },
 
