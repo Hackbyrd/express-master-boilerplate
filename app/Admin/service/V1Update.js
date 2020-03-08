@@ -62,27 +62,16 @@ module.exports = {
  */
 async function V1Update(req, callback) {
   const schema = joi.object({
-    timezone: joi
-      .string()
-      .trim()
-      .optional(),
-    locale: joi
-      .string()
-      .trim()
-      .optional(),
-    name: joi
-      .string()
-      .trim()
-      .optional(),
-    phone: joi
-      .string()
-      .trim()
-      .optional()
+    timezone: joi.string().trim().optional(),
+    locale: joi.string().trim().optional(),
+    name: joi.string().trim().optional(),
+    phone: joi.string().trim().optional()
   });
 
   // validate
-  const { err, value } = schema.validate(req.args);
-  if (err) return callback(null, errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(err)));
+  const { error, value } = schema.validate(req.args);
+  if (error)
+    return callback(null, errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(err)));
 
   // updated arguments with type conversion
   const oldArgs = req.args;

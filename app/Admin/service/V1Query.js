@@ -64,28 +64,15 @@ async function V1Query(req, callback) {
     active: joi.boolean().optional(),
 
     // query params
-    sort: joi
-      .string()
-      .min(1)
-      .default('id')
-      .optional(),
-    page: joi
-      .number()
-      .integer()
-      .min(1)
-      .default(1)
-      .optional(),
-    limit: joi
-      .number()
-      .integer()
-      .min(1)
-      .default(25)
-      .optional()
+    sort: joi.string().min(1).default('id').optional(),
+    page: joi.number().integer().min(1).default(1).optional(),
+    limit: joi.number().integer().min(1).default(25).optional()
   });
 
   // validate
-  const { err, value } = schema.validate(req.args);
-  if (err) return callback(null, errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(err)));
+  const { error, value } = schema.validate(req.args);
+  if (error)
+    return callback(null, errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(err)));
   req.args = value; // updated arguments with type conversion
 
   // grab

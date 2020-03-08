@@ -63,8 +63,9 @@ async function V1ConfirmPassword(req, callback) {
   });
 
   // validate
-  const { err, value } = schema.validate(req.args);
-  if (err) return callback(null, errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(err)));
+  const { error, value } = schema.validate(req.args);
+  if (error)
+    return callback(null, errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(err)));
 
   req.args = value; // updated arguments with type conversion
 
@@ -88,19 +89,16 @@ async function V1ConfirmPassword(req, callback) {
     }
 
     // update new password
-    await models.admin.update(
-      {
-        password: getAdmin.resetPassword, // set to resetPassword
-        resetPassword: null,
-        passwordResetToken: null
-      },
-      {
-        fields: ['password', 'resetPassword', 'passwordResetToken'], // only these fields
-        where: {
-          id: getAdmin.id
-        }
+    await models.admin.update({
+      password: getAdmin.resetPassword, // set to resetPassword
+      resetPassword: null,
+      passwordResetToken: null
+    }, {
+      fields: ['password', 'resetPassword', 'passwordResetToken'], // only these fields
+      where: {
+        id: getAdmin.id
       }
-    );
+    });
 
     // return success
     return callback(null, {

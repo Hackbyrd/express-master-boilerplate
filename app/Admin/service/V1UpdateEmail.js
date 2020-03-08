@@ -59,23 +59,13 @@ module.exports = {
  */
 async function V1UpdateEmail(req, callback) {
   const schema = joi.object({
-    id: joi
-      .number()
-      .integer()
-      .min(1)
-      .optional(),
-    newEmail: joi
-      .string()
-      .min(3)
-      .trim()
-      .lowercase()
-      .email()
-      .required()
+    id: joi.number().integer().min(1).optional(),
+    newEmail: joi.string().min(3).trim().lowercase().email().required()
   });
 
   // validate
-  const { err, value } = schema.validate(req.args);
-  if (err) return callback(null, errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(err)));
+  const { error, value } = schema.validate(req.args);
+  if (error) return callback(null, errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(err)));
 
   req.args = value; // updated arguments with type conversion
 
@@ -91,19 +81,17 @@ async function V1UpdateEmail(req, callback) {
       }
     });
 
-    if (findAdmin) return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__('The new email is already being used.')));
+    if (findAdmin)
+      return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__('The new email is already being used.')));
 
     // update admin
-    await models.admin.update(
-      {
-        email: req.args.newEmail
-      },
-      {
-        where: {
-          id: req.admin.id
-        }
+    await models.admin.update({
+      email: req.args.newEmail
+    }, {
+      where: {
+        id: req.admin.id
       }
-    );
+    });
 
     return callback(null, {
       status: 200,

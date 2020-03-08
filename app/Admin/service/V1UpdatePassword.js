@@ -62,31 +62,25 @@ module.exports = {
  */
 async function V1UpdatePassword(req, callback) {
   const schema = joi.object({
-    password: joi
-      .string()
-      .min(8)
-      .required(),
-    password1: joi
-      .string()
-      .min(8)
-      .required(),
-    password2: joi
-      .string()
-      .min(8)
-      .required()
+    password: joi.string().min(8).required(),
+    password1: joi.string().min(8).required(),
+    password2: joi.string().min(8).required()
   });
 
   // validate
-  const { err, value } = schema.validate(req.args);
-  if (err) return callback(null, errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(err)));
+  const { error, value } = schema.validate(req.args);
+  if (error)
+    return callback(null, errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(err)));
 
   // check password1 and password2 equality
   const msg = checkPasswords(req.args.password1, req.args.password2, 8);
-  if (msg !== true) return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__(msg)));
+  if (msg !== true)
+    return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__(msg)));
 
   // check password
   models.admin.validatePassword(req.args.password, req.admin.password, async (err, result) => {
-    if (err) return callback(err);
+    if (err)
+      return callback(err);
 
     // if password is incorrect
     if (!result)
@@ -96,17 +90,14 @@ async function V1UpdatePassword(req, callback) {
     const newPassword = bcrypt.hashSync(req.args.password1, req.admin.salt);
 
     try {
-      await models.admin.update(
-        {
-          password: newPassword
-        },
-        {
-          fields: ['password'], // only these fields
-          where: {
-            id: req.admin.id
-          }
+      await models.admin.update({
+        password: newPassword
+      }, {
+        fields: ['password'], // only these fields
+        where: {
+          id: req.admin.id
         }
-      );
+      });
 
       // return success
       return callback(null, {

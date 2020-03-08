@@ -60,30 +60,31 @@ module.exports = {
 async function V1Login(req, res, callback) {
   // login admin WITHOUT SESSION
   passport.authenticate('JWTAdminLogin', { session: false }, async (err, admin, info) => {
-    if (err) return callback(err);
+    if (err)
+      return callback(err);
 
     // check if admin exists
-    if (!admin) return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_CREDENTIALS));
+    if (!admin)
+      return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_CREDENTIALS));
 
     // return error message if admin is inactive
-    if (!admin.active) return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_INACTIVE));
+    if (!admin.active)
+      return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_INACTIVE));
 
     // return error message if admin is deleted
-    if (admin.deletedAt) return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_DELETED));
+    if (admin.deletedAt)
+      return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_DELETED));
 
     // update login count and last login
     try {
-      const updatedAdmin = await models.admin.update(
-        {
-          loginCount: admin.loginCount + 1,
-          lastLogin: moment.tz('UTC')
-        },
-        {
-          where: {
-            id: admin.id
-          }
+      const updatedAdmin = await models.admin.update({
+        loginCount: admin.loginCount + 1,
+        lastLogin: moment.tz('UTC')
+      }, {
+        where: {
+          id: admin.id
         }
-      );
+      });
 
       // find admin
       const findAdmin = await models.admin.findByPk(admin.id, {

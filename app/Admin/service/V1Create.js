@@ -67,50 +67,27 @@ module.exports = {
  */
 async function V1Create(req, callback) {
   const schema = joi.object({
-    name: joi
-      .string()
-      .trim()
-      .min(1)
-      .required(),
+    name: joi.string().trim().min(1).required(),
     active: joi.boolean().required(),
-    email: joi
-      .string()
-      .trim()
-      .lowercase()
-      .min(3)
-      .email()
-      .required(),
-    phone: joi
-      .string()
-      .trim()
-      .required(),
-    timezone: joi
-      .string()
-      .min(1)
-      .required(),
-    locale: joi
-      .string()
-      .min(1)
-      .required(),
-    password1: joi
-      .string()
-      .min(8)
-      .required(),
-    password2: joi
-      .string()
-      .min(8)
-      .required(),
+    email: joi.string().trim().lowercase().min(3).email().required(),
+    phone: joi.string().trim().required(),
+    timezone: joi.string().min(1).required(),
+    locale: joi.string().min(1).required(),
+    password1: joi.string().min(8).required(),
+    password2: joi.string().min(8).required(),
     acceptedTerms: joi.boolean().required()
   });
 
   // validate
-  const { err, value } = schema.validate(req.args);
-  if (err) return callback(null, errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(err)));
+  const { error, value } = schema.validate(req.args);
+  if (error)
+    return callback(null, errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(err)));
   req.args = value; // updated arguments with type conversion
 
   // check passwords
   const msg = checkPasswords(req.args.password1, req.args.password2, 8);
-  if (msg !== true) return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__(msg)));
+  if (msg !== true)
+    return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__(msg)));
   req.args.password = req.args.password1; // set password
 
   // check terms of service
@@ -126,7 +103,8 @@ async function V1Create(req, callback) {
     });
 
     // check of duplicate admin user
-    if (duplicateAdmin) return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, 1));
+    if (duplicateAdmin)
+      return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, 1));
 
     // check timezone
     if (!isValidTimezone(req.args.timezone))
@@ -145,16 +123,14 @@ async function V1Create(req, callback) {
     });
 
     // grab admin without sensitive data
-    const returnAdmin = await models.admin
-      .findByPk(newAdmin.id, {
-        attributes: {
-          exclude: models.admin.getSensitiveData() // remove sensitive data
-        }
-      })
-      .catch(err => {
-        newAdmin.destroy(); // destroy if error
-        return callback(err);
-      }); // END grab partner without sensitive data
+    const returnAdmin = await models.admin.findByPk(newAdmin.id, {
+      attributes: {
+        exclude: models.admin.getSensitiveData() // remove sensitive data
+      }
+    }).catch(err => {
+      newAdmin.destroy(); // destroy if error
+      return callback(err);
+    }); // END grab partner without sensitive data
 
     // SOCKET EMIT EVENT
     const data = { admin: returnAdmin };

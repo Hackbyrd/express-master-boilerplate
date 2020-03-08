@@ -66,8 +66,9 @@ async function V1Read(req, callback) {
   });
 
   // validate
-  const { err, value } = schema.validate(req.args);
-  if (err) return callback(null, errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(err)));
+  const { error, value } = schema.validate(req.args);
+  if (error)
+    return callback(null, errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(err)));
   req.args = value; // updated arguments with type conversion
 
   // find admin
@@ -79,7 +80,8 @@ async function V1Read(req, callback) {
     });
 
     // check if admin exists
-    if (!findAdmin) return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST));
+    if (!findAdmin)
+      return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST));
 
     return callback(null, {
       status: 200,
