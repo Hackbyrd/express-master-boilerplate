@@ -28,7 +28,7 @@ const models = require('../../../models');
 // helpers
 const { getOffset, getOrdering, convertStringListToWhereStmt } = require('../../../helpers/cruqd');
 const { randomString, createJwtToken } = require('../../../helpers/logic');
-const { listIntRegex } = require('../../../helpers/constants');
+const { LIST_INT_REGEX } = require('../../../helpers/constants');
 
 // methods
 module.exports = {

@@ -30,7 +30,7 @@ const models = require('../../../models');
 const { getOffset, getOrdering, convertStringListToWhereStmt } = require('../../../helpers/cruqd');
 const { randomString, createJwtToken } = require('../../../helpers/logic');
 const { checkPasswords, isValidTimezone } = require('../../../helpers/validate');
-const { listIntRegex } = require('../../../helpers/constants');
+const { LIST_INT_REGEX } = require('../../../helpers/constants');
 
 // methods
 module.exports = {
