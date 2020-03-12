@@ -1,4 +1,7 @@
 'use strict';
+
+const { randomString } = require('../helpers/logic');
+
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable('Admins', {
@@ -54,7 +57,7 @@ module.exports = {
         type: Sequelize.STRING,
         unique: true,
         allowNull: false,
-        defaultValue: 'HFEJDEIVHDLJGLSALKJHDLGKJHSLKAFJHVLLJHFALU27R828J3KDLSKG926542JD'
+        defaultValue: randomString({ len: 128, uppercase: true, numbers: true, special: true })
       },
 
       password: {

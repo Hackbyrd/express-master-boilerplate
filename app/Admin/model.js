@@ -7,11 +7,12 @@ const constants = require('../../helpers/constants'); // grab format helper func
 
 // helpers
 const bcrypt = require('bcrypt');
+const { randomString } = require('../../helpers/logic');
 
 // sensitive data that should be be seen by any admins
 const sensitiveData = ['salt', 'password', 'resetPassword', 'passwordResetToken'];
 
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   const Admin = sequelize.define(
     'admin',
     {
@@ -62,7 +63,7 @@ module.exports = function(sequelize, DataTypes) {
         type: DataTypes.STRING,
         unique: true,
         allowNull: false,
-        defaultValue: 'HFEJDEIVHDLJGLSALKJHDLGKJHSLKAFJHVLLJHFALU27R828J3KDLSKG926542JD'
+        defaultValue: randomString({ len: 128, uppercase: true, numbers: true, special: true })
       },
 
       password: {
@@ -152,7 +153,7 @@ module.exports = function(sequelize, DataTypes) {
   );
 
   // association
-  Admin.associate = models => {};
+  Admin.associate = models => { };
 
   // sensitive data method
   Admin.getSensitiveData = () => {
