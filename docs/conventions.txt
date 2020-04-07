@@ -37,6 +37,8 @@ err = error
 req = request
 res = response
 result = result
+params = parameters
+callback = callback
 args = arguments
 
 Request (req):

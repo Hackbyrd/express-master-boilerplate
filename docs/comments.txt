@@ -23,6 +23,10 @@ Controller/Service Comment Header:
  *   400: BAD_REQUEST_ACCOUNT_INACTIVE
  *   401: UNAUTHORIZED
  *   500: INTERNAL_SERVER_ERROR
+ *
+ * !IMPORTANT: This is an important message
+ * !NOTE: This is a note
+ * TODO: This is a todo
  */
 
 General Method Header:
@@ -31,6 +35,11 @@ General Method Header:
  *
  * @arg1 - (NUMBER - REQUIRED) [DEFAULT - 100]: <ARGUMENT 1 DESCRIPTION>
  * @arg2 - (NUMBER - OPTIONAL) [DEFAULT - 100]: <ARGUMENT 2 DESCRIPTION>
+ * @arg2 - (NUMBER - OPTIONAL or REQUIRED) [DEFAULT - 100]: <ARGUMENT 2 DESCRIPTION>
  *
  * return: true / false or <{ OBJECT }>
+ *
+ * !IMPORTANT: This is an important message
+ * !NOTE: This is a note
+ * TODO: This is a todo
  */

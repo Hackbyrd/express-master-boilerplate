@@ -20,7 +20,7 @@ const i18n = require('i18n'); // set up language
 const { NODE_ENV, REDIS_URL, REDIS_HOST, REDIS_PORT } = process.env;
 
 // server
-function server() {
+async function server() {
   // require custom
   const models = require('./models'); // establish and grab db connection
   const cfgPassport = require('./services/passport'); // configuration for passport

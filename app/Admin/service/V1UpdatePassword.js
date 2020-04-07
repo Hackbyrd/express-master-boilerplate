@@ -70,7 +70,7 @@ async function V1UpdatePassword(req, callback) {
   // validate
   const { error, value } = schema.validate(req.args);
   if (error)
-    return callback(null, errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(err)));
+    return callback(null, errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));
 
   // check password1 and password2 equality
   const msg = checkPasswords(req.args.password1, req.args.password2, 8);

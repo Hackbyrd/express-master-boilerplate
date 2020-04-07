@@ -7,7 +7,7 @@
 // built-in node modules
 const os = require('os');
 
-// require third-party node modules
+// third-party node modules
 const throng = require('throng'); // concurrency
 
 // env variables
@@ -16,50 +16,44 @@ const PORT = process.env.PORT ? Number(process.env.PORT) : 8000;
 const PROCESSES = NODE_ENV === 'production' ? process.env.WEB_CONCURRENCY || os.cpus().length : 1; // number of cores
 
 // function to start app
-function startApp(processId) {
+async function startApp(processId) {
   const models = require('./models'); // get models
+  const { gracefulExit } = require('./middleware/exit'); // exit
 
   // create server
   const server = require('./server'); // get app
-
-  // exit
-  const { gracefulExit } = require('./middleware/exit');
-
   console.log(`process.env.NODE_ENV: ${NODE_ENV}`);
 
-  // to check if database connection is established
-  models.db
-    .authenticate()
-    .then(() => {
-      // listen server
-      server.listen(PORT, () => {
-        console.log(`Process ID: ${processId} - Server started on port ${PORT}`);
+  try {
 
-        // on terminate command: killall node
-        process.on('SIGTERM', () => {
-          console.log(`Process ${processId} exiting...`);
+    // to check if database connection is established
+    await models.db.authenticate();
 
+    // listen server
+    server.listen(PORT, async () => {
+      console.log(`Process ID: ${processId} - Server started on port ${PORT}`);
+
+      // on terminate command: killall node
+      process.on('SIGTERM', async () => {
+        console.log(`Process ${processId} exiting...`);
+
+        try {
           // remove database connections gracefully
-          models.db
-            .close()
-            .then(() => {
-              console.log('Database Connection Closed');
+          await models.db.close();
+          console.log('Database Connection Closed');
 
-              // gracefully exit server
-              gracefulExit(server);
-            })
-            .catch(err => {
-              console.log(err);
-              process.exit(1);
-            });
-        });
+          // gracefully exit server
+          gracefulExit(server);
+        } catch (err) {
+          console.log(err);
+          process.exit(1);
+        }
       });
-    })
-    .catch(err => {
-      console.log(err);
-      process.exit(1);
-    }); // end authenticate
-  return false;
+    });
+  } catch (err) {
+    console.log(err);
+    process.exit(1);
+  }
 }
 
 // run concurrent workers
