@@ -5,20 +5,13 @@
 'use strict';
 
 // ENV variables
-const { NODE_ENV, REDIS_URL, ADMIN_CLIENT_HOST } = process.env;
+const { REDIS_URL } = process.env;
 
 // third-party
-const _ = require('lodash');
-const Op = require('sequelize').Op; // for operator aliases like $gte, $eq
 const io = require('socket.io-emitter')(REDIS_URL); // to emit real-time events to client
 const joi = require('@hapi/joi'); // validations
-const async = require('async');
-const moment = require('moment-timezone');
-const passport = require('passport');
-const currency = require('currency.js');
 
 // services
-const email = require('../../../services/email');
 const { SOCKET_ROOMS, SOCKET_EVENTS } = require('../../../services/socket');
 const { errorResponse, joiErrorsMessage, ERROR_CODES } = require('../../../services/error');
 
@@ -26,10 +19,7 @@ const { errorResponse, joiErrorsMessage, ERROR_CODES } = require('../../../servi
 const models = require('../../../models');
 
 // helpers
-const { getOffset, getOrdering, convertStringListToWhereStmt } = require('../../../helpers/cruqd');
-const { randomString, createJwtToken } = require('../../../helpers/logic');
 const { checkPasswords, isValidTimezone } = require('../../../helpers/validate');
-const { LIST_INT_REGEX } = require('../../../helpers/constants');
 
 // methods
 module.exports = {
@@ -47,15 +37,15 @@ module.exports = {
  *
  * req.params = {}
  * req.args = {
- *   name - (STRING - REQUIRED): The name of the new admin
- *   active - (BOOLEAN - REQUIRED): Whether admin is active or not
- *   email - (STRING - REQUIRED): The email of the admin,
- *   phone - (STRING - REQUIRED): The phone of the admin,
- *   timezone - (STRING - REQUIRED): The timezone of the admin,
- *   locale - (STRING - REQUIRED): The language of the user
- *   password1 - (STRING - REQUIRED): The unhashed password1 of the admin
- *   password2 - (STRING - REQUIRED): The unhashed password2 of the admin
- *   acceptedTerms - (BOOLEAN - REQUIRED): Whether terms is accepted or not
+ *   @name - (STRING - REQUIRED): The name of the new admin
+ *   @active - (BOOLEAN - REQUIRED): Whether admin is active or not
+ *   @email - (STRING - REQUIRED): The email of the admin,
+ *   @phone - (STRING - REQUIRED): The phone of the admin,
+ *   @timezone - (STRING - REQUIRED): The timezone of the admin,
+ *   @locale - (STRING - REQUIRED): The language of the user
+ *   @password1 - (STRING - REQUIRED): The unhashed password1 of the admin
+ *   @password2 - (STRING - REQUIRED): The unhashed password2 of the admin
+ *   @acceptedTerms - (BOOLEAN - REQUIRED): Whether terms is accepted or not
  * }
  *
  * Success: Return an admin
@@ -65,9 +55,9 @@ module.exports = {
  *   401: UNAUTHORIZED
  *   500: INTERNAL_SERVER_ERROR
  */
-async function V1Create(req, callback) {
+async function V1Create(req) {
   const schema = joi.object({
-    name: joi.string().trim().min(1).required(),
+    name: joi.string().trim().min(1).required().error(new Error(req.__('ADMIN_V1Create_Invalid_Argument(name)'))),
     active: joi.boolean().required(),
     email: joi.string().trim().lowercase().min(3).email().required(),
     phone: joi.string().trim().required(),
@@ -81,18 +71,18 @@ async function V1Create(req, callback) {
   // validate
   const { error, value } = schema.validate(req.args);
   if (error)
-    return callback(null, errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));
+    return Promise.resolve(errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));
   req.args = value; // updated arguments with type conversion
 
   // check passwords
   const msg = checkPasswords(req.args.password1, req.args.password2, 8);
   if (msg !== true)
-    return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__(msg)));
+    return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__(msg)));
   req.args.password = req.args.password1; // set password
 
   // check terms of service
   if (!req.args.acceptedTerms)
-    return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__('You must agree to Terms of Service.')));
+    return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__('You must agree to Terms of Service.')));
 
   try {
     // check if admin email already exists
@@ -104,11 +94,11 @@ async function V1Create(req, callback) {
 
     // check of duplicate admin user
     if (duplicateAdmin)
-      return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, 1));
+      return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, 1));
 
     // check timezone
     if (!isValidTimezone(req.args.timezone))
-      return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__('Time zone is invalid.')));
+      return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__('Time zone is invalid.')));
 
     // create admin
     const newAdmin = await models.admin.create({
@@ -129,7 +119,7 @@ async function V1Create(req, callback) {
       }
     }).catch(err => {
       newAdmin.destroy(); // destroy if error
-      return callback(err);
+      return Promise.reject(err);
     }); // END grab partner without sensitive data
 
     // SOCKET EMIT EVENT
@@ -138,12 +128,12 @@ async function V1Create(req, callback) {
     io.to(`${SOCKET_ROOMS.ADMIN}${returnAdmin.id}`).emit(SOCKET_EVENTS.ADMIN_CREATED, data);
 
     // return
-    return callback(null, {
+    return Promise.resolve({
       status: 201,
       success: true,
       admin: returnAdmin
     });
-  } catch (err) {
-    return callback(err);
+  } catch (error) {
+    return Promise.reject(error);
   }
 } // END V1Create

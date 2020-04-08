@@ -10,6 +10,8 @@
 const { NODE_ENV } = process.env;
 
 module.exports = {
+  LOCALES: ['en', 'ko', 'zh-TW', 'zh-CN'], // first index is the default language
+
   // moment.js formats
   DATE_TIME_FORMAT: 'YYYY-MM-DD HH:mm:ss',
   DATE_TIME_FORMAT_Z: 'YYYY-MM-DD HH:mm:ss z',

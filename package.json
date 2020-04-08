@@ -32,6 +32,7 @@
     "gen": "node app/generate generate",
     "str": "node app/generate stringify",
     "seed": "node ./database/seed",
+    "lang": "node ./services/language.js",
     "gulp": "./node_modules/gulp-cli/bin/gulp.js",
     "format": "NODE_ENV=development node format.js",
     "ngrok": "./node_modules/ngrok/bin/ngrok http 8000",

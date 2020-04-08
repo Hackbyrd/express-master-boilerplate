@@ -39,11 +39,7 @@ const ERROR_CODES = {
 
 // check if is directory and get directories
 const isDirectory = source => fs.lstatSync(source).isDirectory();
-const getDirectories = source =>
-  fs
-    .readdirSync(source)
-    .map(name => path.join(source, name))
-    .filter(isDirectory);
+const getDirectories = source => fs.readdirSync(source).map(name => path.join(source, name)).filter(isDirectory);
 const directories = getDirectories(path.join(__dirname, APP_DIR));
 
 // add each error to models object
@@ -91,7 +87,8 @@ function errorResponse(i18n, errorCode, errorMessage = 0, statusCode) {
  * TODO: Test
  */
 function joiErrorsMessage(errors) {
-  if (!errors) return null;
+  if (!errors)
+    return null;
 
   return errors.details.map(e => e.message).join(', ');
 }

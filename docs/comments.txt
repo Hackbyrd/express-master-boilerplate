@@ -9,12 +9,13 @@ Controller/Service Comment Header:
  * Roles: ['']
  *
  * req.params = {
- *   id - (NUMBER - REQURED): user id
+ *   @id - (NUMBER - REQURED): user id
  * }
  *
  * req.args = {
- *   email - (STRING - REQUIRED) [DEFAULT - 100]: The email of the user,
- *   password - (STRING - REQUIRED) [DEFAULT - 100]: The unhashed password of the user
+ *   @email - (STRING - REQUIRED) [DEFAULT - 100]: The email of the user,
+ *   @password - (STRING - REQUIRED) [DEFAULT - 100]: The unhashed password of the user
+ *   @status - (NUMBER - OPTIONAL or REQUIRED) [DEFAULT - 100]: The unhashed password of the user
  * }
  *
  * Success: Return logged in user.

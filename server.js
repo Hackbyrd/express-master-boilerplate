@@ -17,10 +17,13 @@ const cors = require('cors'); // handle cors
 const i18n = require('i18n'); // set up language
 
 // env variables
-const { NODE_ENV, REDIS_URL, REDIS_HOST, REDIS_PORT } = process.env;
+const { NODE_ENV, REDIS_URL } = process.env;
+
+// helpers
+const { LOCALES } = require('./helpers/constants');
 
 // server
-async function server() {
+function server() {
   // require custom
   const models = require('./models'); // establish and grab db connection
   const cfgPassport = require('./services/passport'); // configuration for passport
@@ -55,8 +58,8 @@ async function server() {
 
   // set up language
   i18n.configure({
-    locales: ['en', 'ko', 'zh-TW', 'zh-CN'], // set the languages here
-    defaultLocale: 'en',
+    locales: LOCALES, // set the languages here
+    defaultLocale: LOCALES[0], // default is the first index
     queryParameter: 'lang', // query parameter to switch locale (ie. /home?lang=ch) - defaults to NULL
     cookie: 'i18n-locale', // if you change cookie name, you must also change in verifyJWTAuth res.cookie
     directory: __dirname + '/locales'
@@ -71,7 +74,8 @@ async function server() {
 
   // save raw body
   function rawBodySaver(req, res, buf, encoding) {
-    if (buf && buf.length) req.rawBody = buf.toString(encoding || 'utf8');
+    if (buf && buf.length)
+      req.rawBody = buf.toString(encoding || 'utf8');
   }
 
   // body parser
@@ -82,7 +86,8 @@ async function server() {
   // app.use(bodyParser.raw({ limit: '32mb', verify: rawBodySaver, type: () => true }));
 
   // only secure in production
-  if (NODE_ENV === 'production') app.set('trust proxy', 1); // get ip address using req.ip
+  if (NODE_ENV === 'production')
+    app.set('trust proxy', 1); // get ip address using req.ip
 
   // passport config, must be in this order!
   app.use(passport.initialize());
@@ -106,7 +111,8 @@ async function server() {
   // io connection, call socket.connect
   io.on('connection', socket.connect);
 
-  return newServer; // return newServer
+  // return newServer
+  return newServer;
 }
 
 module.exports = server(); // return server app for testing

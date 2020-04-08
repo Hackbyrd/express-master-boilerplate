@@ -10,9 +10,6 @@ const path = require('path');
 // load test env
 require('dotenv').config({ path: path.join(__dirname, '../../../../config/.env.test') });
 
-// ENV variables
-const { NODE_ENV } = process.env;
-
 // third party
 const moment = require('moment-timezone');
 const i18n = require('i18n');
@@ -29,12 +26,11 @@ const request = require('supertest');
 const { errorResponse, ERROR_CODES } = require('../../../../services/error');
 
 // helpers
-const { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');
+const { reset, populate } = require('../../../../helpers/tests');
 
-describe('Admin.V1Login', () => {
+describe('Admin.V1Login', async () => {
   // grab fixtures here
   const adminFix = require('../../../fixtures/fix1/admin');
-  const userFix = require('../../../fixtures/fix1/user');
 
   // url of the api method we are testing
   const routeVersion = '/v1';
@@ -43,132 +39,122 @@ describe('Admin.V1Login', () => {
   const routeUrl = `${routeVersion}${routePrefix}${routeMethod}`;
 
   // clear database
-  beforeEach(done => {
-    reset(done);
+  beforeEach(async () => {
+    await reset();
   });
 
   // Logged Out
-  describe('Role: Logged Out', () => {
+  describe('Role: Logged Out', async () => {
     // populate database with fixtures
-    beforeEach(done => {
-      populate('fix1', done);
+    beforeEach(async () => {
+      await populate('fix1');
     });
 
-    it('[logged-out] should login admin successfully', done => {
+    it('[logged-out] should login admin successfully', async () => {
       const admin1 = adminFix[0];
 
-      let loginParams = {
+      // login params
+      const params = {
         email: admin1.email,
         password: admin1.password
       };
 
-      // login admin
-      request(app)
-        .post(routeUrl)
-        .send(loginParams)
-        .end((err, res) => {
-          expect(res.statusCode).to.equal(201);
-          expect(res.body).to.have.property('success', true);
-          expect(res.body)
-            .to.have.property('token')
-            .and.to.a('string');
-          expect(res.body).to.have.property('admin').and.to.not.be.null;
+      try {
+        // login admin
+        const res = await request(app)
+          .post(routeUrl)
+          .send(params);
 
-          // check if login count is updated and last login
-          models.admin
-            .findByPk(admin1.id)
-            .then(foundAdmin => {
-              expect(foundAdmin.loginCount).to.equal(1);
-              expect(foundAdmin.lastLogin).to.not.be.null;
-              done();
-            })
-            .catch(err => {
-              throw err;
-            });
-        }); // END second request
+        expect(res.body).to.have.property('success', true);
+        expect(res.body).to.have.property('token').and.to.a('string');
+        expect(res.body).to.have.property('admin').and.to.not.be.null;
+
+        // check if admin is updated in database
+        const checkAdmin = await models.admin.findByPk(admin1.id);
+        expect(checkAdmin.loginCount).to.equal(1);
+        expect(checkAdmin.lastLogin).to.not.be.null;
+      } catch (error) {
+        throw error;
+      }
     }); // END [logged-out] should login admin successfully
 
-    it('[logged-out] should fail to login admin email or password is incorrect', done => {
-      let loginParams = {
+    it('[logged-out] should fail to login admin email or password is incorrect', async () => {
+      const params = {
         email: 'random@email.com',
         password: '1029384756'
       };
 
-      // login admin
-      request(app)
-        .post(routeUrl)
-        .send(loginParams)
-        .end((err, res) => {
-          expect(res.statusCode).to.equal(400);
-          expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_CREDENTIALS));
-          done();
-        }); // END second request
+      try {
+        // login admin
+        const res = await request(app)
+          .post(routeUrl)
+          .send(params);
+
+        expect(res.statusCode).to.equal(400);
+        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_CREDENTIALS));
+      } catch (error) {
+        throw error;
+      }
     }); // END [logged-out] should fail to login admin email or password is incorrect
 
-    it('[logged-out] should fail to login admin if account is not active', done => {
+    it('[logged-out] should fail to login admin if account is not active', async () => {
       const admin1 = adminFix[0];
 
-      let loginParams = {
-        email: admin1.email,
-        password: admin1.password
-      };
-
-      // change to active false
-      models.admin
-        .update(
-          {
-            active: false
-          },
-          {
-            where: {
-              id: admin1.id
-            }
+      try {
+        // update admin status to false
+        await models.admin.update({
+          active: false
+        }, {
+          where: {
+            id: admin1.id
           }
-        )
-        .then(() => {
-          // login admin
-          request(app)
-            .post(routeUrl)
-            .send(loginParams)
-            .end((err, res) => {
-              expect(res.statusCode).to.equal(400);
-              expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_INACTIVE));
-              done();
-            }); // END second request
         });
+
+        const params = {
+          email: admin1.email,
+          password: admin1.password
+        };
+
+        // login admin
+        const res = await request(app)
+          .post(routeUrl)
+          .send(params);
+
+        expect(res.statusCode).to.equal(400);
+        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_INACTIVE));
+      } catch (error) {
+        throw error;
+      }
     }); // END [logged-out] should fail to login admin if account is not active
 
-    it('[logged-out] should fail to login admin if account is deleted', done => {
+    it('[logged-out] should fail to login admin if account is deleted', async () => {
       const admin1 = adminFix[0];
 
-      let loginParams = {
-        email: admin1.email,
-        password: admin1.password
-      };
-
-      // change to active false
-      models.admin
-        .update(
-          {
-            deletedAt: moment.tz('UTC')
-          },
-          {
-            where: {
-              id: admin1.id
-            }
+      try {
+        // set admin as deleted
+        await models.admin.update({
+          deletedAt: moment.tz('UTC')
+        }, {
+          where: {
+            id: admin1.id
           }
-        )
-        .then(() => {
-          // login admin
-          request(app)
-            .post(routeUrl)
-            .send(loginParams)
-            .end((err, res) => {
-              expect(res.statusCode).to.equal(400);
-              expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_DELETED));
-              done();
-            }); // END second request
         });
+
+        const params = {
+          email: admin1.email,
+          password: admin1.password
+        };
+
+        // login admin
+        const res = await request(app)
+          .post(routeUrl)
+          .send(params);
+
+        expect(res.statusCode).to.equal(400);
+        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_DELETED));
+      } catch (error) {
+        throw error;
+      }
     }); // END [logged-out] should fail to login admin if account is deleted
   }); // END Role: Logged Out
 }); // END Admin.V1Login

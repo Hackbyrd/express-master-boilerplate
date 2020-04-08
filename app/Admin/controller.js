@@ -30,16 +30,25 @@ module.exports = {
  * Must be logged out
  * Roles: []
  */
-function V1Login(req, res, next) {
+async function V1Login(req, res, next) {
   let method = 'V1Login';
 
   // call correct method
   // login has to include the "res" object for passport.authenticate
-  service[method](req, res, (err, result) => {
-    if (err) return next(err);
+  // service[method](req, res, (err, result) => {
+  //   if (err) return next(err);
 
+  //   return res.status(result.status).json(result);
+  // });
+
+  // call correct method
+  try {
+    // login has to include the "res" object for passport.authenticate
+    const result = await service[method](req, res);
     return res.status(result.status).json(result);
-  });
+  } catch (error) {
+    return next(error);
+  }
 }
 
 /**
@@ -73,19 +82,22 @@ function V1Read(req, res, next) {
  * Must be logged in
  * Roles: ['admin']
  */
-function V1Create(req, res, next) {
+async function V1Create(req, res, next) {
   let method = null; // which service method to use
 
   // which method to call
-  if (req.admin) method = `V1Create`;
-  else return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
+  if (req.admin)
+    method = `V1Create`;
+  else
+    return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
 
   // call correct method
-  service[method](req, (err, result) => {
-    if (err) return next(err);
-
+  try {
+    const result = await service[method](req);
     return res.status(result.status).json(result);
-  });
+  } catch (error) {
+    return next(error);
+  }
 }
 
 /**

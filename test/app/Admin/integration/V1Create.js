@@ -29,12 +29,11 @@ const request = require('supertest');
 const { errorResponse, ERROR_CODES } = require('../../../../services/error');
 
 // helpers
-const { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');
+const { adminLogin, reset, populate } = require('../../../../helpers/tests');
 
-describe('Admin.V1Create', () => {
+describe('Admin.V1Create', async () => {
   // grab fixtures here
   const adminFix = require('../../../fixtures/fix1/admin');
-  const userFix = require('../../../fixtures/fix1/user');
 
   // url of the api method we are testing
   const routeVersion = '/v1';
@@ -43,45 +42,45 @@ describe('Admin.V1Create', () => {
   const routeUrl = `${routeVersion}${routePrefix}${routeMethod}`;
 
   // clear database
-  beforeEach(done => {
-    reset(done);
+  beforeEach(async () => {
+    await reset();
   });
 
   // Logged Out
-  describe('Role: Logged Out', () => {
+  describe('Role: Logged Out', async () => {
     // populate database with fixtures
-    beforeEach(done => {
-      populate('fix1', done);
+    beforeEach(async () => {
+      await populate('fix1');
     });
 
-    it('[logged-out] should fail to create admin', done => {
-      // create request
-      request(app)
-        .get(routeUrl)
-        .end((err, res) => {
-          expect(err).to.be.null;
-          expect(res.statusCode).to.equal(401);
-          expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.UNAUTHORIZED));
-          done();
-        }); // END read request
+    it('[logged-out] should fail to create admin', async () => {
+      try {
+        const res = await request(app).get(routeUrl);
+        expect(res.statusCode).to.equal(401);
+        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.UNAUTHORIZED));
+      } catch (error) {
+        expect(error).to.be.null();
+      }
     }); // END [logged-out] should fail to create admin
   }); // END Role: Logged Out
 
   // Admin
-  describe('Role: Admin', () => {
+  describe('Role: Admin', async () => {
     const jwt = 'jwt-admin';
 
     // populate database with fixtures
-    beforeEach(done => {
-      populate('fix1', done);
+    beforeEach(async () => {
+      await populate('fix1');
     });
 
-    it('[admin] should create an admin successfully', done => {
+    it('[admin] should create an admin successfully', async () => {
       const admin1 = adminFix[0];
 
-      // login admin
-      adminLogin(app, routeVersion, request, admin1, (err, res, token) => {
-        let params = {
+      try {
+        // login admin
+        const { token } = await adminLogin(app, routeVersion, request, admin1);
+
+        const params = {
           name: 'Jonathan Chen',
           active: true,
           email: 'new-admin@example.com',
@@ -93,52 +92,45 @@ describe('Admin.V1Create', () => {
           acceptedTerms: true
         };
 
-        request(app)
+        // create admin request
+        const { res } = await request(app)
           .post(routeUrl)
           .set('authorization', `${jwt} ${token}`)
-          .send(params)
-          .end((err, res) => {
-            expect(err).to.be.null;
-            expect(res.statusCode).to.equal(201);
-            expect(res.body.admin.id).to.equal(adminFix.length + 1);
-            expect(res.body.admin.timezone).to.equal(params.timezone);
-            expect(res.body.admin.locale).to.equal(params.locale);
-            expect(res.body.admin.active).to.be.true;
-            expect(res.body.admin.name).to.equal(params.name);
-            expect(res.body.admin.email).to.equal(params.email);
-            expect(res.body.admin.phone).to.equal(params.phone);
-            expect(res.body.admin.passwordResetExpire).to.be.a('string');
-            expect(res.body.admin.acceptedTerms).to.be.true;
-            expect(res.body.admin.loginCount).to.equal(0);
-            expect(res.body.admin.lastLogin).to.be.null;
-            expect(res.body.admin.createdAt).to.be.a('string');
-            expect(res.body.admin.updatedAt).to.be.a('string');
+          .send(params);
 
-            // check if admin was created
-            models.admin
-              .findByPk(res.body.admin.id)
-              .then(foundAdmin => {
-                expect(foundAdmin.name).to.equal(params.name);
-                expect(foundAdmin.timezone).to.equal(params.timezone);
-                expect(foundAdmin.locale).to.equal(params.locale);
-                expect(foundAdmin.active).to.be.true;
-                expect(foundAdmin.name).to.equal(params.name);
-                expect(foundAdmin.email).to.equal(params.email);
-                expect(foundAdmin.phone).to.equal(params.phone);
-                expect(foundAdmin.passwordResetExpire).to.not.be.null;
-                expect(foundAdmin.acceptedTerms).to.be.true;
-                expect(foundAdmin.loginCount).to.equal(0);
-                expect(foundAdmin.lastLogin).to.be.null;
-                expect(foundAdmin.createdAt).to.not.be.null;
-                expect(foundAdmin.updatedAt).to.not.be.null;
+        expect(res.statusCode).to.equal(201);
+        expect(res.body.admin.id).to.equal(adminFix.length + 1);
+        expect(res.body.admin.timezone).to.equal(params.timezone);
+        expect(res.body.admin.locale).to.equal(params.locale);
+        expect(res.body.admin.active).to.be.true;
+        expect(res.body.admin.name).to.equal(params.name);
+        expect(res.body.admin.email).to.equal(params.email);
+        expect(res.body.admin.phone).to.equal(params.phone);
+        expect(res.body.admin.passwordResetExpire).to.be.a('string');
+        expect(res.body.admin.acceptedTerms).to.be.true;
+        expect(res.body.admin.loginCount).to.equal(0);
+        expect(res.body.admin.lastLogin).to.be.null;
+        expect(res.body.admin.createdAt).to.be.a('string');
+        expect(res.body.admin.updatedAt).to.be.a('string');
 
-                done();
-              })
-              .catch(err => {
-                throw err;
-              }); // END check admin
-          });
-      }); // END login admin
+        // check if admin was created
+        const checkAdmin = await models.admin.findByPk(res.body.admin.id);
+        expect(checkAdmin.name).to.equal(params.name);
+        expect(checkAdmin.timezone).to.equal(params.timezone);
+        expect(checkAdmin.locale).to.equal(params.locale);
+        expect(checkAdmin.active).to.be.true;
+        expect(checkAdmin.name).to.equal(params.name);
+        expect(checkAdmin.email).to.equal(params.email);
+        expect(checkAdmin.phone).to.equal(params.phone);
+        expect(checkAdmin.passwordResetExpire).to.not.be.null;
+        expect(checkAdmin.acceptedTerms).to.be.true;
+        expect(checkAdmin.loginCount).to.equal(0);
+        expect(checkAdmin.lastLogin).to.be.null;
+        expect(checkAdmin.createdAt).to.not.be.null;
+        expect(checkAdmin.updatedAt).to.not.be.null;
+      } catch (error) {
+        expect(error).to.be.null;
+      }
     }); // END [admin] should create an admin successfully
 
     it('[admin] should not create new admin if passwords are not the same', done => {

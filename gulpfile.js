@@ -1,5 +1,5 @@
 /**
- * Compiles SCSS into CSS while also adding browser prefixes
+ * Compiles Mailes and Languages
  *
  * yarn add gulp-cli gulp --dev --exact
  *
@@ -11,8 +11,23 @@
 // third-party node modules
 const gulp = require('gulp');
 const compile = require('./mailers/compile');
+const language = require('./services/language.js');
 
-// SASS
+// Languages
+gulp.task('languages', done =>{
+  language.compile();
+
+  console.log('Language locales generated.');
+  done();
+});
+
+// Languages watch for changes
+gulp.task('languages:watch', done => {
+  gulp.watch(['./language/*.js', './app/**/language/*.js'], gulp.series('languages'));
+  done();
+});
+
+// Mailers
 gulp.task('mailers', done => {
   compile(err => {
     if (err) {
@@ -25,16 +40,15 @@ gulp.task('mailers', done => {
   });
 });
 
-// SASS Watch for changes
+// Mailers watch for changes
 gulp.task('mailers:watch', done => {
   gulp.watch('./mailers/**/index.ejs', gulp.series('mailers'));
   done();
 });
 
 // run all tasks
-gulp.task(
-  'default',
-  gulp.series('mailers', 'mailers:watch', done => {
-    console.log('Gulp finished.');
+gulp.task('default',
+  gulp.series('mailers', 'mailers:watch', 'languages', 'languages:watch', done => {
+    console.log('Gulp finished');
   })
 );

@@ -44,14 +44,14 @@ async function startApp(processId) {
 
           // gracefully exit server
           gracefulExit(server);
-        } catch (err) {
-          console.log(err);
+        } catch (error) {
+          console.log(error);
           process.exit(1);
         }
       });
     });
-  } catch (err) {
-    console.log(err);
+  } catch (error) {
+    console.log(error);
     process.exit(1);
   }
 }
