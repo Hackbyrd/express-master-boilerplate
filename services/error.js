@@ -28,6 +28,12 @@ const ERROR_CODES = {
     messages: ['You do not have permission to make this request.']
   },
 
+  SERVICE_UNAVAILABLE: {
+    error: 'SERVICE_UNAVAILABLE',
+    status: 503,
+    message: [`GLOBAL[SERVICE_UNAVAILABLE]`]
+  },
+
   BAD_REQUEST_INVALID_ARGUMENTS: {
     error: 'BAD_REQUEST_INVALID_ARGUMENTS',
     status: 400,

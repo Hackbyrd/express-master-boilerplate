@@ -48,13 +48,16 @@ function connect(socket) {
   console.log('Client ' + socket.id + ' Connected');
 
   // join the global room for application
-  if (socket.handshake.query.global) socket.join(`${SOCKET_ROOMS.GLOBAL}`);
+  if (socket.handshake.query.global)
+    socket.join(`${SOCKET_ROOMS.GLOBAL}`);
 
   // join the correct room for a feature
-  if (socket.handshake.query.room) socket.join(`${SOCKET_ROOMS.ROOM}${socket.handshake.query.room}`);
+  if (socket.handshake.query.room)
+    socket.join(`${SOCKET_ROOMS.ROOM}${socket.handshake.query.room}`);
 
   // join the admin room for a feature
-  if (socket.handshake.query.admin) socket.join(`${SOCKET_ROOMS.ADMIN}${socket.handshake.query.admin}`);
+  if (socket.handshake.query.admin)
+    socket.join(`${SOCKET_ROOMS.ADMIN}${socket.handshake.query.admin}`);
 
   // add more rooms here
 

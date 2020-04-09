@@ -22,6 +22,7 @@ module.exports = (passport, router) => {
   router.all('/v1/admins/query', JWTAuth, verifyJWTAuth, controller.V1Query);
   router.all('/v1/admins/updatepassword', JWTAuth, verifyJWTAuth, controller.V1UpdatePassword);
   router.all('/v1/admins/updateemail', JWTAuth, verifyJWTAuth, controller.V1UpdateEmail);
+  router.all('/v1/admins/export', controller.V1Export);
 
   // return router
   return router;

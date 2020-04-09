@@ -10,5 +10,6 @@
 
 module.exports = {
   'GLOBAL[Language]': 'English',
-  'GLOBAL[Welcome]': 'Welcome'
+  'GLOBAL[Welcome]': 'Welcome',
+  'GLOBAL[SERVICE_UNAVAILABLE]': 'Server is in the process of shutting down or restarting.'
 };

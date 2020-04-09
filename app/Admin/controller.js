@@ -19,7 +19,8 @@ module.exports = {
   V1UpdatePassword,
   V1ResetPassword,
   V1ConfirmPassword,
-  V1UpdateEmail
+  V1UpdateEmail,
+  V1Export
 };
 
 /**
@@ -35,20 +36,9 @@ async function V1Login(req, res, next) {
 
   // call correct method
   // login has to include the "res" object for passport.authenticate
-  // service[method](req, res, (err, result) => {
-  //   if (err) return next(err);
+  const result = await service[method](req, res).catch(err => next(err));
 
-  //   return res.status(result.status).json(result);
-  // });
-
-  // call correct method
-  try {
-    // login has to include the "res" object for passport.authenticate
-    const result = await service[method](req, res);
-    return res.status(result.status).json(result);
-  } catch (error) {
-    return next(error);
-  }
+  return res.status(result.status).json(result);
 }
 
 /**
@@ -92,12 +82,8 @@ async function V1Create(req, res, next) {
     return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
 
   // call correct method
-  try {
-    const result = await service[method](req);
-    return res.status(result.status).json(result);
-  } catch (error) {
-    return next(error);
-  }
+  const result = await service[method](req).catch(err => next(err));
+  return res.status(result.status).json(result);
 }
 
 /**
@@ -228,4 +214,20 @@ function V1UpdateEmail(req, res, next) {
 
     return res.status(result.status).json(result);
   });
+}
+
+/**
+ * Export an admin
+ *
+ * /v1/admins/export
+ *
+ * Must be logged in
+ * Roles: ['admin']
+ */
+async function V1Export(req, res, next) {
+  let method = `V1Export`; // which service method to use
+
+  // call correct method
+  const result = await service[method](req).catch(err => next(err));
+  return res.status(result.status).json(result);
 }

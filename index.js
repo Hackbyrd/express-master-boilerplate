@@ -22,46 +22,34 @@ async function startApp(processId) {
 
   // create server
   const server = require('./server'); // get app
+
+  // Print Process Info
+  console.log(`process.pid: ${process.pid}`);
   console.log(`process.env.NODE_ENV: ${NODE_ENV}`);
 
-  try {
-
-    // to check if database connection is established
-    await models.db.authenticate();
-
-    // listen server
-    server.listen(PORT, async () => {
-      console.log(`Process ID: ${processId} - Server started on port ${PORT}`);
-
-      // on terminate command: killall node
-      process.on('SIGTERM', async () => {
-        console.log(`Process ${processId} exiting...`);
-
-        try {
-          // remove database connections gracefully
-          await models.db.close();
-          console.log('Database Connection Closed');
-
-          // gracefully exit server
-          gracefulExit(server);
-        } catch (error) {
-          console.log(error);
-          process.exit(1);
-        }
-      });
-    });
-  } catch (error) {
-    console.log(error);
+  // to check if database connection is established
+  await models.db.authenticate().catch(err => {
+    console.error(err);
     process.exit(1);
-  }
+  });
+
+  // listen server
+  server.listen(PORT, () => {
+    console.log(`Process ID: ${processId} - Server started on port ${PORT}`);
+
+    // On terminate command: killall node or process.kill(process.pid)
+    process.on('SIGTERM', () => {
+      console.log(`Process ${processId} exiting...`);
+
+      // gracefully exit server
+      gracefulExit(server);
+    });
+  });
 }
 
 // run concurrent workers
-throng(
-  {
-    workers: PROCESSES, // Number of workers (cpu count)
-    lifetime: Infinity, // ms to keep cluster alive (Infinity)
-    grace: 5000 // ms grace period after worker SIGTERM (5000)
-  },
-  startApp
-);
+throng({
+  workers: PROCESSES, // Number of workers (cpu count)
+  lifetime: Infinity, // ms to keep cluster alive (Infinity)
+  grace: 5000 // ms grace period after worker SIGTERM (5000)
+}, startApp);
