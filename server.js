@@ -63,6 +63,7 @@ function server() {
     queryParameter: 'lang', // query parameter to switch locale (ie. /home?lang=ch) - defaults to NULL
     cookie: 'i18n-locale', // if you change cookie name, you must also change in verifyJWTAuth res.cookie
     directory: __dirname + '/locales'
+    // objectNotation: true // hierarchical translation catalogs. To enable this feature, be sure to set objectNotation to true
   });
 
   // you will need to use cookieParser to expose cookies to req.cookies
