@@ -1,6 +1,6 @@
 /**
- * The ordering to create tables for testing
- * Make sure to do MODEL NAME (Singular)!!! DO NOT DO TABLE NAME (Plural)
+ * This is the table order in which test fixture and seed data is added into the database.
+ * Make sure to do MODEL NAME (Lower-case & Singular)!!! DO NOT DO TABLE NAME (Pascal-case & Plural)
  */
 
-module.exports = ['admin', 'user'];
+module.exports = ['admin'];

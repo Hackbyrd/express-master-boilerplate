@@ -40,7 +40,7 @@ function generate() {
 
   // if directory already exists
   if (fs.existsSync(newDirPath)) {
-    console.log('Error: ' + newDir + ' already exists. Please use different name.');
+    console.log('Error: ' + newDir + ' feature already exists. Please use different name.');
     process.exit(1);
   }
 
@@ -121,6 +121,8 @@ function generate() {
   );
   fs.closeSync(fd);
 
+  console.log(`Created ${newDirPath}`);
+
   /*****************************/
   /***** Create Test Files *****/
   /*****************************/
@@ -142,6 +144,8 @@ function generate() {
   fs.closeSync(fs.openSync(path.join(newTestDirPath, 'helper.js'), 'w'));
   fs.closeSync(fs.openSync(path.join(newTestDirPath, 'service.js'), 'w'));
 
+  console.log(`Created ${newTestDirPath}`);
+
   /******************************/
   /***** Update Sequence.js *****/
   /******************************/
@@ -154,15 +158,16 @@ function generate() {
   fd = fs.openSync(path.join(__dirname, '../database/sequence.js'), 'w');
   fs.writeSync(
     fd,
-    `/**\n * The ordering to create tables for testing\n * Make sure to do MODEL NAME (Singular)!!! DO NOT DO TABLE NAME (Plural)\n */\n\nmodule.exports = [${featureNames}];`,
+    `/**\n * This is the table order in which test fixture and seed data is added into the database.\n * Make sure to do MODEL NAME (Lower-case & Singular)!!! DO NOT DO TABLE NAME (Pascal-case & Plural)\n */\n\nmodule.exports = [${featureNames}];\n`,
     0,
     'utf-8'
   );
   fs.closeSync(fd);
 
+  console.log(`Added '${lowerName}' to database/sequence.js`);
+
   // Finished
-  console.log(newDir + ' feature generated successfully!');
-  console.log('NOTE: New feature MODEL NAME was added to database/sequence.js to help with inserting seed and fixture data into database!');
+  console.log(newDir + ' feature generated!');
 }
 
 /**
@@ -174,20 +179,43 @@ function destroy() {
   const rmDir = process.argv[3]; // NEW_FEATURE
   const rmDirPath = path.join(__dirname, rmDir);
   const rmTestDirPath = path.join(__dirname, '../test/app', rmDir);
+  const lowerName = rmDir.toLowerCase();
 
-  console.log('Deleting ' + newDir + ' feature...');
+  console.log('Deleting ' + rmDir + ' feature...');
 
   // if directory exists
-  if (!fs.existsSync(newDirPath)) {
-    console.log('Error: ' + newDir + ' does not exists.');
+  if (!fs.existsSync(rmDirPath)) {
+    console.log('Error: ' + rmDir + ' feature does not exists.');
     process.exit(1);
   }
 
+  // delete app/Feature
   fs.rmdirSync(rmDirPath, { recursive: true });
+  console.log(`Deleted ${rmDirPath}`);
+
+  // delete test/app/Feature
   fs.rmdirSync(rmTestDirPath, { recursive: true });
+  console.log(`Deleted ${rmTestDirPath}`);
+
+  // remove feature name from database/sequence.js
+  const sequenceArray = require('../database/sequence');
+  sequenceArray.splice(sequenceArray.indexOf(lowerName), 1);
+  const featureNames = sequenceArray.map(name => `'${name}'`).join(', ');
+
+  // file descriptor
+  let fd = fs.openSync(path.join(__dirname, '../database/sequence.js'), 'w');
+  fs.writeSync(
+    fd,
+    `/**\n * This is the table order in which test fixture and seed data is added into the database.\n * Make sure to do MODEL NAME (Lower-case & Singular)!!! DO NOT DO TABLE NAME (Pascal-case & Plural)\n */\n\nmodule.exports = [${featureNames}];\n`,
+    0,
+    'utf-8'
+  );
+  fs.closeSync(fd);
+
+  console.log(`Removed '${lowerName}' from database/sequence.js`);
 
   // Finished
-  console.log(newDir + ' feature deleted successfully!');
+  console.log(rmDir + ' feature deleted!');
 }
 
 // takes in a file path and stringifies it to help with writing the generate and delete functions above
