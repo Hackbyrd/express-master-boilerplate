@@ -18,6 +18,9 @@ const fs = require('fs');
 const path = require('path');
 const method = process.argv[2].trim(); // choose the method ['generate', 'delete', 'stringify']
 
+// helpers
+const { LOCALES, LANGUAGES } = require('../helpers/constants');
+
 // choose which method to run
 if (method === 'generate')
   generate();
@@ -115,7 +118,32 @@ function generate() {
   );
   fs.closeSync(fd);
 
-  /***** Service *****/
+  /*********************************/
+  /***** Create Language Files *****/
+  /*********************************/
+
+  // make language directory
+  const newLangDirPath = path.join(newDirPath, 'language');
+  fs.mkdirSync(newLangDirPath);
+
+  // create each language file
+  for (let i = 0; i < LOCALES.length; i++) {
+    const locale = LOCALES[i];
+    const language = LANGUAGES[i];
+
+    fd = fs.openSync(path.join(newLangDirPath, `${locale}.js`), 'w');
+    fs.writeSync(
+      fd,
+      `/**\n * ${pascalName} Language File: ${language}\n *\n * This file holds all ${language} language translations for the ${pascalName} feature.\n * This file is compiled by /services/language.js to generate the final ${language} locale\n * All ${language} translations aggregated from all features can be found in /locales/${locale}.json\n */\n\n'use strict';\n\nmodule.exports = {\n  '${upperName}[Example Message]': 'Example Messagea'\n};\n`,
+      0,
+      'utf-8'
+    );
+    fs.closeSync(fd);
+  }
+
+  /********************************/
+  /***** Create Service Files *****/
+  /********************************/
   fs.mkdirSync(path.join(newDirPath, 'service'));
 
   // service index
@@ -134,6 +162,10 @@ function generate() {
   fs.closeSync(fd);
 
   console.log(`Created ${newDirPath}`);
+
+  /******************************/
+  /***** Create Tasks Files *****/
+  /******************************/
 
   /*****************************/
   /***** Create Test Files *****/

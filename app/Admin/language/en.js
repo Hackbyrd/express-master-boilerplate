@@ -1,8 +1,9 @@
 /**
  * Admin Language File: English
  *
- * This file holds all English language messages for the Admin feature.
- * Go to services/language.js to compile and generate the final English locale
+ * This file holds all English language translations for the Admin feature.
+ * This file is compiled by /services/language.js to generate the final English locale
+ * All English translations aggregated from all features can be found in /locales/en.json
  */
 
 'use strict';

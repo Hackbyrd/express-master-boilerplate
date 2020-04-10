@@ -1,8 +1,9 @@
 /**
- * Admin Language File: Korean
+ * Admin Language File: Traditional Chinese
  *
- * This file holds all Korean language messages for the Admin feature.
- * Go to services/language.js to compile and generate the final Korean locale
+ * This file holds all Traditional Chinese language translations for the Admin feature.
+ * This file is compiled by /services/language.js to generate the final Traditional Chinese locale
+ * All Traditional Chinese translations aggregated from all features can be found in /locales/zh-TW.json
  */
 
 'use strict';

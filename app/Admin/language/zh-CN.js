@@ -1,8 +1,9 @@
 /**
- * Admin Language File: Korean
+ * Admin Language File: Simplified Chinese
  *
- * This file holds all Korean language messages for the Admin feature.
- * Go to services/language.js to compile and generate the final Korean locale
+ * This file holds all Simplified Chinese language translations for the Admin feature.
+ * This file is compiled by /services/language.js to generate the final Simplified Chinese locale
+ * All Simplified Chinese translations aggregated from all features can be found in /locales/zh-CN.json
  */
 
 'use strict';
