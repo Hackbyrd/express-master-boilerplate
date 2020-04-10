@@ -69,15 +69,12 @@ function randomString({ len, pre, post, lowercase, uppercase, numbers, special }
  * Docs: https://www.npmjs.com/package/passport-jwt
  */
 function createJwtToken(user, client) {
-  return jwt.encode(
-    {
-      sub: user.id,
-      iss: HOSTNAME,
-      aud: client,
-      iat: new Date().getTime()
-    },
-    SESSION_SECRET
-  );
+  return jwt.encode({
+    sub: user.id,
+    iss: HOSTNAME,
+    aud: client,
+    iat: new Date().getTime()
+  }, SESSION_SECRET);
 }
 
 /**
@@ -144,7 +141,8 @@ function heapsort(array, comparator) {
   function buildHeap(arr) {
     arrayLength = arr.length;
 
-    for (let i = Math.floor(arrayLength / 2); i >= 0; i -= 1) heapify(arr, i);
+    for (let i = Math.floor(arrayLength / 2); i >= 0; i -= 1)
+      heapify(arr, i);
   }
 
   function heapify(arr, i) {
@@ -152,9 +150,11 @@ function heapsort(array, comparator) {
     let right = 2 * i + 2;
     let largest = i;
 
-    if (left < arrayLength && comparator(arr[left], arr[largest]) > 0) largest = left;
+    if (left < arrayLength && comparator(arr[left], arr[largest]) > 0)
+      largest = left;
 
-    if (right < arrayLength && comparator(arr[right], arr[largest]) > 0) largest = right;
+    if (right < arrayLength && comparator(arr[right], arr[largest]) > 0)
+      largest = right;
 
     if (largest != i) {
       swap(arr, i, largest);

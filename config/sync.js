@@ -9,7 +9,6 @@
 'use strict';
 
 const fs = require('fs');
-const async = require('async');
 const { exec } = require('child_process');
 
 module.exports = {

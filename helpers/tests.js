@@ -8,9 +8,6 @@
 const fs = require('fs');
 const path = require('path');
 
-// third-party
-const async = require('async');
-
 // require models
 const models = require('../models'); // grab db connection
 

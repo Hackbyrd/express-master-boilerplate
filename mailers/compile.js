@@ -7,43 +7,45 @@
 
 'use strict';
 
-// built-in
+// built-in node modules
 const fs = require('fs');
 const path = require('path');
 
-// ejs
+// third-party node modules
 const ejs = require('ejs');
-const async = require('async');
 
-function compile(callback) {
+// Compile and generate a preview of all the templates
+async function compile() {
   // the file to compile
   const MAILER_FILE = 'index.ejs';
 
   // check if is directory and get directories
   const isDirectory = source => fs.lstatSync(source).isDirectory();
-  const getDirectories = source =>
-    fs
-      .readdirSync(source)
-      .map(name => path.join(source, name))
-      .filter(isDirectory);
+  const getDirectories = source => fs.readdirSync(source).map(name => path.join(source, name)).filter(isDirectory);
   const directories = getDirectories(__dirname);
 
-  // add each model to models object
-  async.eachSeries(
-    directories,
-    (dir, next) => {
-      // write html file
-      ejs.renderFile(path.join(dir, MAILER_FILE), {}, (err, rawHtml) => {
-        if (err) {
-          return next(err);
-        }
+    // go through each email and render preview
+    for (var i = 0; i < directories.length; i++) {
+      const curDir = directories[i];
 
-        // write file
-        fs.writeFile(path.join(dir, 'preview.html'), rawHtml, err => next(err));
-      }); // END write html file
-    },
-    err => callback(err)
-  );
+      // render preview.html
+      await render(curDir, MAILER_FILE).catch(err => Promise.reject(err));
+    }
+}
+
+// renders the ejs file
+async function render(directory, file) {
+  return new Promise((resolve, reject) => {
+    // write html file
+    ejs.renderFile(path.join(directory, file), {}, (err, rawHtml) => {
+      if (err)
+        return reject(err);
+
+      // write file
+      fs.writeFileSync(path.join(directory, 'preview.html'), rawHtml);
+      return resolve();
+    }); // END write html file
+  });
 }
 
 module.exports = compile;

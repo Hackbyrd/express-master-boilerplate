@@ -1,12 +1,1 @@
-{
-	"GLOBAL[Language]": "English",
-	"GLOBAL[Welcome]": "Welcome",
-	"GLOBAL[SERVICE_UNAVAILABLE]": "Server is in the process of shutting down or restarting.",
-	"ADMIN[Welcome]": "Welcome",
-	"You do not have permission to make this request.": "You do not have permission to make this request.",
-	"Login failed. Email and/or password is incorrect.": "Login failed. Email and/or password is incorrect.",
-	"One or more request arguments are invalid.": "One or more request arguments are invalid.",
-	"Login failed. Account is inactive.": "Login failed. Account is inactive.",
-	"Login failed. Account has been deleted.": "Login failed. Account has been deleted.",
-	"ADMIN_V1Create_Invalid_Argument(name)": "ADMIN_V1Create_Invalid_Argument(name)"
-}
+{"GLOBAL[Language]":"English","GLOBAL[Welcome]":"Welcome","GLOBAL[SERVICE_UNAVAILABLE]":"Server is in the process of shutting down or restarting.","ADMIN[Welcome]":"Welcome"}

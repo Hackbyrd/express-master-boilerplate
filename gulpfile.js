@@ -28,16 +28,14 @@ gulp.task('languages:watch', done => {
 });
 
 // Mailers
-gulp.task('mailers', done => {
-  compile(err => {
-    if (err) {
-      console.log(err);
-      process.exit(1);
-    }
-
-    console.log('Email previews generated.');
-    done();
+gulp.task('mailers', async () => {
+  await compile().catch(err => {
+    console.error(err);
+    process.exit(1);
   });
+
+  console.log('Email previews generated.');
+  return Promise.resolve();
 });
 
 // Mailers watch for changes
