@@ -8,3 +8,4 @@
 
 `yarn s`
 `yarn t`
+`yarn w`

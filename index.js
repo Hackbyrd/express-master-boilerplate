@@ -24,8 +24,8 @@ async function startApp(processId) {
   const server = require('./server'); // get app
 
   // Print Process Info
-  console.log(`process.pid: ${process.pid}`);
-  console.log(`process.env.NODE_ENV: ${NODE_ENV}`);
+  console.log(`WEB process.pid: ${process.pid}`);
+  console.log(`WEB process.env.NODE_ENV: ${NODE_ENV}`);
 
   // to check if database connection is established
   await models.db.authenticate().catch(err => {

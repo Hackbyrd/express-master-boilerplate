@@ -18,11 +18,38 @@ const models = require('../models'); // grab db connection
 const seq = require('../database/sequence');
 
 module.exports = {
+  login,
   adminLogin,
   userLogin,
   reset,
   populate
 };
+
+/**
+ * Log in a user
+ *
+ * @app - (OBJECT - REQUIRED): The express server
+ * @version - (STRING - REQUIRED): The api version
+ * @request - (OBJECT - REQUIRED): The supertest request object
+ * @model - (STRING - REQUIRED): 'users', 'admins', 'partners', 'drivers', etc...
+ * @user - (OBJECT - REQUIRED): The user to login
+ *
+ * return the JSON web token
+ */
+async function login(app, version, request, model, user) {
+  // login request
+  const response = request(app)
+    .post(`${version}/${model}/login`)
+    .send({
+      email: user.email,
+      password: user.password
+    }).catch(err => Promise.reject(err));
+
+  return Promise.resolve({
+    token: response.body.token,
+    response
+  });
+} // END login
 
 /**
  * Log an admin in
@@ -35,36 +62,8 @@ module.exports = {
  * return the JSON web token
  */
 async function adminLogin(app, version, request, admin) {
-  try {
-    // login request
-    const response = request(app)
-      .post(`${version}/admins/login`)
-      .send({
-        email: admin.email,
-        password: admin.password
-      });
-
-    return Promise.resolve({
-      token: response.body.token,
-      response
-    });
-  } catch (error) {
-    return Promise.reject(error);
-  }
-
-  // request(app)
-  //   .post(`${version}/admins/login`)
-  //   .send({
-  //     email: admin.email,
-  //     password: admin.password
-  //   })
-  //   .end((err, res) => {
-  //     if (err) {
-  //       throw err;
-  //     }
-
-  //     return callback(err, res, res.body.token);
-  //   }); // END login request
+  // login request
+  return login(app, version, request, 'admins', admin);
 }
 
 /**
@@ -73,24 +72,13 @@ async function adminLogin(app, version, request, admin) {
  * @app - (OBJECT - REQUIRED): The express server
  * @version - (STRING - REQUIRED): The api version
  * @request - (OBJECT - REQUIRED): The supertest request object
- * @admin - (OBJECT - REQUIRED): The admin fixture to login
+ * @user - (OBJECT - REQUIRED): The iser fixture to login
  *
  * return the JSON web token
  */
-function userLogin(app, version, request, user, callback) {
-  request(app)
-    .post(`${version}/users/login`)
-    .send({
-      email: user.email,
-      password: user.password
-    })
-    .end((err, res) => {
-      if (err) {
-        throw err;
-      }
-
-      return callback(err, res, res.body.token);
-    }); // END login request
+async function userLogin(app, version, request, user) {
+  // login request
+  return login(app, version, request, 'users', user);
 }
 
 /**
@@ -101,92 +89,6 @@ function userLogin(app, version, request, user, callback) {
 async function reset() {
   await models.db.authenticate();
   await models.db.sync({ force: true });
-}
-
-// populate all fixtures
-function populateOld(fixtureFolder, callback) {
-  let fixtures = []; // store array of fixture arrays
-  let files = []; // file names that coorespond to the fixtures
-
-  // turn off foreign key restrictions
-  models.db.query('SET CONSTRAINTS ALL DEFERRED').spread((results, metadata) => {
-    // load regular fixtures
-    if (fixtureFolder !== null) {
-      // folder path to test fixtures
-      const fixturesFolderPath = path.join(__dirname, '../test', 'fixtures', fixtureFolder);
-
-      // get data to insert
-      fs.readdirSync(fixturesFolderPath)
-        .filter(file => {
-          return file.indexOf('.js') >= 0; // only js files
-        })
-        .forEach(file => {
-          const data = require(path.join(fixturesFolderPath, file));
-          fixtures.push(data);
-          files.push(file.replace('.js', '')); // remove '.js'
-        });
-    } // end load regular fixtures
-
-    let idx = 0; // index
-    const orderedFixtures = [];
-    const orderedFiles = [];
-
-    // order the files
-    for (let i = 0; i < seq.length; i++) {
-      for (let j = 0; j < files.length; j++) {
-        if (seq[i] === files[j]) {
-          orderedFixtures.push(fixtures[j]);
-          orderedFiles.push(files[j]);
-          break;
-        }
-      }
-    }
-
-    // reorder
-    fixtures = orderedFixtures;
-    files = orderedFiles;
-
-    // populate database for each fixture
-    async.eachSeries(
-      fixtures,
-      (fixture, next) => {
-        // console.log(files[idx]); // uncomment to check which model fails to insert
-
-        // bulk create
-        models[files[idx]]
-          .bulkCreate(fixture, {
-            validate: true,
-            // hooks: true,
-            individualHooks: true
-          })
-          .then(() => {
-            const tableName = models[files[idx]].getTableName(); // grab tablename of model
-
-            // set table ID sequence to the highest so far
-            models.db
-              .query('SELECT setval(\'"' + tableName + '_id_seq"\', (SELECT MAX(id) FROM "' + tableName + '"));')
-              .spread((results, metadata) => {
-                idx++; // increase counter
-                return next(null);
-              })
-              .catch(err => next(err));
-          })
-          .catch(err => {
-            idx++; // increase counter
-            return next(err);
-          });
-      },
-      err => {
-        if (err) {
-          console.log(err);
-          throw err;
-        }
-
-        // turn back on foreign key restrictions
-        models.db.query('SET CONSTRAINTS ALL IMMEDIATE').spread((results, metadata) => callback(err));
-      }
-    );
-  });
 }
 
 /**
@@ -260,10 +162,9 @@ async function populate(fixtureFolderName) {
     return Promise.resolve(true);
   } catch (error) {
     // turn back on foreign key restrictions
-    models.db.query('SET CONSTRAINTS ALL IMMEDIATE').then(() => {
-      return Promise.reject(error);
-    }).catch(err => {
-      return Promise.reject(err);
-    });
+    await models.db.query('SET CONSTRAINTS ALL IMMEDIATE')
+      .catch(err => Promise.reject(err));
+
+    return Promise.reject(error);
   }
 }

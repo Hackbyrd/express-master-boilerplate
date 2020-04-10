@@ -36,8 +36,8 @@ directories.forEach(dir => processorRoutes.push(require(`${dir}/${PROCESSOR_FILE
 // function to start app
 async function startWorker(processId) {
   // Print Process Info
-  console.log(`process.pid: ${process.pid}`);
-  console.log(`process.env.NODE_ENV: ${NODE_ENV}`);
+  console.log(`WORKER process.pid: ${process.pid}`);
+  console.log(`WORKER process.env.NODE_ENV: ${NODE_ENV}`);
 
   // run all feature processors
   processorRoutes.forEach(processor => processor());

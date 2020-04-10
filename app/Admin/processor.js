@@ -23,9 +23,6 @@ function processor() {
   // Process Background Tasks
   AdminQueue.process('V1ExportTask', 1, path.join(__dirname, 'tasks/V1ExportTask.js'));
 
-  // Create Cronjob Tasks
-  AdminQueue.add('V1ExportTask', { adminId: 1 }, { repeat: { cron: '* * * * *' } });
-
   // future tasks below
 }
 

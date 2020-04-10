@@ -9,39 +9,24 @@
 
 'use strict';
 
+// ENV variables
+const { NODE_ENV, REDIS_URL } = process.env;
+
 // build-in node modules
 const path = require('path');
 
 // third party node modules
 const CronJob = require('cron').CronJob;
-const request = require('request');
+const Queue = require('bull'); // process background tasks from Queue
 
-// load dev env
-if (process.env.NODE_ENV === 'development') require('dotenv').config({ path: path.join(__dirname, './config/.env.development') });
+// Print Process Info
+console.log(`CLOCK process.pid: ${process.pid}`);
+console.log(`CLOCK process.env.NODE_ENV: ${NODE_ENV}`);
 
-// ENV variables
-const { NODE_ENV, HOSTNAME, CRONJOB_KEY } = process.env;
+/*****************/
+/***** ADMIN *****/
+/*****************/
+const AdminQueue = new Queue('AdminQueue', REDIS_URL);
 
-// send cronjob request
-function call(method) {
-  request.post(
-    `${HOSTNAME}${method}`,
-    {
-      form: {
-        key: CRONJOB_KEY
-      }
-    },
-    (err, res, body) => {
-      if (err) console.log(err);
-
-      console.log(`Called ${method} - ${body}`);
-    }
-  );
-}
-
-/************************/
-/***** FEATURE_NAME *****/
-/************************/
-
-// Example automatically make request. Run every 5 mins.
-// new CronJob('0 0,5,10,15,20,25,30,35,40,45,50,55 * * * *', () => { call('/route/method'); }, null, true, 'UTC');
+// Example automatically make request. Run every 1 min.
+new CronJob('0 0 * * * *', () => { AdminQueue.add('V1ExportTask', { adminId: 1 }); }, null, true, 'UTC');
