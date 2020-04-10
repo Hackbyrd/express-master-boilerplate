@@ -1,11 +1,14 @@
 /**
- * Generate a features folder. MAKE SURE NAME IS SINGULAR!
+ * Generates / deletes a feature folder
+ * !IMPORTANT: MAKE SURE NAME IS SINGULAR AND PASCAL CASE!
  *
  * node app/generate generate [NEW_FEATURE_FOLDER_NAME]
  * node app/generate stringify [PATH_OF_FILE_TO_STRINGIFY]
+ * node app/generate delete [NEW_FEATURE_FOLDER_NAME]
  *
  * yarn gen [NEW_FEATURE_FOLDER_NAME]
  * yarn str [PATH_OF_FILE_TO_STRINGIFY]
+ * yarn del [NEW_FEATURE_FOLDER_NAME]
  */
 
 'use strict';
@@ -13,13 +16,21 @@
 // built in modules
 const fs = require('fs');
 const path = require('path');
-const method = process.argv[2]; // choose the method ['generate', 'stringify']
+const method = process.argv[2].trim(); // choose the method ['generate', 'delete', 'stringify']
 
 // choose which method to run
-if (method === 'stringify') stringify();
-else generate();
+if (method === 'generate')
+  generate();
+else if (method === 'delete')
+  destroy();
+else
+  stringify();
 
-// generate feature folders and test folder
+/**
+ * 1. Generate Feature Folder
+ * 2. Generate Test Folder
+ * 3. Update database/sequence.js
+ */
 function generate() {
   const newDir = process.argv[3]; // NEW_FEATURE
   const newDirPath = path.join(__dirname, newDir);
@@ -27,9 +38,9 @@ function generate() {
 
   console.log('Generating ' + newDir + ' feature...');
 
-  // if directiory oes not
+  // if directory already exists
   if (fs.existsSync(newDirPath)) {
-    console.log('Error: ' + newDir + ' already exists. Please use different name');
+    console.log('Error: ' + newDir + ' already exists. Please use different name.');
     process.exit(1);
   }
 
@@ -131,11 +142,55 @@ function generate() {
   fs.closeSync(fs.openSync(path.join(newTestDirPath, 'helper.js'), 'w'));
   fs.closeSync(fs.openSync(path.join(newTestDirPath, 'service.js'), 'w'));
 
+  /******************************/
+  /***** Update Sequence.js *****/
+  /******************************/
+  const sequenceArray = require('../database/sequence');
+
+  // add new feature name
+  sequenceArray.push(lowerName);
+  const featureNames = sequenceArray.map(name => `'${name}'`).join(', ');
+
+  fd = fs.openSync(path.join(__dirname, '../database/sequence.js'), 'w');
+  fs.writeSync(
+    fd,
+    `/**\n * The ordering to create tables for testing\n * Make sure to do MODEL NAME (Singular)!!! DO NOT DO TABLE NAME (Plural)\n */\n\nmodule.exports = [${featureNames}];`,
+    0,
+    'utf-8'
+  );
+  fs.closeSync(fd);
+
+  // Finished
   console.log(newDir + ' feature generated successfully!');
-  console.log('REMINDER: Remember to add MODEL NAME to database/sequence.js for testing purposes!');
+  console.log('NOTE: New feature MODEL NAME was added to database/sequence.js to help with inserting seed and fixture data into database!');
 }
 
-// takes in a file path and stringifies
+/**
+ * 1. Deletes Feature Folder
+ * 2. Deletes Test Folder
+ * 3. Updates database/sequence.js
+ */
+function destroy() {
+  const rmDir = process.argv[3]; // NEW_FEATURE
+  const rmDirPath = path.join(__dirname, rmDir);
+  const rmTestDirPath = path.join(__dirname, '../test/app', rmDir);
+
+  console.log('Deleting ' + newDir + ' feature...');
+
+  // if directory exists
+  if (!fs.existsSync(newDirPath)) {
+    console.log('Error: ' + newDir + ' does not exists.');
+    process.exit(1);
+  }
+
+  fs.rmdirSync(rmDirPath, { recursive: true });
+  fs.rmdirSync(rmTestDirPath, { recursive: true });
+
+  // Finished
+  console.log(newDir + ' feature deleted successfully!');
+}
+
+// takes in a file path and stringifies it to help with writing the generate and delete functions above
 function stringify() {
   const filePath = process.argv[3]; // the file path of the file to stringify
   let fileText = fs.readFileSync(filePath, 'utf8');

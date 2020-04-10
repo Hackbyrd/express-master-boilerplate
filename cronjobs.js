@@ -12,9 +12,6 @@
 // ENV variables
 const { NODE_ENV, REDIS_URL } = process.env;
 
-// build-in node modules
-const path = require('path');
-
 // third party node modules
 const CronJob = require('cron').CronJob;
 const Queue = require('bull'); // process background tasks from Queue

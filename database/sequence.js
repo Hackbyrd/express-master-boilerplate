@@ -3,4 +3,4 @@
  * Make sure to do MODEL NAME (Singular)!!! DO NOT DO TABLE NAME (Plural)
  */
 
-module.exports = ['admin'];
+module.exports = ['admin', 'user'];
