@@ -18,10 +18,14 @@ const Queue = require('bull'); // process background tasks from Queue
 const AdminQueue = new Queue('AdminQueue', REDIS_URL);
 
 // Function is called in /worker.js
+// Returns an array of Queues used in this feature so we can gracefully close them in worker.js
 module.exports = () => {
 
   // Process Admin Feature Background Tasks
   AdminQueue.process('V1ExportTask', 1, path.join(__dirname, 'tasks/V1ExportTask.js'));
 
   // future tasks below
+
+  // return array of queues to worker.js to gracefully close them
+  return [AdminQueue];
 }

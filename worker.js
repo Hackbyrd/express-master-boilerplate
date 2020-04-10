@@ -1,6 +1,10 @@
 /**
  * Run the worker.js in cluster
  * This is where background jobs are run
+ *
+ * Bull Documentation:
+ * https://github.com/OptimalBits/bull
+ * https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueclean
  */
 
 'use strict';
@@ -36,21 +40,35 @@ directories.forEach(dir => processorRoutes.push(require(`${dir}/${PROCESSOR_FILE
 // function to start app
 async function startWorker(processId) {
   // Print Process Info
+  console.log(`WORKER processId: ${processId}`);
   console.log(`WORKER process.pid: ${process.pid}`);
   console.log(`WORKER process.env.NODE_ENV: ${NODE_ENV}`);
 
-  // run all feature processors
-  processorRoutes.forEach(processor => processor());
+  // GlobalQueue
+  const GlobalQueue = new Queue('GlobalQueue', REDIS_URL);
+  let QueuesArray = [GlobalQueue]; // store queues so we can gracefully shut it down
+
+  // run all feature processors and add feature specific queues to QueuesArray
+  processorRoutes.forEach(processor => {
+    QueuesArray = QueuesArray.concat(processor());
+  });
 
   // Graceful exit
   process.on('SIGTERM', async () => {
-    console.log('Closing GlobalQueue connection...');
-    await GlobalQueue.close().catch(err => {
-      console.error(err);
-      process.exit(1);
-    });
+    console.log(`Closing ${QueuesArray.length} queue connection${QueuesArray.length === 1 ? '' : 's'}...`);
 
-    console.log('GlobalQueue connection closed.');
+    // go through all queues and close them down
+    for (let i = 0; i < QueuesArray.length; i++) {
+      console.log(`Closing ${QueuesArray[i].name}...`);
+
+      // close queue
+      await QueuesArray[i].close().catch(err => {
+        console.error(err);
+        process.exit(1);
+      });
+    }
+
+    console.log('All queue connections closed.');
     process.exit(0);
   });
 }
