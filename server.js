@@ -12,6 +12,7 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const passport = require('passport');
 const helmet = require('helmet');
+const morgan = require('morgan'); // logging
 const http = require('http');
 const cors = require('cors'); // handle cors
 const i18n = require('i18n'); // set up language
@@ -47,8 +48,8 @@ function server() {
   // enable ssl redirect in production
   app.use(sslRedirect());
 
-  // only log requests in development
-  NODE_ENV === 'development' ? app.use(require('morgan')('dev')) : null;
+  // only log requests using morgan
+  app.use(morgan('dev')); // combined, common, dev, short, tiny
 
   // add middleware and they must be in order
   app.use(compression()); // GZIP all assets
