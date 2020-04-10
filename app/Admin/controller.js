@@ -1,5 +1,7 @@
 /**
  * ADMIN CONTROLLER
+ *
+ * Defines which Admin service methods are called based on the type of user role
  */
 
 'use strict';

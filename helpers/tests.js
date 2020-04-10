@@ -38,7 +38,7 @@ module.exports = {
  */
 async function login(app, version, request, model, user) {
   // login request
-  const response = request(app)
+  const response = await request(app)
     .post(`${version}/${model}/login`)
     .send({
       email: user.email,

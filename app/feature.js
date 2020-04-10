@@ -62,7 +62,7 @@ function generate() {
   fd = fs.openSync(path.join(newDirPath, 'controller.js'), 'w');
   fs.writeSync(
     fd,
-    `/**\n * ${upperName} CONTROLLER\n */\n\n'use strict';\n\n// helpers\nconst { errorResponse, ERROR_CODES } = require('../../services/error');\n\n// service\nconst service = require('./service');\n\nmodule.exports = {}\n`,
+    `/**\n * ${upperName} CONTROLLER\n *\n * Defines which ${pascalName} service methods are called based on the type of user role\n */\n\n'use strict';\n\n// helpers\nconst { errorResponse, ERROR_CODES } = require('../../services/error');\n\n// service\nconst service = require('./service');\n\nmodule.exports = {\n  V1Example\n}\n\n/**\n * Example Method\n *\n * /v1/${lowerName}s/example\n *\n * Must be logged out | Must be logged in | Can be both logged in or logged out\n * Roles: ['admin', 'user']\n */\nasync function V1Example(req, res, next) {\n  let method = null; // which service method to use\n\n  // Call the correct service method based on type of user of role\n  if (req.admin)\n    method = \`V1ExampleByAdmin\`;\n  else if (req.user)\n    method = \`V1ExampleByUser\`;\n  else\n    return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));\n\n  // call correct method\n  const result = await service[method](req).catch(err => next(err));\n  return res.status(result.status).json(result);\n}\n`,
     0,
     'utf-8'
   );
@@ -77,17 +77,19 @@ function generate() {
   fd = fs.openSync(path.join(newDirPath, 'model.js'), 'w');
   fs.writeSync(
     fd,
-    `/* ${newDir} Model\n\nFind Table Schema Here: "/database/schema.sql"\n\n*/\n\n'use strict';\n\n// require custom node modules\nconst constants = require('../../helpers/constants');\n\nmodule.exports = function(sequelize, DataTypes) {\n  const ${pascalName} = sequelize.define('${camelName}', {\n\n    // All foreign keys are added in associations\n\n    example1: {\n      type: DataTypes.BOOLEAN,\n      allowNull: false,\n      defaultValue: true\n    },\n\n    example2: {\n      type: DataTypes.INTEGER,\n      allowNull: false,\n      defaultValue: 0,\n      validate: {\n        isInt: true\n      }\n    },\n\n    example3: {\n      type: DataTypes.DECIMAL(4, 2),\n      allowNull: false,\n      defaultValue: 0.00,\n      validate: {\n        isDecimal: true\n      }\n    },\n\n    example4: {\n      type: DataTypes.STRING,\n      allowNull: false,\n      defaultValue: 'foo'\n    },\n\n    example5: {\n      type: DataTypes.ENUM(constants.someList),\n      allowNull: true,\n      defaultValue: null\n    },\n\n    example6: {\n      type: DataTypes.DATE,\n      allowNull: false,\n      defaultValue: DataTypes.NOW, // now\n      validate: {\n        isDate: true\n      }\n    },\n\n    example7: {\n      type: DataTypes.JSONB,\n      allowNull: true,\n      defaultValue: null\n    },\n\n    example8: {\n      type: DataTypes.TEXT,\n      allowNull: true,\n      defaultValue: null\n    }\n  }, {\n    timestamps: true, // allows sequelize to create timestamps automatically\n    freezeTableName: true, // allows sequelize to pluralize the model name\n    tableName: 'MAKE ${upperName} PLURAL', // set table name\n    hooks: {},\n    indexes: []\n  });\n\n  return ${pascalName};\n}\n`,
+    `/**\n * ${upperName} MODEL\n *\n * Find Table Schema Here: "/database/schema.sql"\n */\n\n'use strict';\n\n// require custom node modules\nconst constants = require('../../helpers/constants');\n\nmodule.exports = (sequelize, DataTypes) => {\n  const ${pascalName} = sequelize.define('${camelName}', {\n\n    // All foreign keys are added in associations\n\n    example1: {\n      type: DataTypes.BOOLEAN,\n      allowNull: false,\n      defaultValue: true\n    },\n\n    example2: {\n      type: DataTypes.INTEGER,\n      allowNull: false,\n      defaultValue: 0,\n      validate: {\n        isInt: true\n      }\n    },\n\n    example3: {\n      type: DataTypes.DECIMAL(4, 2),\n      allowNull: false,\n      defaultValue: 0.00,\n      validate: {\n        isDecimal: true\n      },\n      get() {\n        // convert string to float\n        const rawValue = this.getDataValue(example3);\n        return Number(rawValue);\n      }\n    },\n\n    example4: {\n      type: DataTypes.STRING,\n      allowNull: false,\n      defaultValue: 'foo'\n    },\n\n    example5: {\n      type: DataTypes.ENUM(constants.someList),\n      allowNull: true,\n      defaultValue: null\n    },\n\n    example6: {\n      type: DataTypes.DATE,\n      allowNull: false,\n      defaultValue: DataTypes.NOW, // now\n      validate: {\n        isDate: true\n      }\n    },\n\n    example7: {\n      type: DataTypes.JSONB,\n      allowNull: true,\n      defaultValue: null\n    },\n\n    example8: {\n      type: DataTypes.TEXT,\n      allowNull: true,\n      defaultValue: null\n    }\n  }, {\n    timestamps: true, // allows sequelize to create timestamps automatically\n    freezeTableName: true, // allows sequelize to pluralize the model name\n    tableName: '${pascalName}s', // define table name, must be PascalCase!\n    hooks: {},\n    indexes: []\n  });\n\n  return ${pascalName};\n}\n`,
     0,
     'utf-8'
   );
   fs.closeSync(fd);
 
   /***** Routes *****/
+  const version = 'v1'; // route version number
+
   fd = fs.openSync(path.join(newDirPath, 'routes.js'), 'w');
   fs.writeSync(
     fd,
-    `/**\n * ${upperName} ROUTES\n */\n\n'use strict';\n\n// require controller\nconst controller = require('./controller');\n\n// require middleware\nconst { JWTAuth, verifyJWTAuth } = require('../../middleware/auth');\n\nmodule.exports = (passport, router)  => {\n\n  // routes\n  // router.all('/FEATURE/METHOD1', controller.V1Method1);\n  // router.all('/FEATURE/METHOD2', JWTAuth, verifyJWTAuth, controller.V1Method2);\n\n  // return router\n  return router;\n}\n`,
+    `/**\n * ${upperName} ROUTES\n *\n * This is where we define all the routes for the ${pascalName} feature.\n * These routes get exported to the global /routes.js file.\n */\n\n'use strict';\n\n// require controller\nconst controller = require('./controller');\n\n// Returns a function that attaches ${pascalName} feature routes to the global router object\nmodule.exports = (passport, router) => {\n\n  // routes\n  router.all('/${version}/${lowerName}s/example', controller.V1Example);\n\n  // return router\n  return router;\n};\n`,
     0,
     'utf-8'
   );
@@ -97,7 +99,17 @@ function generate() {
   fd = fs.openSync(path.join(newDirPath, 'error.js'), 'w');
   fs.writeSync(
     fd,
-    `/**\n * ${pascalName} Error Service:\n *\n * For Better Client 4xx Error Handling For ${pascalName} Feature\n * Gets exported to /services/error.js and put in variable ERROR_CODES\n */\n\n'use strict';\n\n/**\n * ${pascalName} Local Error Codes\n */\nconst LOCAL_ERROR_CODES = {\n  /* Place error codes below. Remember to prepend ${upperName} to the key and error value  */\n  // ${upperName}_BAD_REQUEST_ACCOUNT_INACTIVE: {\n  //   error: '${upperName}.BAD_REQUEST_ACCOUNT_INACTIVE',\n  //   status: 401,\n  //   messages: ['${pascalName} account is inactive.']\n  // }\n};\n\nmodule.exports = LOCAL_ERROR_CODES;\n`,
+    `/**\n * ${upperName} ERROR\n *\n * For Better Client 4xx Error Handling For ${pascalName} Feature\n * Gets exported to /services/error.js and put in the global variable ERROR_CODES\n */\n\n'use strict';\n\n/**\n * ${pascalName} Feature Local Error Codes\n */\nconst LOCAL_ERROR_CODES = {\n  /* Place error codes below. Remember to prepend ${upperName} to the key and error value  */\n  // ${upperName}_BAD_REQUEST_ACCOUNT_INACTIVE: {\n  //   error: '${upperName}.BAD_REQUEST_ACCOUNT_INACTIVE',\n  //   status: 401,\n  //   messages: ['${upperName}[Account is not active]']\n  // }\n};\n\nmodule.exports = LOCAL_ERROR_CODES;\n`,
+    0,
+    'utf-8'
+  );
+  fs.closeSync(fd);
+
+  /***** Processor *****/
+  fd = fs.openSync(path.join(newDirPath, 'processor.js'), 'w');
+  fs.writeSync(
+    fd,
+    `/**\n * ${upperName} BACKGROUND PROCESSOR\n *\n * This is where we process background tasks for the ${pascalName} feature.\n * Gets exported to /worker.js to be run in a worker process.\n */\n\n'use strict';\n\n// built-in node modules\nconst path = require('path');\n\n// ENV variables\nconst { REDIS_URL } = process.env;\n\n// third party node modules\nconst Queue = require('bull'); // process background tasks from Queue\nconst ${pascalName}Queue = new Queue('${pascalName}Queue', REDIS_URL);\n\n// Function is called in /worker.js\nmodule.exports = () => {\n\n  // Process ${pascalName} Feature Background Tasks\n  ${pascalName}Queue.process('V1ExampleTask', 1, path.join(__dirname, 'tasks/V1ExampleTask.js'));\n\n  // place future tasks here\n}\n`,
     0,
     'utf-8'
   );
@@ -152,7 +164,7 @@ function generate() {
   const sequenceArray = require('../database/sequence');
 
   // add new feature name
-  sequenceArray.push(lowerName);
+  sequenceArray.push(camelName);
   const featureNames = sequenceArray.map(name => `'${name}'`).join(', ');
 
   fd = fs.openSync(path.join(__dirname, '../database/sequence.js'), 'w');
@@ -164,7 +176,7 @@ function generate() {
   );
   fs.closeSync(fd);
 
-  console.log(`Added '${lowerName}' to database/sequence.js`);
+  console.log(`Added '${camelName}' to database/sequence.js`);
 
   // Finished
   console.log(newDir + ' feature generated!');
@@ -179,7 +191,7 @@ function destroy() {
   const rmDir = process.argv[3]; // NEW_FEATURE
   const rmDirPath = path.join(__dirname, rmDir);
   const rmTestDirPath = path.join(__dirname, '../test/app', rmDir);
-  const lowerName = rmDir.toLowerCase();
+  const camelName = rmDir[0].toLowerCase() + '' + rmDir.substring(1);
 
   console.log('Deleting ' + rmDir + ' feature...');
 
@@ -199,7 +211,7 @@ function destroy() {
 
   // remove feature name from database/sequence.js
   const sequenceArray = require('../database/sequence');
-  sequenceArray.splice(sequenceArray.indexOf(lowerName), 1);
+  sequenceArray.splice(sequenceArray.indexOf(camelName), 1);
   const featureNames = sequenceArray.map(name => `'${name}'`).join(', ');
 
   // file descriptor
@@ -212,7 +224,7 @@ function destroy() {
   );
   fs.closeSync(fd);
 
-  console.log(`Removed '${lowerName}' from database/sequence.js`);
+  console.log(`Removed '${camelName}' from database/sequence.js`);
 
   // Finished
   console.log(rmDir + ' feature deleted!');

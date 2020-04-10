@@ -1,5 +1,5 @@
 /**
- * Admin Error Service:
+ * ADMIN ERROR
  *
  * For Better Client 4xx Error Handling For Admin Feature
  * Gets exported to /services/error.js and put in variable ERROR_CODES
@@ -8,7 +8,7 @@
 'use strict';
 
 /**
- * Admin Local Error Codes
+ * Admin Feature Local Error Codes
  */
 const LOCAL_ERROR_CODES = {
   /* Place error codes below. Remember to prepend ADMIN to the key and error value  */

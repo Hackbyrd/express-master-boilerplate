@@ -1,8 +1,8 @@
 /**
- * Admin Background Jobs Processor:
+ * ADMIN BACKGROUND PROCESSOR
  *
- * This is where we process background tasks for Admin feature.
- * Gets exported to /worker.js
+ * This is where we process background tasks for the Admin feature.
+ * Gets exported to /worker.js to be run in a worker process.
  */
 
 'use strict';
@@ -17,13 +17,11 @@ const { REDIS_URL } = process.env;
 const Queue = require('bull'); // process background tasks from Queue
 const AdminQueue = new Queue('AdminQueue', REDIS_URL);
 
-// call this function in worker.js
-function processor() {
+// Function is called in /worker.js
+module.exports = () => {
 
-  // Process Background Tasks
+  // Process Admin Feature Background Tasks
   AdminQueue.process('V1ExportTask', 1, path.join(__dirname, 'tasks/V1ExportTask.js'));
 
   // future tasks below
 }
-
-module.exports = processor;

@@ -93,7 +93,7 @@ describe('Admin.V1Create', async () => {
         };
 
         // create admin request
-        const { res } = await request(app)
+        const res = await request(app)
           .post(routeUrl)
           .set('authorization', `${jwt} ${token}`)
           .send(params);
@@ -129,7 +129,7 @@ describe('Admin.V1Create', async () => {
         expect(checkAdmin.createdAt).to.not.be.null;
         expect(checkAdmin.updatedAt).to.not.be.null;
       } catch (error) {
-        expect(error).to.be.null;
+        throw error;
       }
     }); // END [admin] should create an admin successfully
 

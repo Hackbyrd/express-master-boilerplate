@@ -1,4 +1,8 @@
-/* ADMIN MODEL */
+/**
+ * ADMIN MODEL
+ *
+ * Find Table Schema Here: "/database/schema.sql"
+ */
 
 'use strict';
 
@@ -12,7 +16,7 @@ const { randomString } = require('../../helpers/logic');
 // sensitive data that should be be seen by any admins
 const sensitiveData = ['salt', 'password', 'resetPassword', 'passwordResetToken'];
 
-module.exports = function (sequelize, DataTypes) {
+module.exports = (sequelize, DataTypes) => {
   const Admin = sequelize.define('admin', {
     // All foreign keys are added in associations
 
@@ -132,7 +136,7 @@ module.exports = function (sequelize, DataTypes) {
   }, {
     timestamps: true, // allows sequelize to create timestamps automatically
     freezeTableName: true, // allows sequelize to pluralize the model name
-    tableName: 'Admins', // set table name
+    tableName: 'Admins', // define table name, must be PascalCase!
     hooks: {
       beforeValidate(admin, options) {
         // remove all white space

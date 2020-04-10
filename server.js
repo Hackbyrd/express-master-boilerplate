@@ -33,7 +33,7 @@ function server() {
   const args = require('./middleware/args');
   const error = require('./middleware/error');
   const exit = require('./middleware/exit');
-  const { attachJWTAuth } = require('./middleware/auth');
+  const auth = require('./middleware/auth');
 
   // set up express app
   const app = express();
@@ -48,8 +48,9 @@ function server() {
   // enable ssl redirect in production
   app.use(sslRedirect());
 
-  // only log requests using morgan
-  app.use(morgan('dev')); // combined, common, dev, short, tiny
+  // log requests using morgan, don't log in test env
+  if (NODE_ENV !== 'test')
+    app.use(morgan('dev')); // combined, common, dev, short, tiny
 
   // add middleware and they must be in order
   app.use(compression()); // GZIP all assets
@@ -96,9 +97,13 @@ function server() {
   cfgPassport(passport); // set up passport
 
   // custom middleware
-  app.use(args.attach); // set req.args
-  app.use(attachJWTAuth(passport));
   app.use(exit.middleware); // stops here if server is in the middle of shutting down
+  app.use(args.attach); // set req.args
+
+  // authentication middleware via passport
+  app.use(auth.attachJWTAuth(passport));
+  app.use(auth.JWTAuth);
+  app.use(auth.verifyJWTAuth);
 
   // host public files
   // app.use(express.static(__dirname + '/public'));

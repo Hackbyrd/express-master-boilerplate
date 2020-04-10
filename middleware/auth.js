@@ -46,9 +46,12 @@ function attachJWTAuth(passport) {
  */
 function JWTAuth(req, res, next) {
   // choose method
-  if (req.headers.authorization && req.headers.authorization.indexOf('jwt-user') >= 0) req.JWTAuth.JWTAuthUser(req, res, next);
-  else if (req.headers.authorization && req.headers.authorization.indexOf('jwt-admin') >= 0) req.JWTAuth.JWTAuthAdmin(req, res, next);
-  else return next();
+  if (req.headers.authorization && req.headers.authorization.indexOf('jwt-user') >= 0)
+    req.JWTAuth.JWTAuthUser(req, res, next);
+  else if (req.headers.authorization && req.headers.authorization.indexOf('jwt-admin') >= 0)
+    req.JWTAuth.JWTAuthAdmin(req, res, next);
+  else
+    return next();
 }
 
 /**
