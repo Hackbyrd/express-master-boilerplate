@@ -3,12 +3,22 @@
  * !IMPORTANT: MAKE SURE NAME IS SINGULAR AND PASCAL CASE!
  *
  * node app/generate generate [NEW_FEATURE_FOLDER_NAME]
+ * node app/generate generate [EXISTING_FEATURE_FOLDER_NAME] service [NEW_SERVICE_FILE_NAME]
+ * node app/generate generate [EXISTING_FEATURE_FOLDER_NAME] task [NEW_TASK_FILE_NAME]
  * node app/generate delete [NEW_FEATURE_FOLDER_NAME]
+ * node app/generate delete [EXISTING_FEATURE_FOLDER_NAME] service [NEW_SERVICE_FILE_NAME]
+ * node app/generate delete [EXISTING_FEATURE_FOLDER_NAME] task [NEW_TASK_FILE_NAME]
  * node app/generate stringify [PATH_OF_FILE_TO_STRINGIFY]
  *
  * yarn gen [NEW_FEATURE_FOLDER_NAME]
+ * yarn gen [EXISTING_FEATURE_FOLDER_NAME] service [NEW_SERVICE_FILE_NAME]
+ * yarn gen [EXISTING_FEATURE_FOLDER_NAME] task [NEW_TASK_FILE_NAME]
  * yarn del [NEW_FEATURE_FOLDER_NAME]
+ * yarn del [EXISTING_FEATURE_FOLDER_NAME] service [NEW_SERVICE_FILE_NAME]
+ * yarn del [EXISTING_FEATURE_FOLDER_NAME] task [NEW_TASK_FILE_NAME]
  * yarn str [PATH_OF_FILE_TO_STRINGIFY]
+ *
+ * TODO: yarn gen lang en-US English // adds a new language file to all features
  */
 
 'use strict';
