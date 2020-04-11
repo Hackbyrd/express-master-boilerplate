@@ -6,9 +6,18 @@
 
 'use strict';
 
+// ENV variables
+const { NODE_ENV } = process.env;
+
 // require built-in node modules
 const fs = require('fs');
 const path = require('path');
+
+// third-party node modules
+const moment = require('moment-timezone');
+
+// services
+const email = require('./email');
 
 // variables
 const APP_DIR = '../app'; // app directory
@@ -99,9 +108,47 @@ function joiErrorsMessage(errors) {
   return errors.details.map(e => e.message).join(', ');
 }
 
+/**
+ * Executes when any queue runs into an error
+ *
+ * @error (ERROR OBJECT - REQUIRED): The error message
+ * @queue (OBJECT - REQUIRED): The queue object: queue.name
+ * @job (OBJECT - REQUIRED): The job object: job.id, job.data, job.name
+ *
+ * TODO: Test
+ */
+async function queueError(error, queue, job) {
+  console.error(error);
+
+  // send email in production
+  if (NODE_ENV === 'production') {
+    // send error email
+    await email.send({
+      from: email.emails.error.address,
+      name: email.emails.error.name,
+      subject: 'URGENT! 500 Worker Process Error!',
+      template: 'ErrorQueue',
+      tos: [email.emails.error.address],
+      ccs: null,
+      bccs: null,
+      args: {
+        time: moment.tz('US/Pacific').format('LLLL'),
+        error,
+        queue,
+        job
+      }
+    }).catch(err => {
+      console.error(err);
+    });
+  }
+
+  return Promise.resolve();
+}
+
 // export
 module.exports = {
   ERROR_CODES,
   errorResponse,
-  joiErrorsMessage
+  joiErrorsMessage,
+  queueError
 };

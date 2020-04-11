@@ -6,6 +6,8 @@
 
 // require third-party node modules
 const express = require('express');
+const RateLimit = require("express-rate-limit"); // https://www.npmjs.com/package/express-rate-limit
+const RedisStore = require('rate-limit-redis'); // https://www.npmjs.com/package/rate-limit-redis
 const sslRedirect = require('heroku-ssl-redirect');
 const compression = require('compression');
 const cookieParser = require('cookie-parser');
@@ -18,7 +20,12 @@ const cors = require('cors'); // handle cors
 const i18n = require('i18n'); // set up language
 
 // env variables
-const { NODE_ENV, REDIS_URL } = process.env;
+const {
+  NODE_ENV,
+  REDIS_URL,
+  RATE_LIMIT_WINDOW_MS,
+  RATE_LIMIT_MAX_PER_WINDOW
+ } = process.env;
 
 // helpers
 const { LOCALES } = require('./helpers/constants');
@@ -31,9 +38,9 @@ function server() {
 
   // require custom middleware
   const args = require('./middleware/args');
-  const error = require('./middleware/error');
-  const exit = require('./middleware/exit');
   const auth = require('./middleware/auth');
+  const exit = require('./middleware/exit');
+  const error = require('./middleware/error');
 
   // set up express app
   const app = express();
@@ -47,6 +54,22 @@ function server() {
 
   // enable ssl redirect in production
   app.use(sslRedirect());
+
+  // need to enable this in production because Heroku uses a reverse proxy
+  if (NODE_ENV === 'production')
+    app.set('trust proxy', 1); // get ip address using req.ip
+
+  // set a rate limit for incoming requests
+  const limiter = RateLimit({
+    windowMs: RATE_LIMIT_WINDOW_MS, // 5 minutes
+    max: RATE_LIMIT_MAX_PER_WINDOW, // limit each IP to 300 requests per windowMs
+    store: new RedisStore({
+      redisURL: REDIS_URL
+    })
+  });
+
+  // set rate limiter
+  app.use(limiter);
 
   // log requests using morgan, don't log in test env
   if (NODE_ENV !== 'test')
@@ -87,10 +110,6 @@ function server() {
 
   // NOTE: take this out because it interferes with multer
   // app.use(bodyParser.raw({ limit: '32mb', verify: rawBodySaver, type: () => true }));
-
-  // only secure in production
-  if (NODE_ENV === 'production')
-    app.set('trust proxy', 1); // get ip address using req.ip
 
   // passport config, must be in this order!
   app.use(passport.initialize());

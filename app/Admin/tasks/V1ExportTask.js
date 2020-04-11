@@ -31,7 +31,9 @@ const { checkPasswords, isValidTimezone } = require('../../../helpers/validate')
 const { LIST_INT_REGEX } = require('../../../helpers/constants');
 
 // methods
-module.exports = V1ExportTask;
+module.exports = {
+  V1ExportTask
+}
 
 /**
  *
@@ -42,5 +44,6 @@ async function V1ExportTask(job){
   console.log(job.id);
   console.log(job.data);
 
-  return Promise.resolve();
+  return Promise.reject(new Error('TEST ERROR'));
+  // return Promise.resolve();
 }

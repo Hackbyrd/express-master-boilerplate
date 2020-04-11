@@ -36,26 +36,23 @@ module.exports = function(err, req, res, next) {
   // production
   if (NODE_ENV === 'production') {
     // send error email
-    email.mail(
-      {
-        from: email.emails.error.address,
-        name: email.emails.error.name,
-        subject: 'URGENT! 500 Server Error!',
-        template: 'Error',
-        tos: [email.emails.error.address],
-        ccs: null,
-        bccs: null,
-        args: {
-          time: moment.tz('US/Pacific').format('LLLL'),
-          error: err,
-          reqRoute: req.url,
-          reqUserType: userType,
-          reqUser: user,
-          reqArgs: req.args
-        }
-      },
-      (err, result) => console.log(err)
-    ); // send error email
+    email.send({
+      from: email.emails.error.address,
+      name: email.emails.error.name,
+      subject: 'URGENT! 500 Server Error!',
+      template: 'ErrorRequest',
+      tos: [email.emails.error.address],
+      ccs: null,
+      bccs: null,
+      args: {
+        time: moment.tz('US/Pacific').format('LLLL'),
+        error: err,
+        reqRoute: req.url,
+        reqUserType: userType,
+        reqUser: user,
+        reqArgs: req.args
+      }
+    }, (err, result) => console.error(err)); // send error email
 
     return res.status(500).json({
       status: 500,

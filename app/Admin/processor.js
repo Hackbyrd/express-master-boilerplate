@@ -7,9 +7,6 @@
 
 'use strict';
 
-// built-in node modules
-const path = require('path');
-
 // ENV variables
 const { REDIS_URL } = process.env;
 
@@ -17,12 +14,21 @@ const { REDIS_URL } = process.env;
 const Queue = require('bull'); // process background tasks from Queue
 const AdminQueue = new Queue('AdminQueue', REDIS_URL);
 
+// service
+const { queueError } = require('../../services/error');
+
+// tasks
+const tasks = require('./tasks');
+
 // Function is called in /worker.js
 // Returns an array of Queues used in this feature so we can gracefully close them in worker.js
 module.exports = () => {
 
   // Process Admin Feature Background Tasks
-  AdminQueue.process('V1ExportTask', 1, path.join(__dirname, 'tasks/V1ExportTask.js'));
+  AdminQueue.process('V1ExportTask', tasks.V1ExportTask);
+  AdminQueue.on('failed', async (job, error) => queueError(error, AdminQueue, job));
+  AdminQueue.on('stalled', async job => queueError(new Error('Queue Stalled.'), AdminQueue, job));
+  AdminQueue.on('error', async error => queueError(error, AdminQueue));
 
   // future tasks below
 
