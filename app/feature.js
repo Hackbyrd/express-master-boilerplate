@@ -8,7 +8,7 @@
  * node app/generate delete [NEW_FEATURE_FOLDER_NAME]
  * node app/generate delete [EXISTING_FEATURE_FOLDER_NAME] service [NEW_SERVICE_FILE_NAME]
  * node app/generate delete [EXISTING_FEATURE_FOLDER_NAME] task [NEW_TASK_FILE_NAME]
- * node app/generate stringify [PATH_OF_FILE_TO_STRINGIFY]
+ * node app/generate stringify [ABSOLUTE_PATH_OF_FILE_TO_STRINGIFY]
  *
  * yarn gen [NEW_FEATURE_FOLDER_NAME]
  * yarn gen [EXISTING_FEATURE_FOLDER_NAME] service [NEW_SERVICE_FILE_NAME]
@@ -16,7 +16,7 @@
  * yarn del [NEW_FEATURE_FOLDER_NAME]
  * yarn del [EXISTING_FEATURE_FOLDER_NAME] service [NEW_SERVICE_FILE_NAME]
  * yarn del [EXISTING_FEATURE_FOLDER_NAME] task [NEW_TASK_FILE_NAME]
- * yarn str [PATH_OF_FILE_TO_STRINGIFY]
+ * yarn str [ABSOLUTE_PATH_OF_FILE_TO_STRINGIFY]
  *
  * TODO: yarn gen lang en-US English // adds a new language file to all features
  */
@@ -61,7 +61,7 @@ if (method === 'generate') {
   stringify();
 }
 
-// ALL TEXTS
+// ALL TEXTS - Use yarn str on a template file to generate text
 function controllerFileText({ upperName, lowerName, pascalName, camelName }) { return `/**\n * ${upperName} CONTROLLER\n *\n * Defines which ${pascalName} service methods are called based on the type of user role\n */\n\n'use strict';\n\n// helpers\nconst { errorResponse, ERROR_CODES } = require('../../services/error');\n\n// service\nconst service = require('./service');\n\nmodule.exports = {\n  V1Example\n}\n\n/**\n * Example Method\n *\n * /${version}/${lowerName}s/example\n *\n * Must be logged out | Must be logged in | Can be both logged in or logged out\n * Roles: ['admin', 'user']\n */\nasync function V1Example(req, res, next) {\n  let method = null; // which service method to use\n\n  // Call the correct service method based on type of user of role\n  if (req.admin)\n    method = \`V1ExampleByAdmin\`;\n  else if (req.user)\n    method = \`V1ExampleByUser\`;\n  else\n    return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));\n\n  // call correct method\n  const result = await service[method](req).catch(err => next(err));\n  return res.status(result.status).json(result);\n}\n`; }
 function helperFileText({ upperName, lowerName, pascalName, camelName }) { return `/**\n * ${upperName} HELPER\n */\n\n'use strict';\n\nmodule.exports = {}\n`; }
 function modelFileText({ upperName, lowerName, pascalName, camelName }) { return `/**\n * ${upperName} MODEL\n *\n * Find Table Schema Here: "/database/schema.sql"\n */\n\n'use strict';\n\n// require custom node modules\nconst constants = require('../../helpers/constants');\n\nmodule.exports = (sequelize, DataTypes) => {\n  const ${pascalName} = sequelize.define('${camelName}', {\n\n    // All foreign keys are added in associations\n\n    example1: {\n      type: DataTypes.BOOLEAN,\n      allowNull: false,\n      defaultValue: true\n    },\n\n    example2: {\n      type: DataTypes.INTEGER,\n      allowNull: false,\n      defaultValue: 0,\n      validate: {\n        isInt: true\n      }\n    },\n\n    example3: {\n      type: DataTypes.DECIMAL(4, 2),\n      allowNull: false,\n      defaultValue: 0.00,\n      validate: {\n        isDecimal: true\n      },\n      get() {\n        // convert string to float\n        const rawValue = this.getDataValue(example3);\n        return Number(rawValue);\n      }\n    },\n\n    example4: {\n      type: DataTypes.STRING,\n      allowNull: false,\n      defaultValue: 'foo'\n    },\n\n    example5: {\n      type: DataTypes.ENUM(constants.someList),\n      allowNull: true,\n      defaultValue: null\n    },\n\n    example6: {\n      type: DataTypes.DATE,\n      allowNull: false,\n      defaultValue: DataTypes.NOW, // now\n      validate: {\n        isDate: true\n      }\n    },\n\n    example7: {\n      type: DataTypes.JSONB,\n      allowNull: true,\n      defaultValue: null\n    },\n\n    example8: {\n      type: DataTypes.TEXT,\n      allowNull: true,\n      defaultValue: null\n    }\n  }, {\n    timestamps: true, // allows sequelize to create timestamps automatically\n    freezeTableName: true, // allows sequelize to pluralize the model name\n    tableName: '${pascalName}s', // define table name, must be PascalCase!\n    hooks: {},\n    indexes: []\n  });\n\n  return ${pascalName};\n}\n`; }
