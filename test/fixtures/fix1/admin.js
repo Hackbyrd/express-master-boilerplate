@@ -1,5 +1,5 @@
 /**
- * Admin fixtures
+ * Admin Fixture Data
  */
 
 'use strict';

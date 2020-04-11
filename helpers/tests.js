@@ -89,7 +89,7 @@ async function reset() {
 }
 
 /**
- * Populates database according to the fixture set passed int
+ * Populates database according to the fixture set passed in
  *
  * @fixtureFolderName - (STRING - REQUIRED): The fixtures folder name so we know which fixture to populate, ex. fix1, fix2, etc...
  *
