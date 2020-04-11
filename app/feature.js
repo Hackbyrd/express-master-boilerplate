@@ -75,9 +75,10 @@ function sequenceFileText(featureNames) { return `/**\n * This is the table orde
 function generate() {
   const newDir = process.argv[3]; // NEW_FEATURE
   const newDirPath = path.join(__dirname, newDir);
-  const newTestDirPath = path.join(__dirname, '../test/app', newDir);
   const newLangDirPath = path.join(newDirPath, 'language');
+  const newServiceDirPath = path.join(newDirPath, 'service');
   const newTaskDirPath = path.join(newDirPath, 'tasks');
+  const newTestDirPath = path.join(__dirname, '../test/app', newDir);
 
   console.log('Generating ' + newDir + ' feature...');
 
@@ -153,7 +154,7 @@ function generate() {
   /********************************/
   /***** Create Service Files *****/
   /********************************/
-  fs.mkdirSync(path.join(newDirPath, 'service'));
+  fs.mkdirSync(newServiceDirPath);
 
   // service index
   fd = fs.openSync(path.join(newDirPath, 'service/index.js'), 'w');
@@ -168,7 +169,7 @@ function generate() {
   /******************************/
   /***** Create Tasks Files *****/
   /******************************/
-  fs.mkdirSync(path.join(newDirPath, 'tasks'));
+  fs.mkdirSync(newTaskDirPath);
 
   // tasks index
   fd = fs.openSync(path.join(newDirPath, 'tasks/index.js'), 'w');
@@ -225,10 +226,18 @@ function generate() {
   console.log(newDir + ' feature generated!');
 }
 
+/**
+ * 1. Generate Service File
+ * 2. Generate Integration Test File
+ */
 function generateService() {
   console.log('generateService');
 }
 
+/**
+ * 1. Generate Task File
+ * 2. Generate Task Test File
+ */
 function generateTask() {
   console.log('generateTask');
 }
@@ -276,15 +285,26 @@ function destroy() {
   console.log(rmDir + ' feature deleted!');
 }
 
+/**
+ * 1. Deletes Service File
+ * 2. Deletes Integration Test File
+ */
 function destroyService() {
   console.log('destroyService');
 }
 
+/**
+ * 1. Deletes Task File
+ * 2. Deletes Task Test File
+ */
 function destroyTask() {
   console.log('destroyTask');
 }
 
-// takes in a file path and stringifies it to help with writing the generate and delete functions above
+/**
+ * Takes in a file path and stringifies it to help with writing the generate and delete functions above
+ * You should put in arguments in the format ${variable} so we can just copy and paste it into this file
+ */
 function stringify() {
   const filePath = process.argv[3]; // the file path of the file to stringify
   let fileText = fs.readFileSync(filePath, 'utf8');
