@@ -33,5 +33,5 @@ module.exports = () => {
   // future tasks below
 
   // return array of queues to worker.js to gracefully close them
-  return [AdminQueue];
+  return [AdminQueue]; // return empty array [] if not using any queues in this feature
 }
