@@ -70,11 +70,11 @@ function errorFileText({ upperName, lowerName, pascalName, camelName }) { return
 function processorFileText({ upperName, lowerName, pascalName, camelName }) { return `/**\n * ${upperName} BACKGROUND PROCESSOR\n *\n * This is where we process background tasks for the ${pascalName} feature.\n * Gets exported to /worker.js to be run in a worker process.\n */\n\n'use strict';\n\n// ENV variables\nconst { REDIS_URL } = process.env;\n\n// third party node modules\nconst Queue = require('bull'); // process background tasks from Queue\nconst ${pascalName}Queue = new Queue('${pascalName}Queue', REDIS_URL);\n\n// service\nconst { queueError } = require('../../services/error');\n\n// tasks\nconst tasks = require('./tasks');\n\n// Function is called in /worker.js\n// Returns an array of Queues used in this feature so we can gracefully close them in worker.js\nmodule.exports = () => {\n\n  // Process ${pascalName} Feature Background Tasks\n  ${pascalName}Queue.process('V1ExampleTask', tasks.V1ExampleTask);\n  ${pascalName}Queue.on('failed', async (job, error) => queueError(error, ${pascalName}Queue, job));\n  ${pascalName}Queue.on('stalled', async job => queueError(new Error('Queue Stalled.'), ${pascalName}Queue, job));\n  ${pascalName}Queue.on('error', async error => queueError(error, ${pascalName}Queue));\n\n  // future tasks below\n\n  // return array of queues to worker.js to gracefully close them\n  return [${pascalName}Queue];  // return empty array [] if not using any queues in this feature\n}\n`; }
 function languageFileText({ upperName, lowerName, pascalName, camelName, locale, language }) { return `/**\n * ${pascalName} Language File: ${language}\n *\n * This file holds all ${language} language translations for the ${pascalName} feature.\n * This file is compiled by /services/language.js to generate the final ${language} locale\n * All ${language} translations aggregated from all features can be found in /locales/${locale}.json\n */\n\n'use strict';\n\nmodule.exports = {\n  '${upperName}[Example Message]': 'Example Messagea'\n};\n`; }
 function serviceIndexFileText({ upperName, lowerName, pascalName, camelName }) { return `/**\n * ${upperName} SERVICE\n *\n * Aggregates all service method files to be exported here\n */\n\n'use strict';\n\nmodule.exports = {\n  ...require('./V1Example')\n}\n`; }
-function serviceFileText({ upperName, lowerName, pascalName, camelName }) { return `/**\n * ${upperName} V1Example SERVICE\n */\n\n'use strict';\n\n// ENV variables\nconst { NODE_ENV, REDIS_URL } = process.env;\n\n// third-party\nconst _ = require('lodash'); // general helper methods: https://lodash.com/docs\nconst Op = require('sequelize').Op; // for model operator aliases like $gte, $eq\nconst io = require('socket.io-emitter')(REDIS_URL); // to emit real-time events to client-side applications: https://socket.io/docs/emit-cheatsheet/\nconst joi = require('@hapi/joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md\nconst Queue = require('bull'); // add background tasks to Queue: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueclean\nconst moment = require('moment-timezone'); // manage timezone and dates: https://momentjs.com/timezone/docs/\nconst convert = require('convert-units'); // https://www.npmjs.com/package/convert-units\nconst slugify = require('slugify'); // convert string to URL friendly string: https://www.npmjs.com/package/slugify\nconst sanitize = require("sanitize-filename"); // sanitize filename: https://www.npmjs.com/package/sanitize-filename\nconst passport = require('passport'); // handle authentication: http://www.passportjs.org/docs/\nconst currency = require('currency.js'); // handling currency operations (add, subtract, multiply) without JS precision issues: https://github.com/scurker/currency.js/\nconst accounting = require('accounting'); // handle outputing readable format for currency: http://openexchangerates.github.io/accounting.js/\n\n// services\nconst email = require('../../../services/email');\nconst { SOCKET_ROOMS, SOCKET_EVENTS } = require('../../../services/socket');\nconst { ERROR_CODES, errorResponse, joiErrorsMessage } = require('../../../services/error');\n\n// models\nconst models = require('../../../models');\n\n// helpers\nconst { getOffset, getOrdering, convertStringListToWhereStmt } = require('../../../helpers/cruqd');\nconst { randomString } = require('../../../helpers/logic');\nconst { LIST_INT_REGEX } = require('../../../helpers/constants');\n\n// queues\nconst ${pascalName}Queue = new Queue('${pascalName}Queue', REDIS_URL);\n\n// methods\nmodule.exports = {\n  V1Example\n}\n\n/**\n * Example Method Description\n *\n * GET  /${version}/${lowerName}s/example\n * POST /${version}/${lowerName}s/example\n *\n * Must be logged out | Must be logged in | Can be both logged in or logged out\n * Roles: ['admin', 'user']\n *\n * req.params = {}\n * req.args = {\n *   @alpha - (STRING - REQUIRED): Alpha argument description\n *   @beta - (BOOLEAN - OPTIONAL) [DEFAULT - 100]: Beta argument description\n *   @gamma - (NUMBER - OPTIONAL or REQUIRED): Cato argument description\n *   @delta - (STRING - REQUIRED): Delta argument description\n *   @zeta - (STRING - REQUIRED) [VALID - 'a', 'b']: Zeta argument description\n * }\n *\n * Success: Return example object\n * Errors:\n *   400: BAD_REQUEST_INVALID_ARGUMENTS\n *   401: UNAUTHORIZED\n *   500: INTERNAL_SERVER_ERROR\n *\n * !IMPORTANT: This is an important message\n * !NOTE: This is a note\n * TODO: This is a todo\n */\nasync function V1Example(req) {\n  const schema = joi.object({\n    alpha: joi.string().trim().min(1).lowercase().required().error(new Error(req.__('${upperName}_V1Example_Invalid_Argument[alpha]'))),\n    beta: joi.boolean().default(true).optional().error(new Error(req.__('${upperName}_V1Example_Invalid_Argument[beta]'))),\n    gamma: joi.number().integer().min(1).max(10).error(new Error(req.__('${upperName}_V1Example_Invalid_Argument[gamma]'))),\n    delta: joi.string().trim().lowercase().min(3).email().required().error(new Error(req.__('${upperName}_V1Example_Invalid_Argument[delta]'))),\n    zeta: joi.string().trim().valid('a', 'b').required().error(new Error(req.__('${upperName}_V1Example_Invalid_Argument[zeta]')))\n  }).with('alpha', 'beta') // must come together\n    .xor('beta', 'gamma') // one and not the other must exists\n    .or('gamma', 'delta'); // at least one must exists\n\n  // validate\n  const { error, value } = schema.validate(req.args);\n  if (error)\n    return Promise.resolve(errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));\n  req.args = value; // updated arguments with type conversion\n\n  try {\n    /***** DO WORK HERE *****/\n\n    // assemble data\n    const data = { key: 'value' };\n\n    // ADD BACKGROUND JOB TO QUEUE\n    const job = await ${pascalName}Queue.add('V1ExampleTask', data);\n\n    // SOCKET EMIT EVENT\n    io.to(\`\${SOCKET_ROOMS.GLOBAL}\`).emit(SOCKET_EVENTS.EXAMPLE_EVENT, data);\n    io.to(\`\${SOCKET_ROOMS.ADMIN}\${'_adminId_'}\`).emit(SOCKET_EVENTS.EXAMPLE_EVENT, data);\n\n    // return\n    return Promise.resolve({\n      status: 200,\n      success: true,\n      jobId: job.id,\n      data: data\n    });\n  } catch (error) {\n    return Promise.reject(error);\n  }\n} // END V1Example\n`; }
+function serviceFileText({ upperName, lowerName, pascalName, camelName, method }) { return `/**\n * ${upperName} ${method} SERVICE\n */\n\n'use strict';\n\n// ENV variables\nconst { NODE_ENV, REDIS_URL } = process.env;\n\n// third-party\nconst _ = require('lodash'); // general helper methods: https://lodash.com/docs\nconst Op = require('sequelize').Op; // for model operator aliases like $gte, $eq\nconst io = require('socket.io-emitter')(REDIS_URL); // to emit real-time events to client-side applications: https://socket.io/docs/emit-cheatsheet/\nconst joi = require('@hapi/joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md\nconst Queue = require('bull'); // add background tasks to Queue: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueclean\nconst moment = require('moment-timezone'); // manage timezone and dates: https://momentjs.com/timezone/docs/\nconst convert = require('convert-units'); // https://www.npmjs.com/package/convert-units\nconst slugify = require('slugify'); // convert string to URL friendly string: https://www.npmjs.com/package/slugify\nconst sanitize = require("sanitize-filename"); // sanitize filename: https://www.npmjs.com/package/sanitize-filename\nconst passport = require('passport'); // handle authentication: http://www.passportjs.org/docs/\nconst currency = require('currency.js'); // handling currency operations (add, subtract, multiply) without JS precision issues: https://github.com/scurker/currency.js/\nconst accounting = require('accounting'); // handle outputing readable format for currency: http://openexchangerates.github.io/accounting.js/\n\n// services\nconst email = require('../../../services/email');\nconst { SOCKET_ROOMS, SOCKET_EVENTS } = require('../../../services/socket');\nconst { ERROR_CODES, errorResponse, joiErrorsMessage } = require('../../../services/error');\n\n// models\nconst models = require('../../../models');\n\n// helpers\nconst { getOffset, getOrdering, convertStringListToWhereStmt } = require('../../../helpers/cruqd');\nconst { randomString } = require('../../../helpers/logic');\nconst { LIST_INT_REGEX } = require('../../../helpers/constants');\n\n// queues\nconst ${pascalName}Queue = new Queue('${pascalName}Queue', REDIS_URL);\n\n// methods\nmodule.exports = {\n  ${method}\n}\n\n/**\n * Method Description\n *\n * GET  /${version}/${lowerName}s/<method>\n * POST /${version}/${lowerName}s/<method>\n *\n * Must be logged out | Must be logged in | Can be both logged in or logged out\n * Roles: ['admin', 'user']\n *\n * req.params = {}\n * req.args = {\n *   @alpha - (STRING - REQUIRED): Alpha argument description\n *   @beta - (BOOLEAN - OPTIONAL) [DEFAULT - 100]: Beta argument description\n *   @gamma - (NUMBER - OPTIONAL or REQUIRED): Cato argument description\n *   @delta - (STRING - REQUIRED): Delta argument description\n *   @zeta - (STRING - REQUIRED) [VALID - 'a', 'b']: Zeta argument description\n * }\n *\n * Success: Return example object\n * Errors:\n *   400: BAD_REQUEST_INVALID_ARGUMENTS\n *   401: UNAUTHORIZED\n *   500: INTERNAL_SERVER_ERROR\n *\n * !IMPORTANT: This is an important message\n * !NOTE: This is a note\n * TODO: This is a todo\n */\nasync function ${method}(req) {\n  const schema = joi.object({\n    alpha: joi.string().trim().min(1).lowercase().required().error(new Error(req.__('${upperName}_${method}_Invalid_Argument[alpha]'))),\n    beta: joi.boolean().default(true).optional().error(new Error(req.__('${upperName}_${method}_Invalid_Argument[beta]'))),\n    gamma: joi.number().integer().min(1).max(10).error(new Error(req.__('${upperName}_${method}_Invalid_Argument[gamma]'))),\n    delta: joi.string().trim().lowercase().min(3).email().required().error(new Error(req.__('${upperName}_${method}_Invalid_Argument[delta]'))),\n    zeta: joi.string().trim().valid('a', 'b').required().error(new Error(req.__('${upperName}_${method}_Invalid_Argument[zeta]')))\n  }).with('alpha', 'beta') // must come together\n    .xor('beta', 'gamma') // one and not the other must exists\n    .or('gamma', 'delta'); // at least one must exists\n\n  // validate\n  const { error, value } = schema.validate(req.args);\n  if (error)\n    return Promise.resolve(errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));\n  req.args = value; // updated arguments with type conversion\n\n  try {\n    /***** DO WORK HERE *****/\n\n    // assemble data\n    const data = { key: 'value' };\n\n    // ADD BACKGROUND JOB TO QUEUE\n    const job = await ${pascalName}Queue.add('${method}Task', data);\n\n    // SOCKET EMIT EVENT\n    io.to(\`\${SOCKET_ROOMS.GLOBAL}\`).emit(SOCKET_EVENTS.EXAMPLE_EVENT, data);\n    io.to(\`\${SOCKET_ROOMS.ADMIN}\${'_adminId_'}\`).emit(SOCKET_EVENTS.EXAMPLE_EVENT, data);\n\n    // return\n    return Promise.resolve({\n      status: 200,\n      success: true,\n      jobId: job.id,\n      data: data\n    });\n  } catch (error) {\n    return Promise.reject(error);\n  }\n} // END ${method}\n`; }
 function taskIndexFileText({ upperName, lowerName, pascalName, camelName }) { return `/**\n * ${upperName} TASK\n *\n * Aggregates all background tasks files to be exported here\n */\n\n'use strict';\n\nmodule.exports = {\n  ...require('./V1ExampleTask')\n}\n`; }
-function taskFileText({ upperName, lowerName, pascalName, camelName }) { return `/**\n * ${upperName} V1ExampleTask TASK\n */\n\n'use strict';\n\n// ENV variables\nconst { NODE_ENV, REDIS_URL } = process.env;\n\n// third-party\nconst _ = require('lodash'); // general helper methods: https://lodash.com/docs\nconst Op = require('sequelize').Op; // for model operator aliases like $gte, $eq\nconst io = require('socket.io-emitter')(REDIS_URL); // to emit real-time events to client-side applications: https://socket.io/docs/emit-cheatsheet/\nconst joi = require('@hapi/joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md\nconst Queue = require('bull'); // add background tasks to Queue: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueclean\nconst moment = require('moment-timezone'); // manage timezone and dates: https://momentjs.com/timezone/docs/\nconst convert = require('convert-units'); // https://www.npmjs.com/package/convert-units\nconst slugify = require('slugify'); // convert string to URL friendly string: https://www.npmjs.com/package/slugify\nconst sanitize = require("sanitize-filename"); // sanitize filename: https://www.npmjs.com/package/sanitize-filename\nconst passport = require('passport'); // handle authentication: http://www.passportjs.org/docs/\nconst currency = require('currency.js'); // handling currency operations (add, subtract, multiply) without JS precision issues: https://github.com/scurker/currency.js/\nconst accounting = require('accounting'); // handle outputing readable format for currency: http://openexchangerates.github.io/accounting.js/\n\n// services\nconst email = require('../../../services/email');\nconst { SOCKET_ROOMS, SOCKET_EVENTS } = require('../../../services/socket');\nconst { ERROR_CODES, errorResponse, joiErrorsMessage } = require('../../../services/error');\n\n// models\nconst models = require('../../../models');\n\n// helpers\nconst { getOffset, getOrdering, convertStringListToWhereStmt } = require('../../../helpers/cruqd');\nconst { randomString } = require('../../../helpers/logic');\nconst { LIST_INT_REGEX } = require('../../../helpers/constants');\n\n// queues\nconst ${pascalName}Queue = new Queue('${pascalName}Queue', REDIS_URL);\n\n// methods\nmodule.exports = {\n  V1ExampleTask\n}\n\n/**\n * ExampleTask Method Description\n *\n * @job = {\n *   @id - (INTEGER - REQUIRED): ID of the background job\n *   @data = {\n *     @alpha - (STRING - REQUIRED): Alpha argument description\n *     @beta - (BOOLEAN - OPTIONAL) [DEFAULT - 100]: Beta argument description\n *     @gamma - (NUMBER - OPTIONAL or REQUIRED): Cato argument description\n *     @delta - (STRING - REQUIRED): Delta argument description\n *     @zeta - (STRING - REQUIRED) [VALID - 'a', 'b']: Zeta argument description\n *   }\n * }\n *\n * Success: Return example object\n *\n * !IMPORTANT: This is an important message\n * !NOTE: This is a note\n * TODO: This is a todo\n */\nasync function V1ExampleTask(job) {\n  const schema = joi.object({\n    alpha: joi.string().trim().min(1).lowercase().required().error(new Error(req.__('${upperName}_V1Example_Invalid_Argument[alpha]'))),\n    beta: joi.boolean().default(true).optional().error(new Error(req.__('${upperName}_V1Example_Invalid_Argument[beta]'))),\n    gamma: joi.number().integer().min(1).max(10).error(new Error(req.__('${upperName}_V1Example_Invalid_Argument[gamma]'))),\n    delta: joi.string().trim().lowercase().min(3).email().required().error(new Error(req.__('${upperName}_V1Example_Invalid_Argument[delta]'))),\n    zeta: joi.string().trim().valid('a', 'b').required().error(new Error(req.__('${upperName}_V1Example_Invalid_Argument[zeta]')))\n  }).with('alpha', 'beta') // must come together\n    .xor('beta', 'gamma') // one and not the other must exists\n    .or('gamma', 'delta'); // at least one must exists\n\n  // validate\n  const { error, value } = schema.validate(job.data);\n  if (error)\n    return Promise.resolve(new Error(joiErrorsMessage(error)));\n  req.args = value; // updated arguments with type conversion\n\n  try {\n    /***** DO WORK HERE *****/\n\n    // assemble data\n    const data = { key: 'value' };\n\n    // ADD BACKGROUND JOB TO QUEUE\n    const job = await ${pascalName}Queue.add('V1ExampleTask', data);\n\n    // SOCKET EMIT EVENT\n    io.to(\`\${SOCKET_ROOMS.GLOBAL}\`).emit(SOCKET_EVENTS.EXAMPLE_EVENT, data);\n    io.to(\`\${SOCKET_ROOMS.ADMIN}\${'_adminId_'}\`).emit(SOCKET_EVENTS.EXAMPLE_EVENT, data);\n\n    // return\n    return Promise.resolve();\n  } catch (error) {\n    return Promise.reject(error);\n  }\n} // END V1ExampleTask\n`; }
-function integrationTestFileText({ upperName, lowerName, pascalName, camelName }) { return `/**\n * TEST ${upperName} V1Example METHOD\n */\n\n'use strict';\n\n// build-in node modules\nconst path = require('path');\n\n// load test env\nrequire('dotenv').config({ path: path.join(__dirname, '../../../../config/.env.test') });\n\n// ENV variables\nconst { NODE_ENV } = process.env;\n\n// third party\nconst i18n = require('i18n'); // https://github.com/mashpie/i18n-node\nconst Queue = require('bull'); // add background tasks to Queue: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueclean\nconst moment = require('moment-timezone'); // manage timezone and dates: https://momentjs.com/timezone/docs/\nconst currency = require('currency.js'); // handling currency operations (add, subtract, multiply) without JS precision issues: https://github.com/scurker/currency.js/\n\n// server & models\nconst app = require('../../../../server');\nconst models = require('../../../../models');\n\n// assertion library\nconst { expect } = require('chai');\nconst request = require('supertest');\n\n// services\nconst { errorResponse, ERROR_CODES } = require('../../../../services/error');\n\n// helpers\nconst { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');\n\n// queues\nconst ${pascalName}Queue = new Queue('${pascalName}Queue', REDIS_URL);\n\ndescribe('${pascalName}.V1Example', async () => {\n  // grab fixtures here\n  const adminFix = require('../../../fixtures/fix1/admin');\n  const userFix = require('../../../fixtures/fix1/user');\n\n  // url of the api method we are testing\n  const routeVersion = '/${version}';\n  const routePrefix = '/${lowerName}s';\n  const routeMethod = '/example';\n  const routeUrl = \`\${routeVersion}\${routePrefix}\${routeMethod}\`;\n\n  // clear database\n  beforeEach(async () => {\n    await reset();\n  });\n\n  // Logged Out\n  describe('Role: Logged Out', async () => {\n    // populate database with fixtures and empty queues\n    beforeEach(async () => {\n      await populate('fix1');\n      await ${pascalName}Queue.empty();\n    });\n\n    it('should test something', async () => {\n      try {\n        // execute tests here\n      } catch (error) {\n        throw error;\n      }\n    }); // END should test something\n  }); // END Role: Logged Out\n\n  // Role: Admin\n  describe('Role: Admin', async () => {\n    const jwt = 'jwt-admin';\n\n    // populate database with fixtures and empty queues\n    beforeEach(async () => {\n      await populate('fix1');\n      await ${pascalName}Queue.empty();\n    });\n\n    it('should test something', async () => {\n      try {\n        // execute tests here\n      } catch (error) {\n        throw error;\n      }\n    }); // END should test something\n  }); // END Role: Admin\n\n  // Role: User\n  describe('Role: User', async () => {\n    const jwt = 'jwt-user';\n\n    // populate database with fixtures and empty queues\n    beforeEach(async () => {\n      await populate('fix1');\n      await ${pascalName}Queue.empty();\n    });\n\n    it('should test something', async () => {\n      try {\n        // execute tests here\n      } catch (error) {\n        throw error;\n      }\n    }); // END should test something\n  }); // END Role: User\n}); // END ${pascalName}.V1Example\n`; }
-function tasksTestFileText({ upperName, lowerName, pascalName, camelName }) { return `/**\n * TEST ${upperName} V1ExampleTask METHOD\n */\n\n'use strict';\n\n// build-in node modules\nconst path = require('path');\n\n// load test env\nrequire('dotenv').config({ path: path.join(__dirname, '../../../../config/.env.test') });\n\n// ENV variables\nconst { NODE_ENV } = process.env;\n\n// third party\nconst i18n = require('i18n'); // https://github.com/mashpie/i18n-node\nconst Queue = require('bull'); // add background tasks to Queue: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueclean\nconst moment = require('moment-timezone'); // manage timezone and dates: https://momentjs.com/timezone/docs/\nconst currency = require('currency.js'); // handling currency operations (add, subtract, multiply) without JS precision issues: https://github.com/scurker/currency.js/\n\n// server & models\nconst app = require('../../../../server');\nconst models = require('../../../../models');\n\n// assertion library\nconst { expect } = require('chai');\nconst request = require('supertest');\n\n// services\nconst { errorResponse, ERROR_CODES } = require('../../../../services/error');\n\n// helpers\nconst { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');\n\n// queues\nconst ${pascalName}Queue = new Queue('${pascalName}Queue', REDIS_URL);\n\ndescribe('${pascalName}.V1ExampleTask', async () => {\n  // grab fixtures here\n  const adminFix = require('../../../fixtures/fix1/admin');\n  const userFix = require('../../../fixtures/fix1/user');\n\n  // clear database, populate database with fixtures and empty queues\n  beforeEach(async () => {\n    await reset();\n    await populate('fix1');\n    await ${pascalName}Queue.empty();\n  });\n\n  it('should test something', async () => {\n    try {\n      // execute tests here\n    } catch (error) {\n      throw error;\n    }\n  }); // END should test something\n}); // END ${pascalName}.V1ExampleTask\n`; }
+function taskFileText({ upperName, lowerName, pascalName, camelName, method }) { return `/**\n * ${upperName} ${method} TASK\n */\n\n'use strict';\n\n// ENV variables\nconst { NODE_ENV, REDIS_URL } = process.env;\n\n// third-party\nconst _ = require('lodash'); // general helper methods: https://lodash.com/docs\nconst Op = require('sequelize').Op; // for model operator aliases like $gte, $eq\nconst io = require('socket.io-emitter')(REDIS_URL); // to emit real-time events to client-side applications: https://socket.io/docs/emit-cheatsheet/\nconst joi = require('@hapi/joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md\nconst Queue = require('bull'); // add background tasks to Queue: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueclean\nconst moment = require('moment-timezone'); // manage timezone and dates: https://momentjs.com/timezone/docs/\nconst convert = require('convert-units'); // https://www.npmjs.com/package/convert-units\nconst slugify = require('slugify'); // convert string to URL friendly string: https://www.npmjs.com/package/slugify\nconst sanitize = require("sanitize-filename"); // sanitize filename: https://www.npmjs.com/package/sanitize-filename\nconst passport = require('passport'); // handle authentication: http://www.passportjs.org/docs/\nconst currency = require('currency.js'); // handling currency operations (add, subtract, multiply) without JS precision issues: https://github.com/scurker/currency.js/\nconst accounting = require('accounting'); // handle outputing readable format for currency: http://openexchangerates.github.io/accounting.js/\n\n// services\nconst email = require('../../../services/email');\nconst { SOCKET_ROOMS, SOCKET_EVENTS } = require('../../../services/socket');\nconst { ERROR_CODES, errorResponse, joiErrorsMessage } = require('../../../services/error');\n\n// models\nconst models = require('../../../models');\n\n// helpers\nconst { getOffset, getOrdering, convertStringListToWhereStmt } = require('../../../helpers/cruqd');\nconst { randomString } = require('../../../helpers/logic');\nconst { LIST_INT_REGEX } = require('../../../helpers/constants');\n\n// queues\nconst ${pascalName}Queue = new Queue('${pascalName}Queue', REDIS_URL);\n\n// methods\nmodule.exports = {\n  ${method}\n}\n\n/**\n * Method Description\n *\n * @job = {\n *   @id - (INTEGER - REQUIRED): ID of the background job\n *   @data = {\n *     @alpha - (STRING - REQUIRED): Alpha argument description\n *     @beta - (BOOLEAN - OPTIONAL) [DEFAULT - 100]: Beta argument description\n *     @gamma - (NUMBER - OPTIONAL or REQUIRED): Cato argument description\n *     @delta - (STRING - REQUIRED): Delta argument description\n *     @zeta - (STRING - REQUIRED) [VALID - 'a', 'b']: Zeta argument description\n *   }\n * }\n *\n * Success: Return example object\n *\n * !IMPORTANT: This is an important message\n * !NOTE: This is a note\n * TODO: This is a todo\n */\nasync function ${method}(job) {\n  const schema = joi.object({\n    alpha: joi.string().trim().min(1).lowercase().required().error(new Error(req.__('${upperName}_V1Example_Invalid_Argument[alpha]'))),\n    beta: joi.boolean().default(true).optional().error(new Error(req.__('${upperName}_V1Example_Invalid_Argument[beta]'))),\n    gamma: joi.number().integer().min(1).max(10).error(new Error(req.__('${upperName}_V1Example_Invalid_Argument[gamma]'))),\n    delta: joi.string().trim().lowercase().min(3).email().required().error(new Error(req.__('${upperName}_V1Example_Invalid_Argument[delta]'))),\n    zeta: joi.string().trim().valid('a', 'b').required().error(new Error(req.__('${upperName}_V1Example_Invalid_Argument[zeta]')))\n  }).with('alpha', 'beta') // must come together\n    .xor('beta', 'gamma') // one and not the other must exists\n    .or('gamma', 'delta'); // at least one must exists\n\n  // validate\n  const { error, value } = schema.validate(job.data);\n  if (error)\n    return Promise.resolve(new Error(joiErrorsMessage(error)));\n  req.args = value; // updated arguments with type conversion\n\n  try {\n    /***** DO WORK HERE *****/\n\n    // assemble data\n    const data = { key: 'value' };\n\n    // ADD BACKGROUND JOB TO QUEUE\n    const job = await ${pascalName}Queue.add('${method}', data);\n\n    // SOCKET EMIT EVENT\n    io.to(\`\${SOCKET_ROOMS.GLOBAL}\`).emit(SOCKET_EVENTS.EXAMPLE_EVENT, data);\n    io.to(\`\${SOCKET_ROOMS.ADMIN}\${'_adminId_'}\`).emit(SOCKET_EVENTS.EXAMPLE_EVENT, data);\n\n    // return\n    return Promise.resolve();\n  } catch (error) {\n    return Promise.reject(error);\n  }\n} // END ${method}\n`; }
+function integrationTestFileText({ upperName, lowerName, pascalName, camelName, method }) { return `/**\n * TEST ${upperName} ${method} METHOD\n */\n\n'use strict';\n\n// build-in node modules\nconst path = require('path');\n\n// load test env\nrequire('dotenv').config({ path: path.join(__dirname, '../../../../config/.env.test') });\n\n// ENV variables\nconst { NODE_ENV } = process.env;\n\n// third party\nconst i18n = require('i18n'); // https://github.com/mashpie/i18n-node\nconst Queue = require('bull'); // add background tasks to Queue: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueclean\nconst moment = require('moment-timezone'); // manage timezone and dates: https://momentjs.com/timezone/docs/\nconst currency = require('currency.js'); // handling currency operations (add, subtract, multiply) without JS precision issues: https://github.com/scurker/currency.js/\n\n// server & models\nconst app = require('../../../../server');\nconst models = require('../../../../models');\n\n// assertion library\nconst { expect } = require('chai');\nconst request = require('supertest');\n\n// services\nconst { errorResponse, ERROR_CODES } = require('../../../../services/error');\n\n// helpers\nconst { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');\n\n// queues\nconst ${pascalName}Queue = new Queue('${pascalName}Queue', REDIS_URL);\n\ndescribe('${pascalName}.${method}', async () => {\n  // grab fixtures here\n  const adminFix = require('../../../fixtures/fix1/admin');\n  const userFix = require('../../../fixtures/fix1/user');\n\n  // url of the api method we are testing\n  const routeVersion = '/${version}';\n  const routePrefix = '/${lowerName}s';\n  const routeMethod = '/<method>';\n  const routeUrl = \`\${routeVersion}\${routePrefix}\${routeMethod}\`;\n\n  // clear database\n  beforeEach(async () => {\n    await reset();\n  });\n\n  // Logged Out\n  describe('Role: Logged Out', async () => {\n    // populate database with fixtures and empty queues\n    beforeEach(async () => {\n      await populate('fix1');\n      await ${pascalName}Queue.empty();\n    });\n\n    it('should test something', async () => {\n      try {\n        // execute tests here\n      } catch (error) {\n        throw error;\n      }\n    }); // END should test something\n  }); // END Role: Logged Out\n\n  // Role: Admin\n  describe('Role: Admin', async () => {\n    const jwt = 'jwt-admin';\n\n    // populate database with fixtures and empty queues\n    beforeEach(async () => {\n      await populate('fix1');\n      await ${pascalName}Queue.empty();\n    });\n\n    it('should test something', async () => {\n      try {\n        // execute tests here\n      } catch (error) {\n        throw error;\n      }\n    }); // END should test something\n  }); // END Role: Admin\n\n  // Role: User\n  describe('Role: User', async () => {\n    const jwt = 'jwt-user';\n\n    // populate database with fixtures and empty queues\n    beforeEach(async () => {\n      await populate('fix1');\n      await ${pascalName}Queue.empty();\n    });\n\n    it('should test something', async () => {\n      try {\n        // execute tests here\n      } catch (error) {\n        throw error;\n      }\n    }); // END should test something\n  }); // END Role: User\n}); // END ${pascalName}.${method}\n`; }
+function tasksTestFileText({ upperName, lowerName, pascalName, camelName, method }) { return `/**\n * TEST ${upperName} ${method} METHOD\n */\n\n'use strict';\n\n// build-in node modules\nconst path = require('path');\n\n// load test env\nrequire('dotenv').config({ path: path.join(__dirname, '../../../../config/.env.test') });\n\n// ENV variables\nconst { NODE_ENV } = process.env;\n\n// third party\nconst i18n = require('i18n'); // https://github.com/mashpie/i18n-node\nconst Queue = require('bull'); // add background tasks to Queue: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueclean\nconst moment = require('moment-timezone'); // manage timezone and dates: https://momentjs.com/timezone/docs/\nconst currency = require('currency.js'); // handling currency operations (add, subtract, multiply) without JS precision issues: https://github.com/scurker/currency.js/\n\n// server & models\nconst app = require('../../../../server');\nconst models = require('../../../../models');\n\n// assertion library\nconst { expect } = require('chai');\nconst request = require('supertest');\n\n// services\nconst { errorResponse, ERROR_CODES } = require('../../../../services/error');\n\n// helpers\nconst { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');\n\n// queues\nconst ${pascalName}Queue = new Queue('${pascalName}Queue', REDIS_URL);\n\ndescribe('${pascalName}.${method}', async () => {\n  // grab fixtures here\n  const adminFix = require('../../../fixtures/fix1/admin');\n  const userFix = require('../../../fixtures/fix1/user');\n\n  // clear database, populate database with fixtures and empty queues\n  beforeEach(async () => {\n    await reset();\n    await populate('fix1');\n    await ${pascalName}Queue.empty();\n  });\n\n  it('should test something', async () => {\n    try {\n      // execute tests here\n    } catch (error) {\n      throw error;\n    }\n  }); // END should test something\n}); // END ${pascalName}.${method}\n`; }
 function sequenceFileText(featureNames) { return `/**\n * This is the table order in which test fixture and seed data is added into the database.\n * Make sure to do MODEL NAME (Lower-case & Singular)!!! DO NOT DO TABLE NAME (Pascal-case & Plural)\n */\n\nmodule.exports = [${featureNames}];\n`; }
 
 /**
@@ -90,11 +90,11 @@ function generate() {
   const newTaskDirPath = path.join(newDirPath, 'tasks');
   const newTestDirPath = path.join(__dirname, '../test/app', newDir);
 
-  console.log('Generating ' + newDir + ' feature...');
+  console.log(`Generating ${newDir} feature...`);
 
   // if directory already exists
   if (fs.existsSync(newDirPath)) {
-    console.log('Error: ' + newDir + ' feature already exists. Please use different name.');
+    console.error(`Error: ${newDir} feature already exists. Please use different name.`);
     process.exit(1);
   }
 
@@ -167,13 +167,13 @@ function generate() {
   fs.mkdirSync(newServiceDirPath);
 
   // service index
-  fd = fs.openSync(path.join(newDirPath, 'service/index.js'), 'w');
+  fd = fs.openSync(path.join(newServiceDirPath, 'index.js'), 'w');
   fs.writeSync(fd, serviceIndexFileText(NAMES), 0, 'utf-8');
   fs.closeSync(fd);
 
   // service method
-  fd = fs.openSync(path.join(newDirPath, 'service/V1Example.js'), 'w');
-  fs.writeSync(fd, serviceFileText(NAMES), 0, 'utf-8');
+  fd = fs.openSync(path.join(newServiceDirPath, 'V1Example.js'), 'w');
+  fs.writeSync(fd, serviceFileText({ ...NAMES, method: 'V1Example' }), 0, 'utf-8');
   fs.closeSync(fd);
 
   /******************************/
@@ -188,7 +188,7 @@ function generate() {
 
   // tasks method
   fd = fs.openSync(path.join(newDirPath, 'tasks/V1ExampleTask.js'), 'w');
-  fs.writeSync(fd, taskFileText(NAMES), 0, 'utf-8');
+  fs.writeSync(fd, taskFileText({ ...NAMES, method: 'V1ExampleTask' }), 0, 'utf-8');
   fs.closeSync(fd);
 
   console.log(`Created ${newDirPath}`);
@@ -203,13 +203,13 @@ function generate() {
   // create integration test files
   fs.mkdirSync(path.join(newTestDirPath, 'integration'));
   fd = fs.openSync(path.join(newTestDirPath, 'integration/V1Example.js'), 'w');
-  fs.writeSync(fd, integrationTestFileText(NAMES), 0, 'utf-8');
+  fs.writeSync(fd, integrationTestFileText({ ...NAMES, method: 'V1Example' }), 0, 'utf-8');
   fs.closeSync(fd);
 
   // create background tasks test files
   fs.mkdirSync(path.join(newTestDirPath, 'tasks'));
   fd = fs.openSync(path.join(newTestDirPath, 'tasks/V1ExampleTask.js'), 'w');
-  fs.writeSync(fd, tasksTestFileText(NAMES), 0, 'utf-8');
+  fs.writeSync(fd, tasksTestFileText({ ...NAMES, method: 'V1ExampleTask' }), 0, 'utf-8');
   fs.closeSync(fd);
 
   fs.closeSync(fs.openSync(path.join(newTestDirPath, 'helper.js'), 'w'));
@@ -233,7 +233,7 @@ function generate() {
   console.log(`Added '${camelName}' to database/sequence.js`);
 
   // Finished
-  console.log(newDir + ' feature generated!');
+  console.log(`${newDir} feature generated!`);
 }
 
 /**
@@ -241,7 +241,52 @@ function generate() {
  * 2. Generate Integration Test File
  */
 function generateService() {
-  console.log('generateService');
+  const newFileName = process.argv[5]; // FILE
+  const featDir = process.argv[3]; // FEATURE
+  const featDirPath = path.join(__dirname, featDir);
+  const featServiceDirPath = path.join(featDirPath, 'service');
+  const featTestDirPath = path.join(__dirname, '../test/app', featDir);
+
+  console.log(`Generating ${newFileName} file in service folder of ${featDir} feature...`);
+
+  // if directory exists
+  if (!fs.existsSync(featDirPath)) {
+    console.error(`Error: ${featDir} feature does not exists.`);
+    process.exit(1);
+  }
+
+  // must provide a file name
+  if (!newFileName) {
+    console.error(`Error: Please pass in file name.`);
+    process.exit(1);
+  }
+
+  // add .js
+  const newFileNameJS = newFileName.indexOf('.js') < 0 ? `${newFileName}.js` : newFileName;
+
+  // names
+  const upperName = featDir.toUpperCase();
+  const lowerName = featDir.toLowerCase();
+  const pascalName = featDir[0].toUpperCase() + '' + featDir.substring(1);
+  const camelName = featDir[0].toLowerCase() + '' + featDir.substring(1);
+
+  const NAMES = {upperName, lowerName, pascalName, camelName };
+
+  // service file
+  let fd = fs.openSync(path.join(featServiceDirPath, newFileNameJS), 'w');
+  fs.writeSync(fd, serviceFileText({ ...NAMES, method: newFileName }), 0, 'utf-8');
+  fs.closeSync(fd);
+
+  console.log(`Created ${path.join(featServiceDirPath, newFileNameJS)}...`);
+
+  // service test file
+  fd = fs.openSync(path.join(featTestDirPath, `integration/${newFileNameJS}`), 'w');
+  fs.writeSync(fd, integrationTestFileText({ ...NAMES, method: newFileName }), 0, 'utf-8');
+  fs.closeSync(fd);
+
+  console.log(`Created ${path.join(featTestDirPath, `integration/${newFileNameJS}`)}...`);
+  console.log();
+  console.log('Remember to update: routes.js, controller.js and service/index.js');
 }
 
 /**
@@ -249,7 +294,52 @@ function generateService() {
  * 2. Generate Task Test File
  */
 function generateTask() {
-  console.log('generateTask');
+  const newFileName = process.argv[5]; // FILE
+  const featDir = process.argv[3]; // FEATURE
+  const featDirPath = path.join(__dirname, featDir);
+  const featTasksDirPath = path.join(featDirPath, 'tasks');
+  const featTestDirPath = path.join(__dirname, '../test/app', featDir);
+
+  console.log(`Generating ${newFileName} file in tasks folder of ${featDir} feature...`);
+
+  // if directory exists
+  if (!fs.existsSync(featDirPath)) {
+    console.error(`Error: ${featDir} feature does not exists.`);
+    process.exit(1);
+  }
+
+  // must provide a file name
+  if (!newFileName) {
+    console.error(`Error: Please pass in file name.`);
+    process.exit(1);
+  }
+
+  // add .js
+  const newFileNameJS = newFileName.indexOf('.js') < 0 ? `${newFileName}.js` : newFileName;
+
+  // names
+  const upperName = featDir.toUpperCase();
+  const lowerName = featDir.toLowerCase();
+  const pascalName = featDir[0].toUpperCase() + '' + featDir.substring(1);
+  const camelName = featDir[0].toLowerCase() + '' + featDir.substring(1);
+
+  const NAMES = {upperName, lowerName, pascalName, camelName };
+
+  // task file
+  let fd = fs.openSync(path.join(featTasksDirPath, newFileNameJS), 'w');
+  fs.writeSync(fd, taskFileText({ ...NAMES, method: newFileName }), 0, 'utf-8');
+  fs.closeSync(fd);
+
+  console.log(`Created ${path.join(featTasksDirPath, newFileNameJS)}...`);
+
+  // task test file
+  fd = fs.openSync(path.join(featTestDirPath, `tasks/${newFileNameJS}`), 'w');
+  fs.writeSync(fd, tasksTestFileText({ ...NAMES, method: newFileName }), 0, 'utf-8');
+  fs.closeSync(fd);
+
+  console.log(`Created ${path.join(featTestDirPath, `tasks/${newFileNameJS}`)}...`);
+  console.log();
+  console.log('Remember to update: processor.js and tasks/index.js');
 }
 
 /**
@@ -263,11 +353,11 @@ function destroy() {
   const rmTestDirPath = path.join(__dirname, '../test/app', rmDir);
   const camelName = rmDir[0].toLowerCase() + '' + rmDir.substring(1);
 
-  console.log('Deleting ' + rmDir + ' feature...');
+  console.log(`Deleting ${rmDir} feature...`);
 
   // if directory exists
   if (!fs.existsSync(rmDirPath)) {
-    console.log('Error: ' + rmDir + ' feature does not exists.');
+    console.error(`Error: ${rmDir} feature does not exists.`);
     process.exit(1);
   }
 
@@ -292,7 +382,7 @@ function destroy() {
   console.log(`Removed '${camelName}' from database/sequence.js`);
 
   // Finished
-  console.log(rmDir + ' feature deleted!');
+  console.log(`${rmDir} feature deleted!`);
 }
 
 /**
@@ -300,7 +390,49 @@ function destroy() {
  * 2. Deletes Integration Test File
  */
 function destroyService() {
-  console.log('destroyService');
+  const rmFileName = process.argv[5] // file name
+  const rmDir = process.argv[3]; // NEW_FEATURE
+  const rmDirPath = path.join(__dirname, rmDir);
+  const rmServiceDirPath = path.join(rmDirPath, 'service');
+  const rmTestDirPath = path.join(__dirname, '../test/app', rmDir);
+
+  console.log(`Deleting ${rmFileName} service files...`);
+
+  // if directory exists
+  if (!fs.existsSync(rmDirPath)) {
+    console.error(`Error: ${rmDir} feature does not exists.`);
+    process.exit(1);
+  }
+
+  // must provide a file name
+  if (!rmFileName) {
+    console.error(`Error: Please pass in file name.`);
+    process.exit(1);
+  }
+
+  // add .js
+  const rmFileNameJS = rmFileName.indexOf('.js') < 0 ? `${rmFileName}.js` : rmFileName;
+
+  // files to remove
+  const rmServiceDirPathFile = path.join(rmServiceDirPath, rmFileNameJS);
+  const rmTestDirPathIntegrationFile = path.join(rmTestDirPath, 'integration', rmFileNameJS);
+
+  // if file exists
+  if (!fs.existsSync(rmServiceDirPathFile)) {
+    console.error(`Error: ${rmServiceDirPathFile} file does not exists.`);
+    process.exit(1);
+  }
+
+  // delete service file
+  fs.rmdirSync(rmServiceDirPathFile, { recursive: true });
+  console.log(`Deleted ${rmServiceDirPathFile}`);
+
+  // delete test integration file
+  fs.rmdirSync(rmTestDirPathIntegrationFile, { recursive: true });
+  console.log(`Deleted ${rmTestDirPathIntegrationFile}`);
+
+  console.log();
+  console.log('Remember to update: routes.js, controller.js and service/index.js');
 }
 
 /**
@@ -308,7 +440,49 @@ function destroyService() {
  * 2. Deletes Task Test File
  */
 function destroyTask() {
-  console.log('destroyTask');
+  const rmFileName = process.argv[5] // file name
+  const rmDir = process.argv[3]; // NEW_FEATURE
+  const rmDirPath = path.join(__dirname, rmDir);
+  const rmTasksDirPath = path.join(rmDirPath, 'tasks');
+  const rmTestDirPath = path.join(__dirname, '../test/app', rmDir);
+
+  console.log(`Deleting ${rmFileName} tasks files...`);
+
+  // if directory exists
+  if (!fs.existsSync(rmDirPath)) {
+    console.error(`Error: ${rmDir} feature does not exists.`);
+    process.exit(1);
+  }
+
+  // must provide a file name
+  if (!rmFileName) {
+    console.error(`Error: Please pass in file name.`);
+    process.exit(1);
+  }
+
+  // add .js
+  const rmFileNameJS = rmFileName.indexOf('.js') < 0 ? `${rmFileName}.js` : rmFileName;
+
+  // files to remove
+  const rmTasksDirPathFile = path.join(rmTasksDirPath, rmFileNameJS);
+  const rmTestDirPathTasksFile = path.join(rmTestDirPath, 'tasks', rmFileNameJS);
+
+  // if file exists
+  if (!fs.existsSync(rmTasksDirPathFile)) {
+    console.error(`Error: ${rmTasksDirPathFile} file does not exists.`);
+    process.exit(1);
+  }
+
+  // delete tasks file
+  fs.rmdirSync(rmTasksDirPathFile, { recursive: true });
+  console.log(`Deleted ${rmTasksDirPathFile}`);
+
+  // delete test tasks file
+  fs.rmdirSync(rmTestDirPathTasksFile, { recursive: true });
+  console.log(`Deleted ${rmTestDirPathTasksFile}`);
+
+  console.log();
+  console.log('Remember to update: processor.js and tasks/index.js');
 }
 
 /**
