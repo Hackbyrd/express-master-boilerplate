@@ -12,7 +12,6 @@ const _ = require('lodash');
 const Op = require('sequelize').Op; // for operator aliases like $gte, $eq
 const io = require('socket.io-emitter')(REDIS_URL); // to emit real-time events to client
 const joi = require('@hapi/joi'); // validations
-const bcrypt = require('bcrypt');
 const moment = require('moment-timezone');
 const passport = require('passport');
 const currency = require('currency.js');
@@ -56,7 +55,7 @@ module.exports = {
  *   400: ADMIN_BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST
  *   500: INTERNAL_SERVER_ERROR
  */
-async function V1ResetPassword(req, callback) {
+async function V1ResetPassword(req) {
   const schema = joi.object({
     email: joi.string().trim().lowercase().min(3).email().required(),
   });
@@ -64,7 +63,7 @@ async function V1ResetPassword(req, callback) {
   // validate
   const { error, value } = schema.validate(req.args);
   if (error)
-    return callback(null, errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));
+    return Promise.resolve(errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));
 
   // grab admin with this email
   try {
@@ -76,7 +75,7 @@ async function V1ResetPassword(req, callback) {
 
     // if admin cannot be found
     if (!findAdmin)
-      return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST));
+      return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST));
 
     // preparing for reset
     const passwordResetToken = randomString();
@@ -96,7 +95,7 @@ async function V1ResetPassword(req, callback) {
     const resetLink = `${ADMIN_CLIENT_HOST}/confirm-password?passwordResetToken=${passwordResetToken}`; // create URL using front end url
 
     // send confirmation email
-    const result = await email.mail({
+    const result = await email.send({
       from: email.emails.support.address,
       name: email.emails.support.name,
       subject: 'Your password has been changed. Please confirm.',
@@ -118,6 +117,6 @@ async function V1ResetPassword(req, callback) {
       resetLink: NODE_ENV === 'test' ? resetLink : null // only return reset link in dev and test env for testing purposes
     });
   } catch (error) {
-    return reject(error);
+    return Promise.reject(error);
   }
 } // END V1ResetPassword

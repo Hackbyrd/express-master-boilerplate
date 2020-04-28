@@ -18,5 +18,6 @@
 	"The new email cannot be the same as the current email.": "The new email cannot be the same as the current email.",
 	"The new email is already taken.": "The new email is already taken.",
 	"The new email is already being used.": "The new email is already being used.",
-	"Original password is incorrect, please try again.": "Original password is incorrect, please try again."
+	"Original password is incorrect, please try again.": "Original password is incorrect, please try again.",
+	"Invalid password reset token or reset token has expired.": "Invalid password reset token or reset token has expired."
 }

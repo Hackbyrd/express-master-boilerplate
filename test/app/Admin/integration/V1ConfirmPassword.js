@@ -16,6 +16,7 @@ const { NODE_ENV } = process.env;
 // third party
 const moment = require('moment-timezone');
 const i18n = require('i18n');
+const bcrypt = require('bcrypt');
 
 // server & models
 const app = require('../../../../server');
@@ -31,7 +32,7 @@ const { errorResponse, ERROR_CODES } = require('../../../../services/error');
 // helpers
 const { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');
 
-describe('Admin.V1ConfirmPassword', () => {
+describe('Admin.V1ConfirmPassword', async () => {
   // grab fixtures here
   const adminFix = require('../../../fixtures/fix1/admin');
 
@@ -42,172 +43,170 @@ describe('Admin.V1ConfirmPassword', () => {
   const routeUrl = `${routeVersion}${routePrefix}${routeMethod}`;
 
   // clear database
-  beforeEach(done => {
-    reset(done);
+  beforeEach(async () => {
+    await reset();
   });
 
   // Logged Out
-  describe('Role: Logged Out', () => {
+  describe('Role: Logged Out', async () => {
     // populate database with fixtures
-    beforeEach(done => {
-      populate('fix1', done);
+    beforeEach(async () => {
+      await populate('fix1');
     });
 
-    it('[logged-out] should confirm password successfully', done => {
+    it('[logged-out] should confirm password successfully', async () => {
       const admin1 = adminFix[0];
 
-      let params = {
-        email: admin1.email,
-        password1: 'NEWPASSWORD',
-        password2: 'NEWPASSWORD'
+      const params = {
+        email: admin1.email
       };
 
-      // call reset password
-      request(app)
-        .post(`${routeVersion}${routePrefix}/resetpassword`)
-        .send(params)
-        .end((err, res) => {
-          expect(res.statusCode).to.equal(200);
+      try {
+        // call reset password
+        const res = await request(app)
+          .post(`${routeVersion}${routePrefix}/resetpassword`)
+          .send(params);
 
-          // grab token
-          models.admin
-            .findByPk(admin1.id)
-            .then(foundAdmin => {
-              const params = {
-                passwordResetToken: foundAdmin.passwordResetToken
-              };
+        expect(res.statusCode).to.equal(200);
 
-              // confirm password
-              request(app)
-                .post(routeUrl)
-                .send(params)
-                .end((err, res) => {
-                  expect(res.statusCode).to.equal(200);
-                  expect(res.body).to.have.property('success', true);
+        // grab token
+        const foundAdmin = await models.admin.findByPk(admin1.id);
+        const params2 = {
+          passwordResetToken: foundAdmin.passwordResetToken,
+          password1: 'NEWPASSWORD',
+          password2: 'NEWPASSWORD'
+        };
 
-                  // grab admin again
-                  models.admin
-                    .findByPk(admin1.id)
-                    .then(updatedAdmin => {
-                      expect(updatedAdmin.password).to.equal(foundAdmin.resetPassword);
-                      expect(updatedAdmin.resetPassword).to.be.null;
-                      expect(updatedAdmin.passwordResetToken).to.be.null;
-                      done();
-                    })
-                    .catch(err => {
-                      throw err;
-                    });
-                }); // END call confirm password
-            })
-            .catch(err => {
-              throw err;
-            });
-        }); // END call reset password
+        // confirm password
+        const res2 = await request(app)
+          .post(routeUrl)
+          .send(params2);
+
+        expect(res2.statusCode).to.equal(200);
+        expect(res2.body).to.have.property('success', true);
+
+        // get updated admin
+        const updatedAdmin = await models.admin.findByPk(admin1.id);
+        const resetPassword = bcrypt.hashSync(params2.password1, updatedAdmin.salt);
+
+        expect(updatedAdmin.password).to.equal(resetPassword);
+        expect(updatedAdmin.passwordResetToken).to.be.null;
+      } catch (error) {
+        throw error;
+      }
     }); // END [logged-out] should confirm password successfully
 
-    it('[logged-out] should fail to confirm password if token is invalid', done => {
+    it('[logged-out] should fail to confirm password if token is invalid', async () => {
       const admin1 = adminFix[0];
 
-      let params = {
-        email: admin1.email,
-        password1: 'NEWPASSWORD',
-        password2: 'NEWPASSWORD'
+      const params = {
+        email: admin1.email
       };
 
-      // call reset password
-      request(app)
-        .post(`${routeVersion}${routePrefix}/resetpassword`)
-        .send(params)
-        .end((err, res) => {
-          expect(res.statusCode).to.equal(200);
+      try {
+        // call reset password
+        const res = await request(app)
+          .post(`${routeVersion}${routePrefix}/resetpassword`)
+          .send(params);
 
-          // grab token
-          models.admin
-            .findByPk(admin1.id)
-            .then(foundAdmin => {
-              const params = {
-                passwordResetToken: 'gibberish'
-              };
+        expect(res.statusCode).to.equal(200);
 
-              // confirm password
-              request(app)
-                .post(routeUrl)
-                .send(params)
-                .end((err, res) => {
-                  expect(res.statusCode).to.equal(400);
-                  expect(res.body).to.deep.equal(
-                    errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('Invalid password reset token or reset token has expired.'))
-                  );
-                  done();
-                }); // END call confirm password
-            })
-            .catch(err => {
-              throw err;
-            });
-        }); // END call reset password
+        // grab token
+        const params2 = {
+          passwordResetToken: 'gibberish',
+          password1: 'NEWPASSWORD',
+          password2: 'NEWPASSWORD'
+        };
+
+        // confirm password
+        const res2 = await request(app)
+          .post(routeUrl)
+          .send(params2);
+
+        expect(res2.statusCode).to.equal(400);
+        expect(res2.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('Invalid password reset token or reset token has expired.')));
+      } catch (error) {
+        throw error;
+      }
     }); // END [logged-out] should fail to confirm password if token is invalid
 
-    it('[logged-out] should fail to confirm password if token has expired', done => {
+    it('[logged-out] should fail to confirm password if token has expired', async () => {
       const admin1 = adminFix[0];
 
-      let params = {
-        email: admin1.email,
-        password1: 'NEWPASSWORD',
-        password2: 'NEWPASSWORD'
+      const params = {
+        email: admin1.email
       };
 
-      // call reset password
-      request(app)
-        .post(`${routeVersion}${routePrefix}/resetpassword`)
-        .send(params)
-        .end((err, res) => {
-          expect(res.statusCode).to.equal(200);
+      try {
+        // call reset password
+        const res = await request(app)
+          .post(`${routeVersion}${routePrefix}/resetpassword`)
+          .send(params);
 
-          // update expire
-          models.admin
-            .update(
-              {
-                passwordResetExpire: moment.tz('UTC').subtract('5', 'days')
-              },
-              {
-                where: {
-                  email: params.email
-                }
-              }
-            )
-            .then(() => {
-              // grab token
-              models.admin
-                .findByPk(admin1.id)
-                .then(foundAdmin => {
-                  const params = {
-                    passwordResetToken: foundAdmin.passwordResetToken
-                  };
+        expect(res.statusCode).to.equal(200);
 
-                  // confirm password
-                  request(app)
-                    .post(routeUrl)
-                    .send(params)
-                    .end((err, res) => {
-                      expect(res.statusCode).to.equal(400);
-                      expect(res.body).to.deep.equal(
-                        errorResponse(
-                          i18n,
-                          ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS,
-                          i18n.__('Invalid password reset token or reset token has expired.')
-                        )
-                      );
-                      done();
-                    }); // END call confirm password
-                })
-                .catch(err => {
-                  throw err;
-                }); // grab admin
-            })
-            .catch(err => {
-              throw err;
-            }); // update admin
-        }); // END call reset password
+        // grab token
+        const foundAdmin = await models.admin.findByPk(admin1.id);
+        const params2 = {
+          passwordResetToken: foundAdmin.passwordResetToken,
+          password1: 'NEWPASSWORD',
+          password2: 'NEWPASSWORD'
+        };
+
+        // update expiration of password reset token
+        await models.admin.update({
+          passwordResetExpire: moment.tz('UTC').subtract('5', 'days')
+        }, {
+          where: {
+            email: params.email
+          }
+        });
+
+        // confirm password
+        const res2 = await request(app)
+          .post(routeUrl)
+          .send(params2);
+
+        expect(res2.statusCode).to.equal(400);
+        expect(res2.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('Invalid password reset token or reset token has expired.')));
+      } catch (error) {
+        throw error;
+      }
     }); // END [logged-out] should fail to confirm password if token is invalid
+
+    it('[logged-out] should fail to call confirm password if password1 and password2 are not the same', async () => {
+      const admin1 = adminFix[0];
+
+      const params = {
+        email: admin1.email
+      };
+
+      try {
+        // call reset password
+        const res = await request(app)
+          .post(`${routeVersion}${routePrefix}/resetpassword`)
+          .send(params);
+
+        expect(res.statusCode).to.equal(200);
+
+        // grab token
+        const foundAdmin = await models.admin.findByPk(admin1.id);
+        const params2 = {
+          passwordResetToken: foundAdmin.passwordResetToken,
+          password1: 'NEWPASSWORD1',
+          password2: 'NEWPASSWORD2'
+        };
+
+        // confirm password
+        const res2 = await request(app)
+          .post(routeUrl)
+          .send(params2);
+
+        expect(res2.statusCode).to.equal(400);
+        expect(res2.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('The passwords you entered do not match.')));
+      } catch (error) {
+        throw error;
+      }
+    }); // END [logged-out] should fail to call confirm password because email does not exist
   }); // END Role: Logged Out
 }); // END Admin.V1ConfirmPassword

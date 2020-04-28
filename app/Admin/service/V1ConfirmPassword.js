@@ -12,6 +12,7 @@ const _ = require('lodash');
 const Op = require('sequelize').Op; // for operator aliases like $gte, $eq
 const io = require('socket.io-emitter')(REDIS_URL); // to emit real-time events to client
 const joi = require('@hapi/joi'); // validations
+const bcrypt = require('bcrypt');
 const moment = require('moment-timezone');
 const passport = require('passport');
 const currency = require('currency.js');
