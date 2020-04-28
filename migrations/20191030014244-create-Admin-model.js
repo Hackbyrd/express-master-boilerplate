@@ -65,13 +65,6 @@ module.exports = {
         allowNull: false
       },
 
-      // The new hashed password that has not been confirmed yet, will become the user's secret once it has been confirmed. Used to help manage changing passwords
-      resetPassword: {
-        type: Sequelize.STRING,
-        allowNull: true,
-        defaultValue: null
-      },
-
       // A token to help facilitate changing passwords
       passwordResetToken: {
         type: Sequelize.STRING,

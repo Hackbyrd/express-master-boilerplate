@@ -58,7 +58,7 @@ module.exports = {
  *   401: UNAUTHORIZED
  *   500: INTERNAL_SERVER_ERROR
  */
-async function V1Query(req, callback) {
+async function V1Query(req) {
   const schema = joi.object({
     active: joi.boolean().optional(),
 
@@ -71,7 +71,7 @@ async function V1Query(req, callback) {
   // validate
   const { error, value } = schema.validate(req.args);
   if (error)
-    return callback(null, errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));
+    return Promise.resolve(errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));
   req.args = value; // updated arguments with type conversion
 
   // grab
@@ -90,26 +90,22 @@ async function V1Query(req, callback) {
     whereStmt[key] = req.args[key];
   });
 
-  try {
-    // get admins
-    const result = await models.admin.findAndCountAll({
-      where: whereStmt,
-      limit: limit,
-      offset: getOffset(page, limit),
-      order: getOrdering(sort)
-    });
+  // get admins
+  const result = await models.admin.findAndCountAll({
+    where: whereStmt,
+    limit: limit,
+    offset: getOffset(page, limit),
+    order: getOrdering(sort)
+  }).catch(err => Promise.reject(err));
 
-    // return success
-    return callback(null, {
-      status: 200,
-      success: true,
-      admins: result.rows, // all admins
-      page: page,
-      limit: limit,
-      total: result.count, // the total count
-      totalPages: Math.ceil(result.count / limit)
-    });
-  } catch (err) {
-    return callback(err);
-  }
+  // return success
+  return Promise.resolve({
+    status: 200,
+    success: true,
+    admins: result.rows, // all admins
+    page: page,
+    limit: limit,
+    total: result.count, // the total count
+    totalPages: Math.ceil(result.count / limit)
+  });
 } // END V1Query

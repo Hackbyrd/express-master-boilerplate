@@ -59,7 +59,7 @@ module.exports = {
  *   401: UNAUTHORIZED
  *   500: INTERNAL_SERVER_ERROR
  */
-async function V1Update(req, callback) {
+async function V1Update(req) {
   const schema = joi.object({
     timezone: joi.string().trim().optional(),
     locale: joi.string().trim().optional(),
@@ -70,7 +70,7 @@ async function V1Update(req, callback) {
   // validate
   const { error, value } = schema.validate(req.args);
   if (error)
-    return callback(null, errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));
+    return Promise.resolve(errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));
 
   // updated arguments with type conversion
   const oldArgs = req.args;
@@ -78,7 +78,7 @@ async function V1Update(req, callback) {
 
   // check timezone
   if (req.args.timezone && !isValidTimezone(req.args.timezone))
-    return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__('Time zone is invalid.')));
+    return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__('Time zone is invalid.')));
 
   try {
     // update admin
@@ -99,12 +99,12 @@ async function V1Update(req, callback) {
     io.to(`${SOCKET_ROOMS.GLOBAL}`).emit(SOCKET_EVENTS.ADMIN_UPDATED, data);
     io.to(`${SOCKET_ROOMS.ADMIN}${findAdmin.id}`).emit(SOCKET_EVENTS.ADMIN_UPDATED, data);
 
-    return callback(null, {
+    return Promise.resolve({
       status: 200,
       success: true,
       admin: findAdmin.dataValues
     });
-  } catch (err) {
-    return callback(err);
+  } catch (error) {
+    return Promise.reject(error);
   }
 } // END V1Update

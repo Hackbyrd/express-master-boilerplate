@@ -32,10 +32,9 @@ const { errorResponse, ERROR_CODES } = require('../../../../services/error');
 // helpers
 const { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');
 
-describe('Admin.V1UpdateEmail', () => {
+describe('Admin.V1UpdateEmail', async () => {
   // grab fixtures here
   const adminFix = require('../../../fixtures/fix1/admin');
-  const userFix = require('../../../fixtures/fix1/user');
 
   // url of the api method we are testing
   const routeVersion = '/v1';
@@ -44,98 +43,99 @@ describe('Admin.V1UpdateEmail', () => {
   const routeUrl = `${routeVersion}${routePrefix}${routeMethod}`;
 
   // clear database
-  beforeEach(done => {
-    reset(done);
+  beforeEach(async () => {
+    await reset();
   });
 
   // Logged Out
-  describe('Role: Logged Out', () => {
+  describe('Role: Logged Out', async () => {
     // populate database with fixtures
-    beforeEach(done => {
-      populate('fix1', done);
+    beforeEach(async () => {
+      await populate('fix1');
     });
 
-    it('[logged-out] should fail to update email', done => {
+    it('[logged-out] should fail to update email', async () => {
       // update request
-      request(app)
-        .get(routeUrl)
-        .end((err, res) => {
-          expect(err).to.be.null;
-          expect(res.statusCode).to.equal(401);
-          expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.UNAUTHORIZED));
-          done();
-        }); // END update request
+      try {
+        const res = await request(app).get(routeUrl);
+        expect(res.statusCode).to.equal(401);
+        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.UNAUTHORIZED));
+      } catch (error) {
+        throw error;
+      }
     }); // END [logged-out] should fail to update email
   }); // END Role: Logged Out
 
   // Admin
-  describe('Role: Admin', () => {
+  describe('Role: Admin', async () => {
     const jwt = 'jwt-admin';
 
     // populate database with fixtures
-    beforeEach(done => {
-      populate('fix1', done);
+    beforeEach(async () => {
+      await populate('fix1');
     });
 
-    it('[admin] should update email successfully', done => {
+    it('[admin] should update email successfully', async () => {
       const admin1 = adminFix[0];
-      const newEmail = 'test@example.com';
+      const email = 'test@example.com';
 
-      // login admin
-      adminLogin(app, routeVersion, request, admin1, (err, res, token) => {
+      try {
+        // login admin
+        const { token } = await adminLogin(app, routeVersion, request, admin1);
+
         const params = {
-          newEmail: newEmail
+          email: email
         };
 
-        // update request
-        request(app)
+        // read admin request
+        const res = await request(app)
           .post(routeUrl)
           .set('authorization', `${jwt} ${token}`)
           .send(params)
-          .end((err, res) => {
-            expect(err).to.be.null;
-            expect(res.statusCode).to.equal(200);
-            expect(res.body).to.have.property('success', true);
 
-            // find admin to see if the email is updated
-            models.admin.findByPk(admin1.id).then(foundAdmin => {
-              expect(foundAdmin.email).to.equal(params.newEmail);
-              done();
-            }); // END find admin
-          }); // END update request
-      }); // END login admin
+        expect(res.statusCode).to.equal(200);
+        expect(res.body).to.have.property('success', true);
+
+        // find admin to see if the email is updated
+        const foundAdmin = await models.admin.findByPk(admin1.id);
+        expect(foundAdmin.email).to.equal(params.email);
+      } catch (error) {
+        throw error;
+      }
     }); // END [admin] should update email successfully
 
-    it('[admin] should fail to update if new email is the same as the current email', done => {
+    it('[admin] should fail to update if new email is the same as the current email', async () => {
       const admin1 = adminFix[0];
 
-      // login admin
-      adminLogin(app, routeVersion, request, admin1, (err, res, token) => {
+      try {
+        // login admin
+        const { token } = await adminLogin(app, routeVersion, request, admin1);
+
         const params = {
-          newEmail: admin1.email
+          email: admin1.email
         };
 
         // call update email
-        request(app)
+        const res = await request(app)
           .post(routeUrl)
           .set('authorization', `${jwt} ${token}`)
-          .send(params)
-          .end((err, res) => {
-            expect(res.statusCode).to.equal(400);
-            expect(res.body).to.deep.equal(
-              errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('New email cannot be the same as the current email.'))
-            );
-            done();
-          }); // END call update email
-      }); // END login admin
+          .send(params);
+
+        expect(res.statusCode).to.equal(400);
+        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('The new email cannot be the same as the current email.')));
+      } catch (error) {
+        throw error;
+      }
     }); // END [admin] should fail to update if new email is the same as the current email
 
-    it('[admin] should not update email if the new email is already being used', done => {
+    it('[admin] should not update email if the new email is already being used', async () => {
       const admin1 = adminFix[0];
 
-      // login admin
-      adminLogin(app, routeVersion, request, admin1, (err, res, token) => {
-        let params = {
+      try {
+        // login admin
+        const { token } = await adminLogin(app, routeVersion, request, admin1);
+
+        const params = {
           name: 'Admin 3',
           active: true,
           email: 'admin-3@example.com',
@@ -147,33 +147,28 @@ describe('Admin.V1UpdateEmail', () => {
           acceptedTerms: true
         };
 
-        // create second admin
-        request(app)
+        // create new admin request
+        const res = await request(app)
           .post(`${routeVersion}${routePrefix}/create`)
           .set('authorization', `${jwt} ${token}`)
-          .send(params)
-          .end((err, res) => {
-            expect(err).to.be.null;
-            expect(res.statusCode).to.equal(201);
+          .send(params);
+        expect(res.statusCode).to.equal(201);
 
-            params = {
-              newEmail: 'admin-3@example.com'
-            };
+        const params2 = {
+          email: 'admin-3@example.com'
+        };
 
-            // call update email
-            request(app)
-              .post(routeUrl)
-              .set('authorization', `${jwt} ${token}`)
-              .send(params)
-              .end((err, res) => {
-                expect(res.statusCode).to.equal(400);
-                expect(res.body).to.deep.equal(
-                  errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('The new email is already being used.'))
-                );
-                done();
-              }); // END call update email
-          }); // END create second admin
-      }); // END login admin
+        // update email request
+        const res2 = await request(app)
+          .post(routeUrl)
+          .set('authorization', `${jwt} ${token}`)
+          .send(params2);
+
+        expect(res2.statusCode).to.equal(400);
+        expect(res2.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('The new email is already taken.')));
+      } catch (error) {
+        throw error;
+      }
     }); // END [admin] should not update email if the new email is already being used
   }); // END Role: Admin
 }); // END Admin.V1UpdateEmail

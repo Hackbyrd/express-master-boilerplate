@@ -15,38 +15,38 @@ const LOCAL_ERROR_CODES = {
   ADMIN_BAD_REQUEST_INVALID_CREDENTIALS: {
     error: 'ADMIN.BAD_REQUEST_INVALID_CREDENTIALS',
     status: 400,
-    messages: ['One or more request arguments are invalid.']
+    messages: ['Login failed. Email and/or password is incorrect.', 'An admin account with this email already exists, please try another email.']
   },
 
   ADMIN_BAD_REQUEST_INVALID_ARGUMENTS: {
     error: 'ADMIN.BAD_REQUEST_INVALID_ARGUMENTS',
     status: 400,
-    messages: ['Login failed. Email and/or password is incorrect.', 'An account with this email already exists, please try again email.']
+    messages: ['One or more request arguments are invalid.']
   },
 
   ADMIN_BAD_REQUEST_DOES_NOT_EXIST: {
     error: 'ADMIN.BAD_REQUEST_DOES_NOT_EXIST',
     status: 400,
-    messages: ['Record does not exist.']
+    messages: ['Admin user does not exist.']
   },
 
   // ACCOUNT
   ADMIN_BAD_REQUEST_ACCOUNT_INACTIVE: {
     error: 'ADMIN.BAD_REQUEST_ACCOUNT_INACTIVE',
     status: 400,
-    messages: ['Login failed. Account is inactive.']
+    messages: ['Login failed. Admin account is inactive.']
   },
 
   ADMIN_BAD_REQUEST_ACCOUNT_DELETED: {
     error: 'ADMIN.BAD_REQUEST_ACCOUNT_DELETED',
     status: 400,
-    messages: ['Login failed. Account has been deleted.']
+    messages: ['Login failed. Admin account has been deleted.']
   },
 
   ADMIN_BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST: {
     error: 'ADMIN.BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST',
     status: 400,
-    messages: ['Account does not exist.']
+    messages: ['Admin account does not exist.']
   }
 
   // place more local error codes below

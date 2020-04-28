@@ -19,35 +19,13 @@ const ignoreDirectories = ['node_modules', '.git', 'redis'];
 
 // methods to detect weather a file is a directory or a .js file
 const isDirectory = source => fs.lstatSync(source).isDirectory();
-const isJsFile = source =>
-  fs.lstatSync(source).isFile() &&
-  source
-    .trim()
-    .substring(source.length - 3)
-    .toLowerCase() === '.js';
-const isJsonFile = source =>
-  fs.lstatSync(source).isFile() &&
-  source
-    .trim()
-    .substring(source.length - 5)
-    .toLowerCase() === '.json';
+const isJsFile = source => fs.lstatSync(source).isFile() && source.trim().substring(source.length - 3).toLowerCase() === '.js';
+const isJsonFile = source => fs.lstatSync(source).isFile() && source.trim().substring(source.length - 5).toLowerCase() === '.json';
 
 // functions to get directories and js files
-const getDirectories = source =>
-  fs
-    .readdirSync(source)
-    .map(name => path.join(source, name))
-    .filter(isDirectory);
-const getJsFiles = source =>
-  fs
-    .readdirSync(source)
-    .map(name => path.join(source, name))
-    .filter(isJsFile);
-const getJsonFiles = source =>
-  fs
-    .readdirSync(source)
-    .map(name => path.join(source, name))
-    .filter(isJsonFile);
+const getDirectories = source => fs.readdirSync(source).map(name => path.join(source, name)).filter(isDirectory);
+const getJsFiles = source => fs.readdirSync(source).map(name => path.join(source, name)).filter(isJsFile);
+const getJsonFiles = source => fs.readdirSync(source).map(name => path.join(source, name)).filter(isJsonFile);
 
 // store all the directories to format
 let stack = [currentDir];
@@ -78,7 +56,8 @@ function formatDirectory(curDir, options) {
       }
 
       // if not in ignore directories
-      if (addDir) stack.push(directory);
+      if (addDir)
+        stack.push(directory);
     }
 
     // format js files
@@ -108,7 +87,8 @@ function formatDirectory(curDir, options) {
 // load prettier configuration
 prettier.resolveConfig(process.cwd()).then(options => {
   // go through the stack
-  while (stack.length) formatDirectory(stack.pop(), options);
+  while (stack.length)
+    formatDirectory(stack.pop(), options);
 
   console.log('Formatting Finished.');
 });

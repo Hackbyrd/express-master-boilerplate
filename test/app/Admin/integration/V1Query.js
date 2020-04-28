@@ -31,10 +31,9 @@ const { errorResponse, ERROR_CODES } = require('../../../../services/error');
 // helpers
 const { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');
 
-describe('Admin.V1Query', () => {
+describe('Admin.V1Query', async () => {
   // grab fixtures here
   const adminFix = require('../../../fixtures/fix1/admin');
-  const userFix = require('../../../fixtures/fix1/user');
 
   // url of the api method we are testing
   const routeVersion = '/v1';
@@ -43,48 +42,44 @@ describe('Admin.V1Query', () => {
   const routeUrl = `${routeVersion}${routePrefix}${routeMethod}`;
 
   // clear database
-  beforeEach(done => {
-    reset(done);
+  beforeEach(async () => {
+    await reset();
   });
 
   // Logged Out
-  describe('Role: Logged Out', () => {
+  describe('Role: Logged Out', async () => {
     // populate database with fixtures
-    beforeEach(done => {
-      populate('fix1', done);
+    beforeEach(async () => {
+      await populate('fix1');
     });
 
-    it('[logged-out] should fail to query user', done => {
-      const params = {
-        id: 100000
-      };
-
-      // query request
-      request(app)
-        .post(routeUrl)
-        .end((err, res) => {
-          expect(err).to.be.null;
-          expect(res.statusCode).to.equal(401);
-          expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.UNAUTHORIZED));
-          done();
-        }); // END query request
+    it('[logged-out] should fail to query user', async () => {
+      try {
+        const res = await request(app).get(routeUrl);
+        expect(res.statusCode).to.equal(401);
+        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.UNAUTHORIZED));
+      } catch (error) {
+        throw error;
+      }
     }); // END [logged-out] should fail to query user
   }); // END Role: Logged Out
 
   // Admin
-  describe('Role: Admin', () => {
+  describe('Role: Admin', async () => {
     const jwt = 'jwt-admin';
 
     // populate database with fixtures
-    beforeEach(done => {
-      populate('fix1', done);
+    beforeEach(async () => {
+      await populate('fix1');
     });
 
-    it('[admin] should query for admins successfully', done => {
+    it('[admin] should query for admins successfully', async () => {
       const admin1 = adminFix[0];
 
-      // login admin
-      adminLogin(app, routeVersion, request, admin1, (err, res, token) => {
+      try {
+        // login admin
+        const { token } = await adminLogin(app, routeVersion, request, admin1);
+
         const params = {
           name: 'Admin 3',
           active: true,
@@ -97,68 +92,66 @@ describe('Admin.V1Query', () => {
           acceptedTerms: true
         };
 
-        // create third admin
-        request(app)
+        // create admin request
+        const res = await request(app)
           .post(`${routeVersion}${routePrefix}/create`)
           .set('authorization', `${jwt} ${token}`)
-          .send(params)
-          .end((err, res) => {
-            expect(err).to.be.null;
-            expect(res.statusCode).to.equal(201);
+          .send(params);
 
-            const params2 = {
-              active: true,
-              sort: '-id',
-              page: 1,
-              limit: 10
-            };
+        expect(res.statusCode).to.equal(201);
 
-            // query request
-            request(app)
-              .post(routeUrl)
-              .set('authorization', `${jwt} ${token}`)
-              .send(params2)
-              .end((err, res) => {
-                expect(err).to.be.null;
-                expect(res.statusCode).to.equal(200);
-                expect(res.body).to.have.property('success', true);
-                expect(res.body).to.have.property('admins');
-                expect(res.body.admins.length).to.equal(3);
-                expect(res.body).to.have.property('page', 1);
-                expect(res.body).to.have.property('limit', 10);
-                expect(res.body).to.have.property('total', 3);
-                done();
-              }); // END query request
-          }); // END create third admin
-      }); // END login admin
+        const params2 = {
+          active: true,
+          sort: '-id',
+          page: 1,
+          limit: 10
+        };
+
+        // query admin request
+        const res2 = await request(app)
+          .post(routeUrl)
+          .set('authorization', `${jwt} ${token}`)
+          .send(params2);
+
+        expect(res2.statusCode).to.equal(200);
+        expect(res2.body).to.have.property('success', true);
+        expect(res2.body).to.have.property('admins');
+        expect(res2.body.admins.length).to.equal(3);
+        expect(res2.body).to.have.property('page', 1);
+        expect(res2.body).to.have.property('limit', 10);
+        expect(res2.body).to.have.property('total', 3);
+      } catch (error) {
+        throw error;
+      }
     }); // END [admin] should query for admins successfully
 
-    it('[admin] should query for admins successfully but return 0 admins', done => {
+    it('[admin] should query for admins successfully but return 0 admins', async () => {
       const admin1 = adminFix[0];
 
-      // login admin
-      adminLogin(app, routeVersion, request, admin1, (err, res, token) => {
+      try {
+        // login admin
+        const { token } = await adminLogin(app, routeVersion, request, admin1);
+
         const params = {
           active: false
         };
 
-        // query request
-        request(app)
+        // query admin request
+        const res = await request(app)
           .post(routeUrl)
           .set('authorization', `${jwt} ${token}`)
-          .send(params)
-          .end((err, res) => {
-            expect(err).to.be.null;
-            expect(res.statusCode).to.equal(200);
-            expect(res.body).to.have.property('success', true);
-            expect(res.body).to.have.property('admins');
-            expect(res.body.admins.length).to.equal(0);
-            expect(res.body).to.have.property('page', 1);
-            expect(res.body).to.have.property('limit', 25);
-            expect(res.body).to.have.property('total', 0);
-            done();
-          }); // END query request
-      }); // END login admin
+          .send(params);
+
+        expect(res.statusCode).to.equal(200);
+        expect(res.body).to.have.property('success', true);
+        expect(res.body).to.have.property('admins');
+        expect(res.body.admins.length).to.equal(0);
+        expect(res.body).to.have.property('page', 1);
+        expect(res.body).to.have.property('limit', 25);
+        expect(res.body).to.have.property('total', 0);
+      } catch (error) {
+        throw error;
+      }
     }); // END [admin] should query for admins successfully but return 0 admins
   }); // END Role: Admin
 }); // END Admin.V1Query

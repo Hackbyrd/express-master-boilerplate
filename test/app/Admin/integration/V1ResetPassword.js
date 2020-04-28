@@ -35,7 +35,6 @@ const { adminLogin, userLogin, reset, populate } = require('../../../../helpers/
 describe('Admin.V1ResetPassword', () => {
   // grab fixtures here
   const adminFix = require('../../../fixtures/fix1/admin');
-  const userFix = require('../../../fixtures/fix1/user');
 
   // url of the api method we are testing
   const routeVersion = '/v1';

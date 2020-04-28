@@ -55,39 +55,31 @@ module.exports = {
  *   401: UNAUTHORIZED
  *   500: INTERNAL_SERVER_ERROR
  */
-async function V1Read(req, callback) {
+async function V1Read(req) {
   const schema = joi.object({
-    id: joi
-      .number()
-      .min(1)
-      .default(req.admin.id)
-      .optional()
+    id: joi.number().min(1).default(req.admin.id).optional()
   });
 
   // validate
   const { error, value } = schema.validate(req.args);
   if (error)
-    return callback(null, errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));
+    return Promise.resolve(errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));
   req.args = value; // updated arguments with type conversion
 
   // find admin
-  try {
-    const findAdmin = await models.admin.findByPk(req.args.id, {
-      attributes: {
-        exclude: models.admin.getSensitiveData() // remove sensitive data
-      }
-    });
+  const findAdmin = await models.admin.findByPk(req.args.id, {
+    attributes: {
+      exclude: models.admin.getSensitiveData() // remove sensitive data
+    }
+  }).catch(err => Promise.reject(error));
 
-    // check if admin exists
-    if (!findAdmin)
-      return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST));
+  // check if admin exists
+  if (!findAdmin)
+    return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST));
 
-    return callback(null, {
-      status: 200,
-      success: true,
-      admin: findAdmin.dataValues
-    });
-  } catch (err) {
-    return callback(err);
-  }
+  return Promise.resolve({
+    status: 200,
+    success: true,
+    admin: findAdmin.dataValues
+  });
 } // END V1Read

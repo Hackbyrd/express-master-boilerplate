@@ -46,7 +46,7 @@ module.exports = {
  * req.params = {}
  * req.args = {
  *   id - (NUMBER - OPTIONAL): The id of the admin
- *   newEmail - (STRING - REQUIRED): - the new email to update the current email to
+ *   email - (STRING - REQUIRED): - the new email to update the current email to
  * }
  *
  * Success: Return a true.
@@ -56,47 +56,48 @@ module.exports = {
  *   401: UNAUTHORIZED
  *   500: INTERNAL_SERVER_ERROR
  */
-async function V1UpdateEmail(req, callback) {
+async function V1UpdateEmail(req) {
   const schema = joi.object({
     id: joi.number().integer().min(1).optional(),
-    newEmail: joi.string().min(3).trim().lowercase().email().required()
+    email: joi.string().trim().lowercase().min(3).email().required()
   });
 
   // validate
   const { error, value } = schema.validate(req.args);
-  if (error) return callback(null, errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));
-
+  if (error)
+    return Promise.resolve(errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));
   req.args = value; // updated arguments with type conversion
 
-  //checks if the new email is different from the existing one
-  if (req.args.newEmail === req.admin.email)
-    return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__('New email cannot be the same as the current email.')));
+  // checks if the new email is different from the existing one
+  if (req.args.email === req.admin.email)
+    return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__('The new email cannot be the same as the current email.')));
 
   try {
     // checks if any other admin is using the new email
     const findAdmin = await models.admin.findOne({
       where: {
-        email: req.args.newEmail
+        email: req.args.email
       }
     });
 
+    // email already being used
     if (findAdmin)
-      return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__('The new email is already being used.')));
+      return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__('The new email is already taken.')));
 
     // update admin
     await models.admin.update({
-      email: req.args.newEmail
+      email: req.args.email
     }, {
       where: {
         id: req.admin.id
       }
     });
 
-    return callback(null, {
+    return Promise.resolve({
       status: 200,
       success: true
     });
-  } catch (err) {
-    return callback(err);
+  } catch (error) {
+    return Promise.reject(error);
   }
 } // END V1UpdateEmail

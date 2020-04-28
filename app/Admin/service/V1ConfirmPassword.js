@@ -47,6 +47,8 @@ module.exports = {
  * req.params = {}
  * req.args = {
  *   passwordResetToken - (STRING - REQUIRED): The password reset token to confirm new password
+ *   password1 - (STRING - REQUIRED): password 1
+ *   password2 - (STRING - REQUIRED): password 2
  * }
  *
  * Success: Return a admin and JWT.
@@ -56,16 +58,17 @@ module.exports = {
  *   401: UNAUTHORIZED
  *   500: INTERNAL_SERVER_ERROR.
  */
-async function V1ConfirmPassword(req, callback) {
+async function V1ConfirmPassword(req) {
   const schema = joi.object({
-    passwordResetToken: joi.string().required()
+    passwordResetToken: joi.string().required(),
+    password1: joi.string().min(8).required(),
+    password2: joi.string().min(8).required()
   });
 
   // validate
   const { error, value } = schema.validate(req.args);
   if (error)
-    return callback(null, errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));
-
+    return Promise.resolve(errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));
   req.args = value; // updated arguments with type conversion
 
   try {
@@ -80,31 +83,34 @@ async function V1ConfirmPassword(req, callback) {
     });
 
     // if admin does not exists
-    if (!getAdmin) {
-      return callback(
-        null,
-        errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__('Invalid password reset token or reset token has expired.'))
-      );
-    }
+    if (!getAdmin)
+      return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__('Invalid password reset token or reset token has expired.')));
+
+    // check password1 and password2 equality
+    const msg = checkPasswords(req.args.password1, req.args.password2, 8);
+    if (msg !== true)
+      return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__(msg)));
+
+    // generate new password
+    const newPassword = bcrypt.hashSync(req.args.password1, getAdmin.salt);
 
     // update new password
     await models.admin.update({
-      password: getAdmin.resetPassword, // set to resetPassword
-      resetPassword: null,
+      password: newPassword, // set to resetPassword
       passwordResetToken: null
     }, {
-      fields: ['password', 'resetPassword', 'passwordResetToken'], // only these fields
+      fields: ['password', 'passwordResetToken'], // only these fields
       where: {
         id: getAdmin.id
       }
     });
 
     // return success
-    return callback(null, {
+    return Promise.resolve({
       status: 200,
       success: true
     });
-  } catch (err) {
-    return callback(err);
+  } catch (error) {
+    return Promise.reject(error);
   }
 } // END confirmPassword

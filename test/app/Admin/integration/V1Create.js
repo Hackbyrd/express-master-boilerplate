@@ -59,7 +59,7 @@ describe('Admin.V1Create', async () => {
         expect(res.statusCode).to.equal(401);
         expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.UNAUTHORIZED));
       } catch (error) {
-        expect(error).to.be.null();
+        throw error;
       }
     }); // END [logged-out] should fail to create admin
   }); // END Role: Logged Out
@@ -133,12 +133,14 @@ describe('Admin.V1Create', async () => {
       }
     }); // END [admin] should create an admin successfully
 
-    it('[admin] should not create new admin if passwords are not the same', done => {
+    it('[admin] should not create new admin if passwords are not the same', async () => {
       const admin1 = adminFix[0];
 
-      // login admin
-      adminLogin(app, routeVersion, request, admin1, (err, res, token) => {
-        let params = {
+      try {
+        // login admin
+        const { token } = await adminLogin(app, routeVersion, request, admin1);
+
+        const params = {
           name: 'Jonathan Chen',
           active: true,
           email: 'new-admin@example.com',
@@ -150,26 +152,27 @@ describe('Admin.V1Create', async () => {
           acceptedTerms: true
         };
 
-        request(app)
+        // create admin request
+        const res = await request(app)
           .post(routeUrl)
           .set('authorization', `${jwt} ${token}`)
-          .send(params)
-          .end((err, res) => {
-            expect(res.statusCode).to.equal(400);
-            expect(res.body).to.deep.equal(
-              errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('The passwords you entered do not match.'))
-            );
-            done();
-          });
-      }); // END login admin
+          .send(params);
+
+        expect(res.statusCode).to.equal(400);
+        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('The passwords you entered do not match.')));
+      } catch (error) {
+        throw error;
+      }
     }); // END [admin] should not create new admin if passwords are not the same
 
-    it('[admin] should not create new admin if acceptedTerms is false', done => {
+    it('[admin] should not create new admin if acceptedTerms is false', async () => {
       const admin1 = adminFix[0];
 
-      // login admin
-      adminLogin(app, routeVersion, request, admin1, (err, res, token) => {
-        let params = {
+      try {
+        // login admin
+        const { token } = await adminLogin(app, routeVersion, request, admin1);
+
+        const params = {
           name: 'Jonathan Chen',
           active: true,
           email: 'new-admin@example.com',
@@ -181,76 +184,81 @@ describe('Admin.V1Create', async () => {
           acceptedTerms: false
         };
 
-        request(app)
+        // create admin request
+        const res = await request(app)
           .post(routeUrl)
           .set('authorization', `${jwt} ${token}`)
-          .send(params)
-          .end((err, res) => {
-            expect(res.statusCode).to.equal(400);
-            expect(res.body).to.deep.equal(
-              errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('You must agree to Terms of Service.'))
-            );
-            done();
-          });
-      }); // END login admin
+          .send(params);
+
+        expect(res.statusCode).to.equal(400);
+        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('You must agree to Terms of Service.')));
+      } catch (error) {
+        throw error;
+      }
     }); // END [admin] should not create new admin if acceptedTerms is false
 
-    it('[admin] should not create new admin if email already exists', done => {
+    it('[admin] should not create new admin if email already exists', async () => {
       const admin1 = adminFix[0];
 
-      // login admin
-      adminLogin(app, routeVersion, request, admin1, (err, res, token) => {
-        let params = {
+      try {
+        // login admin
+        const { token } = await adminLogin(app, routeVersion, request, admin1);
+
+        const params = {
           name: 'Jonathan Chen',
           active: true,
           email: admin1.email,
-          phone: '+12406206949',
+          phone: '+12406206950',
           timezone: 'America/Los_Angeles',
           locale: 'en',
           password1: 'thisisapassword',
           password2: 'thisisapassword',
-          acceptedTerms: true
+          acceptedTerms: false
         };
 
-        request(app)
+        // create admin request
+        const res = await request(app)
           .post(routeUrl)
           .set('authorization', `${jwt} ${token}`)
-          .send(params)
-          .end((err, res) => {
-            expect(res.statusCode).to.equal(400);
-            expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, 1));
-            done();
-          });
-      }); // END login admin
+          .send(params);
+
+        expect(res.statusCode).to.equal(400);
+        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('You must agree to Terms of Service.')));
+      } catch (error) {
+        throw error;
+      }
     }); // END [admin] should not create new admin if email already exists
 
-    it('[admin] should not create new admin if timezone is invalid', done => {
+    it('[admin] should not create new admin if timezone is invalid', async () => {
       const admin1 = adminFix[0];
 
-      // login admin
-      adminLogin(app, routeVersion, request, admin1, (err, res, token) => {
-        let params = {
+      try {
+        // login admin
+        const { token } = await adminLogin(app, routeVersion, request, admin1);
+
+        const params = {
           name: 'Jonathan Chen',
           active: true,
-          email: 'new-partner-email@email.com',
-          phone: '+12406206949',
-          timezone: 'randomtimezone',
+          email: 'new-admin@example.com',
+          phone: '+12406206950',
+          timezone: 'invalid-timezone',
           locale: 'en',
           password1: 'thisisapassword',
           password2: 'thisisapassword',
           acceptedTerms: true
         };
 
-        request(app)
+        // create admin request
+        const res = await request(app)
           .post(routeUrl)
           .set('authorization', `${jwt} ${token}`)
-          .send(params)
-          .end((err, res) => {
-            expect(res.statusCode).to.equal(400);
-            expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('Time zone is invalid.')));
-            done();
-          });
-      }); // END login admin
+          .send(params);
+
+        expect(res.statusCode).to.equal(400);
+        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('Time zone is invalid.')));
+      } catch (error) {
+        throw error;
+      }
     }); // END [admin] should not create new admin if timezone is invalid
   }); // END Role: Admin
 }); // END Admin.V1Create

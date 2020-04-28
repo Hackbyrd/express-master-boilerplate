@@ -29,12 +29,11 @@ const request = require('supertest');
 const { errorResponse, ERROR_CODES } = require('../../../../services/error');
 
 // helpers
-const { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');
+const { adminLogin, reset, populate } = require('../../../../helpers/tests');
 
-describe('Admin.V1Read', () => {
+describe('Admin.V1Read', async () => {
   // grab fixtures here
   const adminFix = require('../../../fixtures/fix1/admin');
-  const userFix = require('../../../fixtures/fix1/user');
 
   // url of the api method we are testing
   const routeVersion = '/v1';
@@ -43,108 +42,108 @@ describe('Admin.V1Read', () => {
   const routeUrl = `${routeVersion}${routePrefix}${routeMethod}`;
 
   // clear database
-  beforeEach(done => {
-    reset(done);
+  beforeEach(async () => {
+    await reset();
   });
 
   // Logged Out
-  describe('Role: Logged Out', () => {
+  describe('Role: Logged Out', async () => {
     // populate database with fixtures
-    beforeEach(done => {
-      populate('fix1', done);
+    beforeEach(async () => {
+      await populate('fix1');
     });
 
-    it('[logged-out] should fail to read admin', done => {
-      // read request
-      request(app)
-        .get(routeUrl)
-        .end((err, res) => {
-          expect(err).to.be.null;
-          expect(res.statusCode).to.equal(401);
-          expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.UNAUTHORIZED));
-          done();
-        }); // END read request
+    it('[logged-out] should fail to read admin', async () => {
+      try {
+        const res = await request(app).get(routeUrl);
+        expect(res.statusCode).to.equal(401);
+        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.UNAUTHORIZED));
+      } catch (error) {
+        throw error;
+      }
     }); // END [logged-out] should fail to read admin
   }); // END Role: Logged Out
 
   // Admin
-  describe('Role: Admin', () => {
+  describe('Role: Admin', async () => {
     const jwt = 'jwt-admin';
 
     // populate database with fixtures
-    beforeEach(done => {
-      populate('fix1', done);
+    beforeEach(async () => {
+      await populate('fix1');
     });
 
-    it('[admin] should read self successfully', done => {
+    it('[admin] should read self successfully', async () => {
       const admin1 = adminFix[0];
 
-      // login admin
-      adminLogin(app, routeVersion, request, admin1, (err, res, token) => {
-        // read request
-        request(app)
-          .get(routeUrl)
+      try {
+        // login admin
+        const { token } = await adminLogin(app, routeVersion, request, admin1);
+
+        // read admin request
+        const res = await request(app)
+          .post(routeUrl)
           .set('authorization', `${jwt} ${token}`)
-          .end((err, res) => {
-            expect(err).to.be.null;
-            expect(res.statusCode).to.equal(200);
-            expect(res.body).to.have.property('success', true);
-            expect(res.body).to.have.property('admin');
-            expect(res.body.admin).to.have.property('id', admin1.id);
-            done();
-          }); // END read request
-      }); // END login admin
+
+        expect(res.statusCode).to.equal(200);
+        expect(res.body).to.have.property('success', true);
+        expect(res.body).to.have.property('admin');
+        expect(res.body.admin).to.have.property('id', admin1.id);
+      } catch (error) {
+        throw error;
+      }
     }); // END [admin] should read self successfully
 
-    it('[admin] should read another admin successfully', done => {
+    it('[admin] should read another admin successfully', async () => {
       const admin1 = adminFix[0];
       const admin2 = adminFix[1];
 
-      // login admin
-      adminLogin(app, routeVersion, request, admin1, (err, res, token) => {
+      try {
+        // login admin
+        const { token } = await adminLogin(app, routeVersion, request, admin1);
+
         // params
         const params = {
           id: admin2.id
         };
 
-        // read request
-        request(app)
+        // read admin request
+        const res = await request(app)
           .post(routeUrl)
           .set('authorization', `${jwt} ${token}`)
           .send(params)
-          .end((err, res) => {
-            expect(err).to.be.null;
-            expect(res.statusCode).to.equal(200);
-            expect(res.body).to.have.property('success', true);
-            expect(res.body).to.have.property('admin');
-            expect(res.body.admin).to.have.property('id', admin2.id);
-            done();
-          }); // END read request
-      }); // END login admin
+
+        expect(res.statusCode).to.equal(200);
+        expect(res.body).to.have.property('success', true);
+        expect(res.body).to.have.property('admin');
+        expect(res.body.admin).to.have.property('id', admin2.id);
+      } catch (error) {
+        throw error;
+      }
     }); // END [admin] should read another admin successfully
 
-    it('[admin] should fail to read admin if admin does not exist', done => {
+    it('[admin] should fail to read admin if admin does not exist', async () => {
       const admin1 = adminFix[0];
 
-      // login admin
-      adminLogin(app, routeVersion, request, admin1, (err, res, token) => {
-        // params
+      try {
+        // login admin
+        const { token } = await adminLogin(app, routeVersion, request, admin1);
+
         const params = {
-          id: 10000
+          id: 100000
         };
 
-        // read request
-        request(app)
+        // read admin request
+        const res = await request(app)
           .post(routeUrl)
           .set('authorization', `${jwt} ${token}`)
-          .send(params)
-          .end((err, res) => {
-            expect(err).to.be.null;
-            expect(res.statusCode).to.equal(400);
-            expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST));
-            done();
-          }); // END read request
-      }); // END login admin
+          .send(params);
+
+        expect(res.statusCode).to.equal(400);
+        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST));
+      } catch (error) {
+        throw error;
+      }
     }); // END [admin] should fail to read admin if admin does not exist
   }); // END Role: Admin
 }); // END Admin.V1Read

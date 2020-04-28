@@ -59,7 +59,7 @@ module.exports = {
  *   401: UNAUTHORIZED
  *   500: INTERNAL_SERVER_ERROR
  */
-async function V1UpdatePassword(req, callback) {
+async function V1UpdatePassword(req) {
   const schema = joi.object({
     password: joi.string().min(8).required(),
     password1: joi.string().min(8).required(),
@@ -69,42 +69,40 @@ async function V1UpdatePassword(req, callback) {
   // validate
   const { error, value } = schema.validate(req.args);
   if (error)
-    return callback(null, errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));
+    return Promise.resolve(errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));
 
   // check password1 and password2 equality
   const msg = checkPasswords(req.args.password1, req.args.password2, 8);
   if (msg !== true)
-    return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__(msg)));
+    return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__(msg)));
 
-  // check password
-  models.admin.validatePassword(req.args.password, req.admin.password, async (err, result) => {
-    if (err)
-      return callback(err);
+  try {
+    // validate password
+    const result = await models.admin.validatePassword(req.args.password, req.admin.password);
 
     // if password is incorrect
     if (!result)
-      return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__('Original password is incorrect, please try again.')));
+      return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__('Original password is incorrect, please try again.')));
 
     // hash new password
     const newPassword = bcrypt.hashSync(req.args.password1, req.admin.salt);
 
-    try {
-      await models.admin.update({
-        password: newPassword
-      }, {
-        fields: ['password'], // only these fields
-        where: {
-          id: req.admin.id
-        }
-      });
+    // update password
+    await models.admin.update({
+      password: newPassword
+    }, {
+      fields: ['password'], // only these fields
+      where: {
+        id: req.admin.id
+      }
+    });
 
-      // return success
-      return callback(null, {
-        status: 200,
-        success: true
-      });
-    } catch (err) {
-      return callback(err);
-    }
-  }); // END validPassword
+    // return success
+    return Promise.resolve({
+      status: 200,
+      success: true
+    });
+  } catch (error) {
+    return Promise.reject(error);
+  }
 } // END V1UpdatePassword

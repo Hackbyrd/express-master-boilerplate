@@ -39,7 +39,6 @@ async function V1Login(req, res, next) {
   // call correct method
   // login has to include the "res" object for passport.authenticate
   const result = await service[method](req, res).catch(err => next(err));
-
   return res.status(result.status).json(result);
 }
 
@@ -51,19 +50,18 @@ async function V1Login(req, res, next) {
  * Must be logged in
  * Roles: ['admin']
  */
-function V1Read(req, res, next) {
+async function V1Read(req, res, next) {
   let method = null; // which service method to use
 
   // which method to call
-  if (req.admin) method = `V1Read`;
-  else return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
+  if (req.admin)
+    method = `V1Read`;
+  else
+    return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
 
   // call correct method
-  service[method](req, (err, result) => {
-    if (err) return next(err);
-
-    return res.status(result.status).json(result);
-  });
+  const result = await service[method](req).catch(err => next(err));
+  return res.status(result.status).json(result);
 }
 
 /**
@@ -96,19 +94,18 @@ async function V1Create(req, res, next) {
  * Must be logged in
  * Roles: ['admin']
  */
-function V1Update(req, res, next) {
+async function V1Update(req, res, next) {
   let method = null; // which service method to use
 
   // which method to call
-  if (req.admin) method = `V1Update`;
-  else return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
+  if (req.admin)
+      method = `V1Update`;
+  else
+    return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
 
   // call correct method
-  service[method](req, (err, result) => {
-    if (err) return next(err);
-
-    return res.status(result.status).json(result);
-  });
+  const result = await service[method](req).catch(err => next(err));
+  return res.status(result.status).json(result);
 }
 
 /**
@@ -119,19 +116,18 @@ function V1Update(req, res, next) {
  * Must be logged in
  * Roles: ['admin']
  */
-function V1Query(req, res, next) {
+async function V1Query(req, res, next) {
   let method = null; // which service method to use
 
   // which method to call
-  if (req.admin) method = `V1Query`;
-  else return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
+  if (req.admin)
+      method = `V1Query`;
+  else
+    return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
 
   // call correct method
-  service[method](req, (err, result) => {
-    if (err) return next(err);
-
-    return res.status(result.status).json(result);
-  });
+  const result = await service[method](req).catch(err => next(err));
+  return res.status(result.status).json(result);
 }
 
 /**
@@ -142,19 +138,18 @@ function V1Query(req, res, next) {
  * Must be logged in
  * Roles: ['admin']
  */
-function V1UpdatePassword(req, res, next) {
+async function V1UpdatePassword(req, res, next) {
   let method = null; // which service method to use
 
   // which method to call
-  if (req.admin) method = `V1UpdatePassword`;
-  else return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
+  if (req.admin)
+    method = `V1UpdatePassword`;
+  else
+    return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
 
   // call correct method
-  service[method](req, (err, result) => {
-    if (err) return next(err);
-
-    return res.status(result.status).json(result);
-  });
+  const result = await service[method](req).catch(err => next(err));
+  return res.status(result.status).json(result);
 }
 
 /**
@@ -165,15 +160,12 @@ function V1UpdatePassword(req, res, next) {
  * Must be logged out
  * Roles: []
  */
-function V1ResetPassword(req, res, next) {
+async function V1ResetPassword(req, res, next) {
   let method = 'V1ResetPassword';
 
   // call correct method
-  service[method](req, (err, result) => {
-    if (err) return next(err);
-
-    return res.status(result.status).json(result);
-  });
+  const result = await service[method](req).catch(err => next(err));
+  return res.status(result.status).json(result);
 }
 
 /**
@@ -184,15 +176,12 @@ function V1ResetPassword(req, res, next) {
  * Can be logged in or logged out
  * Roles: []
  */
-function V1ConfirmPassword(req, res, next) {
+async function V1ConfirmPassword(req, res, next) {
   let method = 'V1ConfirmPassword';
 
   // call correct method
-  service[method](req, (err, result) => {
-    if (err) return next(err);
-
-    return res.status(result.status).json(result);
-  });
+  const result = await service[method](req).catch(err => next(err));
+  return res.status(result.status).json(result);
 }
 
 /**
@@ -203,19 +192,18 @@ function V1ConfirmPassword(req, res, next) {
  * Must be logged in
  * Roles: ['admin']
  */
-function V1UpdateEmail(req, res, next) {
+async function V1UpdateEmail(req, res, next) {
   let method = null; // which service method to use
 
   // which method to call
-  if (req.admin) method = `V1UpdateEmail`;
-  else return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
+  if (req.admin)
+    method = `V1UpdateEmail`;
+  else
+    return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
 
   // call correct method
-  service[method](req, (err, result) => {
-    if (err) return next(err);
-
-    return res.status(result.status).json(result);
-  });
+  const result = await service[method](req).catch(err => next(err));
+  return res.status(result.status).json(result);
 }
 
 /**

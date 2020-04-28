@@ -20,7 +20,6 @@ CREATE TABLE IF NOT EXISTS Admins (
   phone STRING DEFAULT NULL,
   salt TEXT NOT NULL, -- random salt value
   password TEXT NOT NULL, -- hashed password
-  resetPassword TEXT DEFAULT NULL, -- the new hashed password
   passwordResetToken TEXT DEFAULT NULL UNIQUE,
   passwordResetExpire TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (now() AT TIME ZONE 'utc'),
   acceptedTerms BOOLEAN NOT NULL DEFAULT TRUE, -- whether this admin accepted our terms / services
@@ -46,7 +45,6 @@ CREATE TABLE IF NOT EXISTS Users (
   sex SEXTYPE DEFAULT NULL,
   salt TEXT NOT NULL, -- random salt value
   password TEXT NOT NULL, -- hashed password
-  resetPassword TEXT DEFAULT NULL, -- the new hashed password
   passwordResetToken TEXT DEFAULT NULL UNIQUE,
   passwordResetExpire TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (now() AT TIME ZONE 'utc'),
   emailConfirmed BOOLEAN NOT NULL DEFAULT FALSE,

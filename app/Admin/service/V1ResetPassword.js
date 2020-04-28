@@ -47,8 +47,6 @@ module.exports = {
  * req.params = {}
  * req.args = {
  *   email - (STRING - REQUIRED): The email of the user
- *   password1 - (STRING - REQUIRED): password 1
- *   password2 - (STRING - REQUIRED): password 2
  * }
  *
  * Success: Return true
@@ -60,20 +58,13 @@ module.exports = {
  */
 async function V1ResetPassword(req, callback) {
   const schema = joi.object({
-    email: joi.string().min(3).email().required(),
-    password1: joi.string().min(8).required(),
-    password2: joi.string().min(8).required()
+    email: joi.string().trim().lowercase().min(3).email().required(),
   });
 
   // validate
   const { error, value } = schema.validate(req.args);
   if (error)
     return callback(null, errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));
-
-  // check password1 and password2 equality
-  const msg = checkPasswords(req.args.password1, req.args.password2, 8);
-  if (msg !== true)
-    return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__(msg)));
 
   // grab admin with this email
   try {
@@ -87,21 +78,16 @@ async function V1ResetPassword(req, callback) {
     if (!findAdmin)
       return callback(null, errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST));
 
-    // hash new password
-    const newPassword = bcrypt.hashSync(req.args.password1, findAdmin.salt);
-
     // preparing for reset
     const passwordResetToken = randomString();
     const passwordResetExpire = moment.tz('UTC').add(6, 'hours'); // add 6 hours from now
-    req.args.password = newPassword; // set hashed password
 
     // update admin
     await models.admin.update({
-      resetPassword: req.args.password,
       passwordResetToken: passwordResetToken,
       passwordResetExpire: passwordResetExpire
     }, {
-      fields: ['resetPassword', 'passwordResetToken', 'passwordResetExpire'], // only these fields
+      fields: ['passwordResetToken', 'passwordResetExpire'], // only these fields
       where: {
         email: req.args.email
       }
@@ -110,7 +96,7 @@ async function V1ResetPassword(req, callback) {
     const resetLink = `${ADMIN_CLIENT_HOST}/confirm-password?passwordResetToken=${passwordResetToken}`; // create URL using front end url
 
     // send confirmation email
-    email.mail({
+    const result = await email.mail({
       from: email.emails.support.address,
       name: email.emails.support.name,
       subject: 'Your password has been changed. Please confirm.',
@@ -122,19 +108,16 @@ async function V1ResetPassword(req, callback) {
         resetPasswordConfirmationLink: resetLink,
         expires: '6 hours'
       }
-    }, (err, result) => {
-      if (err)
-        return callback(err);
+    });
 
-      // return success
-      return callback(null, {
-        status: 200,
-        success: true,
-        message: 'An email has been sent to ' + req.args.email + '. Please check your email to confirm your new password change.',
-        resetLink: NODE_ENV === 'test' ? resetLink : null // only return reset link in dev and test env for testing purposes
-      });
-    }); // END send email
-  } catch (err) {
-    return callback(err);
+    // return success
+    return Promise.resolve({
+      status: 200,
+      success: true,
+      message: 'An email has been sent to ' + req.args.email + '. Please check your email to confirm your new password change.',
+      resetLink: NODE_ENV === 'test' ? resetLink : null // only return reset link in dev and test env for testing purposes
+    });
+  } catch (error) {
+    return reject(error);
   }
 } // END V1ResetPassword

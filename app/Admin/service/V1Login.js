@@ -58,7 +58,7 @@ async function V1Login(req, res) {
 
       // check if admin exists
       if (!admin)
-        return resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS));
+        return resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_CREDENTIALS));
 
       // return error message if admin is inactive
       if (!admin.active)

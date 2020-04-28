@@ -31,10 +31,9 @@ const { errorResponse, ERROR_CODES } = require('../../../../services/error');
 // helpers
 const { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');
 
-describe('Admin.V1Update', () => {
+describe('Admin.V1Update', async () => {
   // grab fixtures here
   const adminFix = require('../../../fixtures/fix1/admin');
-  const userFix = require('../../../fixtures/fix1/user');
 
   // url of the api method we are testing
   const routeVersion = '/v1';
@@ -43,44 +42,45 @@ describe('Admin.V1Update', () => {
   const routeUrl = `${routeVersion}${routePrefix}${routeMethod}`;
 
   // clear database
-  beforeEach(done => {
-    reset(done);
+  beforeEach(async () => {
+    await reset();
   });
 
   // Logged Out
-  describe('Role: Logged Out', () => {
+  describe('Role: Logged Out', async () => {
     // populate database with fixtures
-    beforeEach(done => {
-      populate('fix1', done);
+    beforeEach(async () => {
+      await populate('fix1');
     });
 
-    it('[logged-out] should fail to update admin', done => {
+    it('[logged-out] should fail to update admin', async () => {
       // update request
-      request(app)
-        .get(routeUrl)
-        .end((err, res) => {
-          expect(err).to.be.null;
-          expect(res.statusCode).to.equal(401);
-          expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.UNAUTHORIZED));
-          done();
-        }); // END read request
+      try {
+        const res = await request(app).get(routeUrl);
+        expect(res.statusCode).to.equal(401);
+        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.UNAUTHORIZED));
+      } catch (error) {
+        throw error;
+      }
     }); // END [logged-out] should fail to update admin
   }); // END Role: Logged Out
 
   // Admin
-  describe('Role: Admin', () => {
+  describe('Role: Admin', async () => {
     const jwt = 'jwt-admin';
 
     // populate database with fixtures
-    beforeEach(done => {
-      populate('fix1', done);
+    beforeEach(async () => {
+      await populate('fix1');
     });
 
-    it('[admin] should update self all fields successfully', done => {
+    it('[admin] should update self all fields successfully', async () => {
       const admin1 = adminFix[0];
 
-      // login admin
-      adminLogin(app, routeVersion, request, admin1, (err, res, token) => {
+      try {
+        // login admin
+        const { token } = await adminLogin(app, routeVersion, request, admin1);
+
         const params = {
           timezone: 'Africa/Cairo',
           locale: 'ko',
@@ -88,51 +88,50 @@ describe('Admin.V1Update', () => {
           phone: '+1240827485'
         }
 
-        // update request
-        request(app)
+        // update admin request
+        const res = await request(app)
           .post(routeUrl)
           .set('authorization', `${jwt} ${token}`)
-          .send(params)
-          .end((err, res) => {
-            expect(err).to.be.null;
-            expect(res.statusCode).to.equal(200);
-            expect(res.body).to.have.property('success', true);
-            expect(res.body).to.have.property('admin');
-            expect(res.body.admin).to.have.property('id', admin1.id);
+          .send(params);
 
-            // find admin to see if he's updated
-            models.admin.findByPk(admin1.id).then(foundAdmin => {
-              expect(foundAdmin.timezone).to.equal(params.timezone);
-              expect(foundAdmin.locale).to.equal(params.locale);
-              expect(foundAdmin.phone).to.equal(params.phone);
-              expect(foundAdmin.name).to.equal(params.name);
-              done();
-            }); // END find admin
-          }); // END update request
-      }); // END login admin
+        expect(res.statusCode).to.equal(200);
+        expect(res.body).to.have.property('success', true);
+        expect(res.body).to.have.property('admin');
+        expect(res.body.admin).to.have.property('id', admin1.id);
+
+        // find admin to see if he's updated
+        const foundAdmin = await models.admin.findByPk(admin1.id);
+        expect(foundAdmin.timezone).to.equal(params.timezone);
+        expect(foundAdmin.locale).to.equal(params.locale);
+        expect(foundAdmin.phone).to.equal(params.phone);
+        expect(foundAdmin.name).to.equal(params.name);
+      } catch (error) {
+        throw error;
+      }
     }); // END [admin] should update self all fields successfully
 
-    it('[admin] should fail to update self if timezone is invalid', done => {
+    it('[admin] should fail to update self if timezone is invalid', async () => {
       const admin1 = adminFix[0];
 
-      // login admin
-      adminLogin(app, routeVersion, request, admin1, (err, res, token) => {
+      try {
+        // login admin
+        const { token } = await adminLogin(app, routeVersion, request, admin1);
+
         const params = {
           timezone: 'randometimezone',
-        }
+        };
 
-        // update request
-        request(app)
+        // read admin request
+        const res = await request(app)
           .post(routeUrl)
           .set('authorization', `${jwt} ${token}`)
-          .send(params)
-          .end((err, res) => {
-            expect(err).to.be.null;
-            expect(res.statusCode).to.equal(400);
-            expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('Time zone is invalid.')));
-            done();
-          }); // END update request
-      }); // END login admin
+          .send(params);
+
+        expect(res.statusCode).to.equal(400);
+        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('Time zone is invalid.')));
+      } catch (error) {
+        throw error;
+      }
     }); // END [admin] should fail to update self if timezone is invalid
   }); // END Role: Admin
 }); // END Admin.V1Update
