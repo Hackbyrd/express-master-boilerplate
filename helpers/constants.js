@@ -32,5 +32,9 @@ module.exports = {
   LIST_STRING_REGEX_EMPTY: /^$|^(\w|\s)+([,](\w|\s)+)*$/, // regex for a list string 1,2,3,456,78 or ''
   LIST_STRING_AT_REGEX_EMPTY: /^$|^(\w|\s|@|\.)+([,](\w|\s|@|\.)+)*$/, // regex for a list string 1,2,3,456,@78 or ''
 
+  // passwords
+  PASSWORD_LENGTH_MIN: 8, // minimum of 8 characters for passwords
+  PASSWORD_REGEX: /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/, // Password must contain at least 1 lowercase alphabetical character, at least 1 uppercase alphabetical character, at least 1 numeric character, at least one special character, and must be at least eight characters in length.
+
   GENDER_LIST: ['MALE', 'FEMALE', 'OTHER']
 };

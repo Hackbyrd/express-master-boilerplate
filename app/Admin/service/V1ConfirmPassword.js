@@ -28,8 +28,8 @@ const models = require('../../../models');
 // helpers
 const { getOffset, getOrdering, convertStringListToWhereStmt } = require('../../../helpers/cruqd');
 const { randomString, createJwtToken } = require('../../../helpers/logic');
-const { checkPasswords, isValidTimezone } = require('../../../helpers/validate');
-const { LIST_INT_REGEX } = require('../../../helpers/constants');
+const { isValidTimezone } = require('../../../helpers/validate');
+const { PASSWORD_REGEX, PASSWORD_LENGTH_MIN } = require('../../../helpers/constants');
 
 // methods
 module.exports = {
@@ -55,15 +55,16 @@ module.exports = {
  * Success: Return a admin and JWT.
  * Errors:
  *   400: BAD_REQUEST_INVALID_ARGUMENTS
- *   400: ADMIN_BAD_REQUEST_INVALID_ARGUMENTS
+ *   400: ADMIN_BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN
+ *   400: ADMIN_BAD_REQUEST_PASSWORDS_NOT_EQUAL
  *   401: UNAUTHORIZED
- *   500: INTERNAL_SERVER_ERROR.
+ *   500: INTERNAL_SERVER_ERROR
  */
 async function V1ConfirmPassword(req) {
   const schema = joi.object({
     passwordResetToken: joi.string().required(),
-    password1: joi.string().min(8).required(),
-    password2: joi.string().min(8).required()
+    password1: joi.string().min(PASSWORD_LENGTH_MIN).regex(PASSWORD_REGEX).required().error(new Error(req.__('ADMIN[Invalid Password Format]'))),
+    password2: joi.string().min(PASSWORD_LENGTH_MIN).regex(PASSWORD_REGEX).required().error(new Error(req.__('ADMIN[Invalid Password Format]')))
   });
 
   // validate
@@ -85,12 +86,11 @@ async function V1ConfirmPassword(req) {
 
     // if admin does not exists
     if (!getAdmin)
-      return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__('Invalid password reset token or reset token has expired.')));
+      return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN));
 
     // check password1 and password2 equality
-    const msg = checkPasswords(req.args.password1, req.args.password2, 8);
-    if (msg !== true)
-      return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__(msg)));
+    if (req.args.password1 !== req.args.password2)
+      return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_PASSWORDS_NOT_EQUAL));
 
     // generate new password
     const newPassword = bcrypt.hashSync(req.args.password1, getAdmin.salt);

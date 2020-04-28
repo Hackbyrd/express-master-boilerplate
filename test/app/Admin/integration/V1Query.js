@@ -87,8 +87,8 @@ describe('Admin.V1Query', async () => {
           phone: '+12406206950',
           timezone: 'America/Los_Angeles',
           locale: 'en',
-          password1: 'thisisapassword',
-          password2: 'thisisapassword',
+          password1: 'thisisapassword1F%',
+          password2: 'thisisapassword1F%',
           acceptedTerms: true
         };
 

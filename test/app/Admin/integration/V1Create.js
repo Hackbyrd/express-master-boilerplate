@@ -87,8 +87,8 @@ describe('Admin.V1Create', async () => {
           phone: '+12406206950',
           timezone: 'America/Los_Angeles',
           locale: 'en',
-          password1: 'thisisapassword',
-          password2: 'thisisapassword',
+          password1: 'thisisapassword1F%',
+          password2: 'thisisapassword1F%',
           acceptedTerms: true
         };
 
@@ -133,6 +133,38 @@ describe('Admin.V1Create', async () => {
       }
     }); // END [admin] should create an admin successfully
 
+    it('[admin] should not create new admin if passwords format is invalid', async () => {
+      const admin1 = adminFix[0];
+
+      try {
+        // login admin
+        const { token } = await adminLogin(app, routeVersion, request, admin1);
+
+        const params = {
+          name: 'Jonathan Chen',
+          active: true,
+          email: 'new-admin@example.com',
+          phone: '+12406206950',
+          timezone: 'America/Los_Angeles',
+          locale: 'en',
+          password1: 'thisisapassword',
+          password2: 'thisisapassword',
+          acceptedTerms: true
+        };
+
+        // create admin request
+        const res = await request(app)
+          .post(routeUrl)
+          .set('authorization', `${jwt} ${token}`)
+          .send(params);
+
+        expect(res.statusCode).to.equal(400);
+        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('ADMIN[Invalid Password Format]')));
+      } catch (error) {
+        throw error;
+      }
+    }); // END [admin] should not create new admin if passwords format is invalid
+
     it('[admin] should not create new admin if passwords are not the same', async () => {
       const admin1 = adminFix[0];
 
@@ -147,8 +179,8 @@ describe('Admin.V1Create', async () => {
           phone: '+12406206950',
           timezone: 'America/Los_Angeles',
           locale: 'en',
-          password1: 'thisisapassword1',
-          password2: 'thisisapassword2',
+          password1: 'thisisapassword1F%',
+          password2: 'thisisapassword2F%',
           acceptedTerms: true
         };
 
@@ -159,7 +191,7 @@ describe('Admin.V1Create', async () => {
           .send(params);
 
         expect(res.statusCode).to.equal(400);
-        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('The passwords you entered do not match.')));
+        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_PASSWORDS_NOT_EQUAL));
       } catch (error) {
         throw error;
       }
@@ -179,8 +211,8 @@ describe('Admin.V1Create', async () => {
           phone: '+12406206950',
           timezone: 'America/Los_Angeles',
           locale: 'en',
-          password1: 'thisisapassword',
-          password2: 'thisisapassword',
+          password1: 'thisisapassword1F%',
+          password2: 'thisisapassword1F%',
           acceptedTerms: false
         };
 
@@ -191,7 +223,7 @@ describe('Admin.V1Create', async () => {
           .send(params);
 
         expect(res.statusCode).to.equal(400);
-        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('You must agree to Terms of Service.')));
+        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_TERMS_OF_SERVICE_NOT_ACCEPTED));
       } catch (error) {
         throw error;
       }
@@ -211,9 +243,9 @@ describe('Admin.V1Create', async () => {
           phone: '+12406206950',
           timezone: 'America/Los_Angeles',
           locale: 'en',
-          password1: 'thisisapassword',
-          password2: 'thisisapassword',
-          acceptedTerms: false
+          password1: 'thisisapassword1F%',
+          password2: 'thisisapassword1F%',
+          acceptedTerms: true
         };
 
         // create admin request
@@ -223,7 +255,7 @@ describe('Admin.V1Create', async () => {
           .send(params);
 
         expect(res.statusCode).to.equal(400);
-        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('You must agree to Terms of Service.')));
+        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_ADMIN_ALREADY_EXISTS));
       } catch (error) {
         throw error;
       }
@@ -243,8 +275,8 @@ describe('Admin.V1Create', async () => {
           phone: '+12406206950',
           timezone: 'invalid-timezone',
           locale: 'en',
-          password1: 'thisisapassword',
-          password2: 'thisisapassword',
+          password1: 'thisisapassword1F%',
+          password2: 'thisisapassword1F%',
           acceptedTerms: true
         };
 
@@ -255,7 +287,7 @@ describe('Admin.V1Create', async () => {
           .send(params);
 
         expect(res.statusCode).to.equal(400);
-        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('Time zone is invalid.')));
+        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_TIMEZONE));
       } catch (error) {
         throw error;
       }

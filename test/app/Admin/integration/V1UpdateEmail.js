@@ -122,7 +122,7 @@ describe('Admin.V1UpdateEmail', async () => {
           .send(params);
 
         expect(res.statusCode).to.equal(400);
-        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('The new email cannot be the same as the current email.')));
+        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_SAME_EMAIL));
       } catch (error) {
         throw error;
       }
@@ -142,8 +142,8 @@ describe('Admin.V1UpdateEmail', async () => {
           phone: '+12406206950',
           timezone: 'America/Los_Angeles',
           locale: 'en',
-          password1: 'thisisapassword',
-          password2: 'thisisapassword',
+          password1: 'thisisapassword1F%',
+          password2: 'thisisapassword1F%',
           acceptedTerms: true
         };
 
@@ -165,7 +165,7 @@ describe('Admin.V1UpdateEmail', async () => {
           .send(params2);
 
         expect(res2.statusCode).to.equal(400);
-        expect(res2.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('The new email is already taken.')));
+        expect(res2.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_EMAIL_ALREADY_TAKEN));
       } catch (error) {
         throw error;
       }

@@ -26,7 +26,7 @@ describe('services/error.js', () => {
       expect(resultJSON.success).to.be.false;
       expect(resultJSON.status).to.equal(401);
       expect(resultJSON.error).to.equal(ERROR_CODES.UNAUTHORIZED.error);
-      expect(resultJSON.message).to.equal(ERROR_CODES.UNAUTHORIZED.messages[0]);
+      expect(resultJSON.message).to.equal(i18n.__(ERROR_CODES.UNAUTHORIZED.messages[0]));
       done();
     }); // END should create the error response JSON correctly
 

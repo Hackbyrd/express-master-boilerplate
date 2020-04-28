@@ -12,41 +12,83 @@
  */
 const LOCAL_ERROR_CODES = {
   /* Place error codes below. Remember to prepend ADMIN to the key and error value  */
-  ADMIN_BAD_REQUEST_INVALID_CREDENTIALS: {
-    error: 'ADMIN.BAD_REQUEST_INVALID_CREDENTIALS',
+
+  // V1Login
+  ADMIN_BAD_REQUEST_INVALID_LOGIN_CREDENTIALS: {
+    error: 'ADMIN.BAD_REQUEST_INVALID_LOGIN_CREDENTIALS',
     status: 400,
-    messages: ['Login failed. Email and/or password is incorrect.', 'An admin account with this email already exists, please try another email.']
+    messages: ['ADMIN[Invalid Login Credentials]']
   },
 
-  ADMIN_BAD_REQUEST_INVALID_ARGUMENTS: {
-    error: 'ADMIN.BAD_REQUEST_INVALID_ARGUMENTS',
-    status: 400,
-    messages: ['One or more request arguments are invalid.']
-  },
-
-  ADMIN_BAD_REQUEST_DOES_NOT_EXIST: {
-    error: 'ADMIN.BAD_REQUEST_DOES_NOT_EXIST',
-    status: 400,
-    messages: ['Admin user does not exist.']
-  },
-
-  // ACCOUNT
   ADMIN_BAD_REQUEST_ACCOUNT_INACTIVE: {
     error: 'ADMIN.BAD_REQUEST_ACCOUNT_INACTIVE',
     status: 400,
-    messages: ['Login failed. Admin account is inactive.']
+    messages: ['ADMIN[Admin Account Inactive]']
   },
 
   ADMIN_BAD_REQUEST_ACCOUNT_DELETED: {
     error: 'ADMIN.BAD_REQUEST_ACCOUNT_DELETED',
     status: 400,
-    messages: ['Login failed. Admin account has been deleted.']
+    messages: ['ADMIN[Admin Account Deleted]']
   },
 
+  // V1Read
   ADMIN_BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST: {
     error: 'ADMIN.BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST',
     status: 400,
-    messages: ['Admin account does not exist.']
+    messages: ['ADMIN[Admin Account Does Not Exist]']
+  },
+
+  // V1Create
+  ADMIN_BAD_REQUEST_TERMS_OF_SERVICE_NOT_ACCEPTED: {
+    error: 'ADMIN.BAD_REQUEST_TERMS_OF_SERVICE_NOT_ACCEPTED',
+    status: 400,
+    messages: ['ADMIN[Terms of Service Not Accepted]']
+  },
+
+  ADMIN_BAD_REQUEST_ADMIN_ALREADY_EXISTS: {
+    error: 'ADMIN.BAD_REQUEST_ADMIN_ALREADY_EXISTS',
+    status: 400,
+    messages: ['ADMIN[Admin Already Exists]']
+  },
+
+  ADMIN_BAD_REQUEST_INVALID_TIMEZONE: {
+    error: 'ADMIN.BAD_REQUEST_INVALID_TIMEZONE',
+    status: 400,
+    messages: ['ADMIN[Invalid Time Zone]']
+  },
+
+  // V1ConfirmPassword
+  ADMIN_BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN: {
+    error: 'ADMIN.BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN',
+    status: 400,
+    messages: ['ADMIN[Invalid Password Reset Token]']
+  },
+
+  ADMIN_BAD_REQUEST_PASSWORDS_NOT_EQUAL: {
+    error: 'ADMIN.BAD_REQUEST_PASSWORDS_NOT_EQUAL',
+    status: 400,
+    messages: ['ADMIN[Passwords Not Equal]']
+  },
+
+  // V1UpdateEmail
+  ADMIN_BAD_REQUEST_SAME_EMAIL: {
+    error: 'ADMIN.BAD_REQUEST_SAME_EMAIL',
+    status: 400,
+    messages: ['ADMIN[Same Email]']
+  },
+
+  ADMIN_BAD_REQUEST_EMAIL_ALREADY_TAKEN: {
+    error: 'ADMIN.BAD_REQUEST_EMAIL_ALREADY_TAKEN',
+    status: 400,
+    messages: ['ADMIN[Email Already Taken]']
+  },
+
+  // V1UpdatePassword
+  ADMIN_BAD_REQUEST_PASSWORD_AUTHENTICATION_FAILED: {
+    error: 'ADMIN.BAD_REQUEST_PASSWORD_AUTHENTICATION_FAILED',
+    status: 400,
+    messages: ['ADMIN[Password Authentication Failed]']
   }
 
   // place more local error codes below

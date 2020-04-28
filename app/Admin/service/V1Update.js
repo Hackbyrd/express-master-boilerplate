@@ -55,7 +55,7 @@ module.exports = {
  * Success: Return a admin.
  * Errors:
  *   400: BAD_REQUEST_INVALID_ARGUMENTS
- *   400: ADMIN_BAD_REQUEST_INVALID_ARGUMENTS
+ *   400: ADMIN_BAD_REQUEST_INVALID_TIMEZONE
  *   401: UNAUTHORIZED
  *   500: INTERNAL_SERVER_ERROR
  */
@@ -78,7 +78,7 @@ async function V1Update(req) {
 
   // check timezone
   if (req.args.timezone && !isValidTimezone(req.args.timezone))
-    return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__('Time zone is invalid.')));
+    return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_TIMEZONE));
 
   try {
     // update admin

@@ -55,7 +55,8 @@ module.exports = {
  * Success: Return a true.
  * Errors:
  *   400: BAD_REQUEST_INVALID_ARGUMENTS
- *   400: ADMIN_BAD_REQUEST_INVALID_ARGUMENTS
+ *   400: ADMIN_BAD_REQUEST_PASSWORDS_NOT_EQUAL
+ *   400: ADMIN_BAD_REQUEST_PASSWORD_AUTHENTICATION_FAILED
  *   401: UNAUTHORIZED
  *   500: INTERNAL_SERVER_ERROR
  */
@@ -72,9 +73,8 @@ async function V1UpdatePassword(req) {
     return Promise.resolve(errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));
 
   // check password1 and password2 equality
-  const msg = checkPasswords(req.args.password1, req.args.password2, 8);
-  if (msg !== true)
-    return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__(msg)));
+  if (req.args.password1 !== req.args.password2)
+    return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_PASSWORDS_NOT_EQUAL));
 
   try {
     // validate password
@@ -82,7 +82,7 @@ async function V1UpdatePassword(req) {
 
     // if password is incorrect
     if (!result)
-      return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__('Original password is incorrect, please try again.')));
+      return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_PASSWORD_AUTHENTICATION_FAILED));
 
     // hash new password
     const newPassword = bcrypt.hashSync(req.args.password1, req.admin.salt);

@@ -19,7 +19,8 @@ const { errorResponse, joiErrorsMessage, ERROR_CODES } = require('../../../servi
 const models = require('../../../models');
 
 // helpers
-const { checkPasswords, isValidTimezone } = require('../../../helpers/validate');
+const { isValidTimezone } = require('../../../helpers/validate');
+const { PASSWORD_LENGTH_MIN, PASSWORD_REGEX } = require('../../../helpers/constants');
 
 // methods
 module.exports = {
@@ -51,20 +52,22 @@ module.exports = {
  * Success: Return an admin
  * Errors:
  *   400: BAD_REQUEST_INVALID_ARGUMENTS
- *   400: ADMIN_BAD_REQUEST_INVALID_ARGUMENTS
+ *   400: ADMIN_BAD_REQUEST_TERMS_OF_SERVICE_NOT_ACCEPTED
+ *   400: ADMIN_BAD_REQUEST_ADMIN_ALREADY_EXISTS
+ *   400: ADMIN_BAD_REQUEST_INVALID_TIMEZONE
  *   401: UNAUTHORIZED
  *   500: INTERNAL_SERVER_ERROR
  */
 async function V1Create(req) {
   const schema = joi.object({
-    name: joi.string().trim().min(1).required().error(new Error(req.__('ADMIN_V1Create_Invalid_Argument(name)'))),
+    name: joi.string().trim().min(1).required(),
     active: joi.boolean().required(),
     email: joi.string().trim().lowercase().min(3).email().required(),
     phone: joi.string().trim().required(),
     timezone: joi.string().min(1).required(),
     locale: joi.string().min(1).required(),
-    password1: joi.string().min(8).required(),
-    password2: joi.string().min(8).required(),
+    password1: joi.string().min(PASSWORD_LENGTH_MIN).regex(PASSWORD_REGEX).required().error(new Error(req.__('ADMIN[Invalid Password Format]'))),
+    password2: joi.string().min(PASSWORD_LENGTH_MIN).regex(PASSWORD_REGEX).required().error(new Error(req.__('ADMIN[Invalid Password Format]'))),
     acceptedTerms: joi.boolean().required()
   });
 
@@ -75,14 +78,13 @@ async function V1Create(req) {
   req.args = value; // updated arguments with type conversion
 
   // check passwords
-  const msg = checkPasswords(req.args.password1, req.args.password2, 8);
-  if (msg !== true)
-    return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__(msg)));
+  if (req.args.password1 !== req.args.password2)
+    return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_PASSWORDS_NOT_EQUAL));
   req.args.password = req.args.password1; // set password
 
   // check terms of service
   if (!req.args.acceptedTerms)
-    return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__('You must agree to Terms of Service.')));
+    return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_TERMS_OF_SERVICE_NOT_ACCEPTED));
 
   try {
     // check if admin email already exists
@@ -94,11 +96,11 @@ async function V1Create(req) {
 
     // check of duplicate admin user
     if (duplicateAdmin)
-      return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, 1));
+      return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_ADMIN_ALREADY_EXISTS));
 
     // check timezone
     if (!isValidTimezone(req.args.timezone))
-      return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__('Time zone is invalid.')));
+      return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_TIMEZONE));
 
     // create admin
     const newAdmin = await models.admin.create({

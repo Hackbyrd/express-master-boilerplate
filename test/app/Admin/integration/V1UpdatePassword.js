@@ -84,8 +84,8 @@ describe('Admin.V1UpdatePassword', async () => {
 
         const params = {
           password: admin1.password,
-          password1: 'NEWPASSWORD',
-          password2: 'NEWPASSWORD'
+          password1: 'NEWPASSWORD1f%',
+          password2: 'NEWPASSWORD1f%'
         };
 
         // read admin request
@@ -106,36 +106,6 @@ describe('Admin.V1UpdatePassword', async () => {
       }
     }); // END [admin] should update password successfully
 
-    it('[admin] should fail to update password if original password is incorrect', async () => {
-      const admin1 = adminFix[0];
-
-      try {
-        // login admin
-        const { token } = await adminLogin(app, routeVersion, request, admin1);
-
-        const params = {
-          password: 'BADPASSWORD',
-          password1: 'NEWPASSWORD',
-          password2: 'NEWPASSWORD'
-        };
-
-        // call update email
-        const res = await request(app)
-          .post(routeUrl)
-          .set('authorization', `${jwt} ${token}`)
-          .send(params);
-
-        expect(res.statusCode).to.equal(400);
-        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('Original password is incorrect, please try again.')));
-
-        // find admin to see if the email is updated
-        const foundAdmin = await models.admin.findByPk(admin1.id);
-        expect(foundAdmin.password).to.equal(bcrypt.hashSync(admin1.password, foundAdmin.salt));
-      } catch (error) {
-        throw error;
-      }
-    }); // END [admin] should fail to update password if original password is incorrect
-
     it('[admin] should fail to update password if password1 and password2 are not the same', async () => {
       const admin1 = adminFix[0];
 
@@ -145,8 +115,8 @@ describe('Admin.V1UpdatePassword', async () => {
 
         const params = {
           password: admin1.password,
-          password1: 'NEWPASSWORD1',
-          password2: 'NEWPASSWORD2'
+          password1: 'NEWPASSWORD1f%',
+          password2: 'NEWPASSWORD2f%'
         };
 
         // call update email
@@ -156,7 +126,7 @@ describe('Admin.V1UpdatePassword', async () => {
           .send(params);
 
         expect(res.statusCode).to.equal(400);
-        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('The passwords you entered do not match.')));
+        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_PASSWORDS_NOT_EQUAL));
 
         // find admin to see if the email is updated
         const foundAdmin = await models.admin.findByPk(admin1.id);
@@ -165,5 +135,35 @@ describe('Admin.V1UpdatePassword', async () => {
         throw error;
       }
     }); // END [admin] should fail to update password if password1 and password2 are not the same
+
+    it('[admin] should fail to update password if original password is incorrect', async () => {
+      const admin1 = adminFix[0];
+
+      try {
+        // login admin
+        const { token } = await adminLogin(app, routeVersion, request, admin1);
+
+        const params = {
+          password: 'BADPASSWORD',
+          password1: 'NEWPASSWORD1f%',
+          password2: 'NEWPASSWORD1f%'
+        };
+
+        // call update email
+        const res = await request(app)
+          .post(routeUrl)
+          .set('authorization', `${jwt} ${token}`)
+          .send(params);
+
+        expect(res.statusCode).to.equal(400);
+        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_PASSWORD_AUTHENTICATION_FAILED));
+
+        // find admin to see if the email is updated
+        const foundAdmin = await models.admin.findByPk(admin1.id);
+        expect(foundAdmin.password).to.equal(bcrypt.hashSync(admin1.password, foundAdmin.salt));
+      } catch (error) {
+        throw error;
+      }
+    }); // END [admin] should fail to update password if original password is incorrect
   }); // END Role: Admin
 }); // END Admin.V1UpdatePassword

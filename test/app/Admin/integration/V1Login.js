@@ -91,7 +91,7 @@ describe('Admin.V1Login', async () => {
           .send(params);
 
         expect(res.statusCode).to.equal(400);
-        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_CREDENTIALS));
+        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_LOGIN_CREDENTIALS));
       } catch (error) {
         throw error;
       }

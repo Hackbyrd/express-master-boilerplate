@@ -11,5 +11,9 @@
 module.exports = {
   'GLOBAL[Language]': 'English',
   'GLOBAL[Welcome]': 'Welcome',
-  'GLOBAL[SERVICE_UNAVAILABLE]': 'Server is in the process of shutting down or restarting.'
+
+  'GLOBAL[Invalid Arguments]': 'One or more request arguments are invalid.',
+  'GLOBAL[Unauthorized]': 'You do not have permission to make this request.',
+  'GLOBAL[Internal Server Error]': 'Oops... something went wrong.',
+  'GLOBAL[Service Unavailable]': 'Server is in the process of shutting down or restarting.'
 };

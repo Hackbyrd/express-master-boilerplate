@@ -31,24 +31,29 @@ const ERROR_FILE = 'error.js'; // the error file name
  * Add more custom global error codes here
  */
 const ERROR_CODES = {
+  BAD_REQUEST_INVALID_ARGUMENTS: {
+    error: 'BAD_REQUEST_INVALID_ARGUMENTS',
+    status: 400,
+    messages: ['GLOBAL[Invalid Arguments]']
+  },
+
   UNAUTHORIZED: {
     error: 'UNAUTHORIZED',
     status: 401,
-    messages: ['You do not have permission to make this request.']
+    messages: ['GLOBAL[Unauthorized]']
+  },
+
+  INTERNAL_SERVER_ERROR: {
+    error: 'INTERNAL_SERVER_ERROR',
+    status: 500,
+    message: ['GLOBAL[Internal Server Error]']
   },
 
   SERVICE_UNAVAILABLE: {
     error: 'SERVICE_UNAVAILABLE',
     status: 503,
-    message: [`GLOBAL[SERVICE_UNAVAILABLE]`]
-  },
-
-  BAD_REQUEST_INVALID_ARGUMENTS: {
-    error: 'BAD_REQUEST_INVALID_ARGUMENTS',
-    status: 400,
-    messages: ['One or more request arguments are invalid.']
+    message: ['GLOBAL[Service Unavailable]']
   }
-
   //-- ADD MORE ERROR CODES BELOW --//
 };
 
@@ -105,7 +110,13 @@ function joiErrorsMessage(errors) {
   if (!errors)
     return null;
 
-  return errors.details.map(e => e.message).join(', ');
+  // if joi's error message object
+  if (errors.details)
+    return errors.details.map(e => e.message).join(', ');
+
+  // our custom message
+  else
+    return errors.message;
 }
 
 /**

@@ -70,7 +70,7 @@ async function V1UpdateEmail(req) {
 
   // checks if the new email is different from the existing one
   if (req.args.email === req.admin.email)
-    return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__('The new email cannot be the same as the current email.')));
+    return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_SAME_EMAIL));
 
   try {
     // checks if any other admin is using the new email
@@ -82,7 +82,7 @@ async function V1UpdateEmail(req) {
 
     // email already being used
     if (findAdmin)
-      return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, req.__('The new email is already taken.')));
+      return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_EMAIL_ALREADY_TAKEN));
 
     // update admin
     await models.admin.update({

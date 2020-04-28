@@ -73,8 +73,8 @@ describe('Admin.V1ConfirmPassword', async () => {
         const foundAdmin = await models.admin.findByPk(admin1.id);
         const params2 = {
           passwordResetToken: foundAdmin.passwordResetToken,
-          password1: 'NEWPASSWORD',
-          password2: 'NEWPASSWORD'
+          password1: 'NEWPASSWORD1f%',
+          password2: 'NEWPASSWORD1f%'
         };
 
         // confirm password
@@ -114,8 +114,8 @@ describe('Admin.V1ConfirmPassword', async () => {
         // grab token
         const params2 = {
           passwordResetToken: 'gibberish',
-          password1: 'NEWPASSWORD',
-          password2: 'NEWPASSWORD'
+          password1: 'NEWPASSWORD1f%',
+          password2: 'NEWPASSWORD1f%'
         };
 
         // confirm password
@@ -124,7 +124,7 @@ describe('Admin.V1ConfirmPassword', async () => {
           .send(params2);
 
         expect(res2.statusCode).to.equal(400);
-        expect(res2.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('Invalid password reset token or reset token has expired.')));
+        expect(res2.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN));
       } catch (error) {
         throw error;
       }
@@ -149,8 +149,8 @@ describe('Admin.V1ConfirmPassword', async () => {
         const foundAdmin = await models.admin.findByPk(admin1.id);
         const params2 = {
           passwordResetToken: foundAdmin.passwordResetToken,
-          password1: 'NEWPASSWORD',
-          password2: 'NEWPASSWORD'
+          password1: 'NEWPASSWORD1f%',
+          password2: 'NEWPASSWORD1f%'
         };
 
         // update expiration of password reset token
@@ -168,7 +168,7 @@ describe('Admin.V1ConfirmPassword', async () => {
           .send(params2);
 
         expect(res2.statusCode).to.equal(400);
-        expect(res2.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('Invalid password reset token or reset token has expired.')));
+        expect(res2.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN));
       } catch (error) {
         throw error;
       }
@@ -193,8 +193,8 @@ describe('Admin.V1ConfirmPassword', async () => {
         const foundAdmin = await models.admin.findByPk(admin1.id);
         const params2 = {
           passwordResetToken: foundAdmin.passwordResetToken,
-          password1: 'NEWPASSWORD1',
-          password2: 'NEWPASSWORD2'
+          password1: 'NEWPASSWORD1f%',
+          password2: 'NEWPASSWORD2f%'
         };
 
         // confirm password
@@ -203,10 +203,45 @@ describe('Admin.V1ConfirmPassword', async () => {
           .send(params2);
 
         expect(res2.statusCode).to.equal(400);
-        expect(res2.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('The passwords you entered do not match.')));
+        expect(res2.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_PASSWORDS_NOT_EQUAL));
       } catch (error) {
         throw error;
       }
     }); // END [logged-out] should fail to call confirm password because email does not exist
+
+    it('[logged-out] should fail to call confirm password if password1 and password2 have an invalid password format', async () => {
+      const admin1 = adminFix[0];
+
+      const params = {
+        email: admin1.email
+      };
+
+      try {
+        // call reset password
+        const res = await request(app)
+          .post(`${routeVersion}${routePrefix}/resetpassword`)
+          .send(params);
+
+        expect(res.statusCode).to.equal(200);
+
+        // grab token
+        const foundAdmin = await models.admin.findByPk(admin1.id);
+        const params2 = {
+          passwordResetToken: foundAdmin.passwordResetToken,
+          password1: 'NEWPASSWORD',
+          password2: 'NEWPASSWORD'
+        };
+
+        // confirm password
+        const res2 = await request(app)
+          .post(routeUrl)
+          .send(params2);
+
+        expect(res2.statusCode).to.equal(400);
+        expect(res2.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('ADMIN[Invalid Password Format]')));
+      } catch (error) {
+        throw error;
+      }
+    }); // END [logged-out] should fail to call confirm password if password1 and password2 have an invalid password format
   }); // END Role: Logged Out
 }); // END Admin.V1ConfirmPassword
