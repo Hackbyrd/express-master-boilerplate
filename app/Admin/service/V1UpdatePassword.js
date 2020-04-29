@@ -29,7 +29,7 @@ const models = require('../../../models');
 const { getOffset, getOrdering, convertStringListToWhereStmt } = require('../../../helpers/cruqd');
 const { randomString, createJwtToken } = require('../../../helpers/logic');
 const { checkPasswords, isValidTimezone } = require('../../../helpers/validate');
-const { LIST_INT_REGEX } = require('../../../helpers/constants');
+const { PASSWORD_LENGTH_MIN, PASSWORD_REGEX, LIST_INT_REGEX } = require('../../../helpers/constants');
 
 // methods
 module.exports = {
@@ -63,8 +63,8 @@ module.exports = {
 async function V1UpdatePassword(req) {
   const schema = joi.object({
     password: joi.string().min(8).required(),
-    password1: joi.string().min(8).required(),
-    password2: joi.string().min(8).required()
+    password1: joi.string().min(PASSWORD_LENGTH_MIN).regex(PASSWORD_REGEX).required().error(new Error(req.__('ADMIN[Invalid Password Format]'))),
+    password2: joi.string().min(PASSWORD_LENGTH_MIN).regex(PASSWORD_REGEX).required().error(new Error(req.__('ADMIN[Invalid Password Format]')))
   });
 
   // validate

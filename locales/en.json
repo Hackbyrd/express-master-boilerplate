@@ -19,5 +19,17 @@
 	"ADMIN[Same Email]": "Your new email cannot be the same as your current email.",
 	"ADMIN[Email Already Taken]": "The new email you entered is already taken.",
 	"ADMIN[Password Authentication Failed]": "Original password entered is incorrect.",
-	"Time zone is invalid.": "Time zone is invalid."
+	"USER[Invalid Login Credentials]": "USER[Invalid Login Credentials]",
+	"USER[User Account Inactive]": "USER[User Account Inactive]",
+	"USER[User Account Deleted]": "USER[User Account Deleted]",
+	"USER[Invalid Password Format]": "USER[Invalid Password Format]",
+	"USER[Passwords Not Equal]": "USER[Passwords Not Equal]",
+	"USER[Terms of Service Not Accepted]": "USER[Terms of Service Not Accepted]",
+	"USER[Invalid Time Zone]": "USER[Invalid Time Zone]",
+	"USER[User Already Exists]": "USER[User Already Exists]",
+	"USER[Same Email]": "USER[Same Email]",
+	"USER[Email Already Taken]": "USER[Email Already Taken]",
+	"USER[Password Authentication Failed]": "USER[Password Authentication Failed]",
+	"USER[User Account Does Not Exist]": "USER[User Account Does Not Exist]",
+	"USER[Invalid Password Reset Token]": "USER[Invalid Password Reset Token]"
 }

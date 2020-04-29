@@ -1,45 +1,52 @@
 /**
- * ADMIN V1ResetPassword SERVICE
+ * USER V1ResetPassword SERVICE
  */
 
 'use strict';
 
 // ENV variables
-const { NODE_ENV, REDIS_URL, ADMIN_CLIENT_HOST } = process.env;
+const { NODE_ENV, REDIS_URL, USER_CLIENT_HOST } = process.env;
 
 // third-party
-const _ = require('lodash');
-const Op = require('sequelize').Op; // for operator aliases like $gte, $eq
-const io = require('socket.io-emitter')(REDIS_URL); // to emit real-time events to client
-const joi = require('@hapi/joi'); // validations
-const moment = require('moment-timezone');
-const passport = require('passport');
-const currency = require('currency.js');
+const _ = require('lodash'); // general helper methods: https://lodash.com/docs
+const Op = require('sequelize').Op; // for model operator aliases like $gte, $eq
+const io = require('socket.io-emitter')(REDIS_URL); // to emit real-time events to client-side applications: https://socket.io/docs/emit-cheatsheet/
+const joi = require('@hapi/joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md
+const Queue = require('bull'); // add background tasks to Queue: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueclean
+const moment = require('moment-timezone'); // manage timezone and dates: https://momentjs.com/timezone/docs/
+const convert = require('convert-units'); // https://www.npmjs.com/package/convert-units
+const slugify = require('slugify'); // convert string to URL friendly string: https://www.npmjs.com/package/slugify
+const sanitize = require("sanitize-filename"); // sanitize filename: https://www.npmjs.com/package/sanitize-filename
+const passport = require('passport'); // handle authentication: http://www.passportjs.org/docs/
+const currency = require('currency.js'); // handling currency operations (add, subtract, multiply) without JS precision issues: https://github.com/scurker/currency.js/
+const accounting = require('accounting'); // handle outputing readable format for currency: http://openexchangerates.github.io/accounting.js/
 
 // services
 const email = require('../../../services/email');
 const { SOCKET_ROOMS, SOCKET_EVENTS } = require('../../../services/socket');
-const { errorResponse, joiErrorsMessage, ERROR_CODES } = require('../../../services/error');
+const { ERROR_CODES, errorResponse, joiErrorsMessage } = require('../../../services/error');
 
 // models
 const models = require('../../../models');
 
 // helpers
 const { getOffset, getOrdering, convertStringListToWhereStmt } = require('../../../helpers/cruqd');
-const { randomString, createJwtToken } = require('../../../helpers/logic');
-const { checkPasswords, isValidTimezone } = require('../../../helpers/validate');
+const { randomString } = require('../../../helpers/logic');
 const { LIST_INT_REGEX } = require('../../../helpers/constants');
+
+// queues
+const UserQueue = new Queue('UserQueue', REDIS_URL);
 
 // methods
 module.exports = {
   V1ResetPassword
-};
+}
 
 /**
  * Reset Password
  *
- * GET  /v1/admins/resetpassword
- * POST /v1/admins/resetpassword
+ * GET  /v1/users/resetpassword
+ * POST /v1/users/resetpassword
  *
  * Must be logged out
  * Roles: []
@@ -52,7 +59,7 @@ module.exports = {
  * Success: Return true
  * Errors:
  *   400: BAD_REQUEST_INVALID_ARGUMENTS
- *   400: ADMIN_BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST
+ *   400: USER_BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST
  *   500: INTERNAL_SERVER_ERROR
  */
 async function V1ResetPassword(req) {
@@ -65,24 +72,24 @@ async function V1ResetPassword(req) {
   if (error)
     return Promise.resolve(errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));
 
-  // grab admin with this email
+  // grab user with this email
   try {
-    const findAdmin = await models.admin.findOne({
+    const findUser = await models.user.findOne({
       where: {
         email: req.args.email
       }
     });
 
-    // if admin cannot be found
-    if (!findAdmin)
-      return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST));
+    // if user cannot be found
+    if (!findUser)
+      return Promise.resolve(errorResponse(req, ERROR_CODES.USER_BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST));
 
     // preparing for reset
     const passwordResetToken = randomString();
     const passwordResetExpire = moment.tz('UTC').add(6, 'hours'); // add 6 hours from now
 
-    // update admin
-    await models.admin.update({
+    // update user
+    await models.user.update({
       passwordResetToken: passwordResetToken,
       passwordResetExpire: passwordResetExpire
     }, {
@@ -92,14 +99,14 @@ async function V1ResetPassword(req) {
       }
     });
 
-    const resetLink = `${ADMIN_CLIENT_HOST}/confirm-password?passwordResetToken=${passwordResetToken}`; // create URL using front end url
+    const resetLink = `${USER_CLIENT_HOST}/confirm-password?passwordResetToken=${passwordResetToken}`; // create URL using front end url
 
     // send confirmation email
     const result = await email.send({
       from: email.emails.support.address,
       name: email.emails.support.name,
       subject: 'Your password has been changed. Please confirm.',
-      template: 'AdminResetPassword',
+      template: 'UserResetPassword',
       tos: [req.args.email],
       ccs: null,
       bccs: null,
