@@ -14,7 +14,7 @@ const bcrypt = require('bcrypt');
 const { randomString } = require('../../helpers/logic');
 
 // sensitive data that should be be seen by any admins
-const sensitiveData = ['salt', 'password', 'resetPassword', 'passwordResetToken'];
+const sensitiveData = ['salt', 'password', 'passwordResetToken'];
 
 module.exports = (sequelize, DataTypes) => {
   const Admin = sequelize.define('admin', {

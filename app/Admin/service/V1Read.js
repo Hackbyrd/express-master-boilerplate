@@ -45,7 +45,7 @@ module.exports = {
  *
  * req.params = {}
  * req.args = {
- *   id - (NUMBER - OPTIONAL) [DEFAULT - req.admin.id]: The id of an admin
+ *   @id - (NUMBER - OPTIONAL) [DEFAULT - req.admin.id]: The id of an admin
  * }
  *
  * Success: Return a admin.

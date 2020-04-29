@@ -45,11 +45,11 @@ module.exports = {
  *
  * req.params = {}
  * req.args = {
- *   active - (BOOLEAN - OPTIONAL): Whether active or not
+ *   @active - (BOOLEAN - OPTIONAL): Whether active or not
  *
- *   sort - (STRING - OPTIONAL) DEFAULT id, A comma separated list of columns of a table, could have a '-' in front which means descending, ex. id,-name,date
- *   page - (NUMBER - OPTIONAL) The page number which must be greater than 0 DEFAULT 1
- *   limit - (NUMBER - OPTIONAL) The number of elements per page which must be greater than 0 DEFAULT 10
+ *   @sort - (STRING - OPTIONAL) DEFAULT id, A comma separated list of columns of a table, could have a '-' in front which means descending, ex. id,-name,date
+ *   @page - (NUMBER - OPTIONAL) The page number which must be greater than 0 DEFAULT 1
+ *   @limit - (NUMBER - OPTIONAL) The number of elements per page which must be greater than 0 DEFAULT 10
  * }
  *
  * Success: Return admins.

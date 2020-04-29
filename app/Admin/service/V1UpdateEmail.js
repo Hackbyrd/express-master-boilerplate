@@ -45,8 +45,8 @@ module.exports = {
  *
  * req.params = {}
  * req.args = {
- *   id - (NUMBER - OPTIONAL): The id of the admin
- *   email - (STRING - REQUIRED): - the new email to update the current email to
+ *   @id - (NUMBER - OPTIONAL): The id of the admin
+ *   @email - (STRING - REQUIRED): - the new email to update the current email to
  * }
  *
  * Success: Return a true.

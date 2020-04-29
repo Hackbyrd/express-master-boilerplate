@@ -47,9 +47,9 @@ module.exports = {
  *
  * req.params = {}
  * req.args = {
- *   passwordResetToken - (STRING - REQUIRED): The password reset token to confirm new password
- *   password1 - (STRING - REQUIRED): password 1
- *   password2 - (STRING - REQUIRED): password 2
+ *   @passwordResetToken - (STRING - REQUIRED): The password reset token to confirm new password
+ *   @password1 - (STRING - REQUIRED): password 1
+ *   @password2 - (STRING - REQUIRED): password 2
  * }
  *
  * Success: Return a admin and JWT.

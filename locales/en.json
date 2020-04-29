@@ -18,6 +18,5 @@
 	"ADMIN[Passwords Not Equal]": "The passwords entered do not match.",
 	"ADMIN[Same Email]": "Your new email cannot be the same as your current email.",
 	"ADMIN[Email Already Taken]": "The new email you entered is already taken.",
-	"ADMIN[Password Authentication Failed]": "Original password entered is incorrect.",
-	"Time zone is invalid.": "Time zone is invalid."
+	"ADMIN[Password Authentication Failed]": "Original password entered is incorrect."
 }

@@ -46,10 +46,10 @@ module.exports = {
  *
  * req.params = {}
  * req.args = {
- *   timezone - (STRING - OPTIONAL): the timezone of the admin
- *   locale - (STRING - OPTIONAL): The language of the user
- *   name - (STRING - OPTIONAL): the name of the admin
- *   phone - (STRING - OPTIONAL): the phone
+ *   @timezone - (STRING - OPTIONAL): the timezone of the admin
+ *   @locale - (STRING - OPTIONAL): The language of the user
+ *   @name - (STRING - OPTIONAL): the name of the admin
+ *   @phone - (STRING - OPTIONAL): the phone
  * }
  *
  * Success: Return a admin.

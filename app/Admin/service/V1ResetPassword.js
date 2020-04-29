@@ -45,7 +45,7 @@ module.exports = {
  *
  * req.params = {}
  * req.args = {
- *   email - (STRING - REQUIRED): The email of the user
+ *   @email - (STRING - REQUIRED): The email of the user
  * }
  *
  * Success: Return true
