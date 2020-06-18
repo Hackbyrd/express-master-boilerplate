@@ -21,7 +21,7 @@ module.exports = {
   'ADMIN[Admin Account Does Not Exist]': 'Admin account does not exist.',
 
   // V1Create
-  'ADMIN[Terms of Service Not Accepted]': 'You must agree to Mixbowl\'s Terms of Service.',
+  'ADMIN[Terms of Service Not Accepted]': 'You must agree to our Terms of Service.',
   'ADMIN[Admin Already Exists]': 'Admin user already exists.',
   'ADMIN[Invalid Time Zone]': 'Time Zone is invalid.',
 
