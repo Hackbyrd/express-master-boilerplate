@@ -33,7 +33,6 @@ const { LOCALES } = require('./helpers/constants');
 // server
 function server() {
   // require custom
-  const models = require('./models'); // establish and grab db connection
   const cfgPassport = require('./services/passport'); // configuration for passport
 
   // require custom middleware

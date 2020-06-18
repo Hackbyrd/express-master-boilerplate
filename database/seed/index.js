@@ -17,7 +17,7 @@ const path = require('path');
 process.env.NODE_ENV = process.argv[3] || 'development';
 
 // load env
-require('dotenv').config({ path: path.join(__dirname, `../../config/.${process.env.NODE_ENV}`) });
+require('dotenv').config({ path: path.join(__dirname, `../../config/.env.${process.env.NODE_ENV}`) });
 
 // require models
 const models = require('../../models'); // grab db connection

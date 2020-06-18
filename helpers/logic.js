@@ -97,24 +97,31 @@ function removeAllWhiteSpace(str) {
  * @obj (OBJECT): the object of keys and their string values
  * @keysToConvertArray (ARRAY STRING): the name of the keys to convert from JSON string to js objects
  *
- * return new object with converted key values
+ * return { success: true, result }
+ * error { success: false, error }
  *
  * TODO: TEST
  */
-function convertJSONStringsToJSObjects(obj, keysToConvertArray, callback) {
+function convertJSONStringsToJSObjects(obj, keysToConvertArray) {
   // go through each key and convert
   for (let i = 0; i < keysToConvertArray.length; i++) {
     // must be a string in the first place before we can convert, if undefined, then skip
     if (typeof obj[keysToConvertArray[i]] === 'string') {
       try {
         obj[keysToConvertArray[i]] = JSON.parse(obj[keysToConvertArray[i]]);
-      } catch (err) {
-        return callback(new Error(keysToConvertArray[i] + ' is not in a valid JSON string format.'), null);
+      } catch (error) {
+        return {
+          success: false,
+          error: new Error(keysToConvertArray[i] + ' is not in a valid JSON string format.')
+        }
       }
     }
   }
 
-  return callback(null, obj);
+  return {
+    success: true,
+    result: obj
+  };
 }
 
 // takes in a data obj timestamp from the database and returns the unix timestamp
