@@ -2,6 +2,7 @@
   "tab_size": 2,
   "translate_tabs_to_spaces": true,
   "trim_trailing_white_space_on_save": true,
+  "word_wrap": "false",
   "eof_newline": true
 
   Create Symlink:
@@ -27,13 +28,17 @@
     mkdir ~/.nvm
     echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bash_profile && echo '. "$(brew --prefix nvm)/nvm.sh"' >> ~/.bash_profile
     source ~/.bash_profile
+    
+    Add the following:
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "/usr/local/opt/nvm/nvm.sh" ] && . "/usr/local/opt/nvm/nvm.sh"  # This loads nvm
+    [ -s "/usr/local/opt/nvm/etc/bash_completion.d/nvm" ] && . "/usr/local/opt/nvm/etc bash_completion.d/nvm"  # This loads nvm bash_completion
 
   Install node (Whatever version in package.json)
     nvm install v12.13.0
 
 3. Download Yarn Package Manager
-  @1.12.3
-  brew install yarn --ignore-dependencies
+  npm install yarn -g
 
 4. Install ImageMagick & GraphicsMagick
   brew install imagemagick
@@ -43,9 +48,8 @@
   https://postgresapp.com/
   Open the postgresapp up and click "Initialize"
 
-  Add to ~/.bash_profile to use 'psql' command: [!!NOTE you MUST add psql into your $PATH before you run "npm install" or else it will crash!]
-  sudo subl ~/.bash_profile
-  export PATH=$PATH:/Applications/Postgres.app/Contents/Versions/latest/bin
+  Add the following to use 'psql' command: [!!NOTE you MUST add psql into your $PATH before you run "npm install" or else it will crash!]
+  sudo mkdir -p /etc/paths.d && echo /Applications/Postgres.app/Contents/Versions/latest/bin | sudo tee /etc/paths.d/postgresapp
 
   Set Timezone to UTC:
     Run in Terminal:
@@ -54,8 +58,8 @@
     postgresql.conf
       subl ~/Library/Application\ Support/Postgres/var-[YOUR_VERSION]/postgresql.conf
       Inside postgresql.conf change the following:
-        log_timezone = 'US/Eastern' --> log_timezone = 'UTC'
-        timezone = 'US/Eastern' --> timezone = 'UTC'
+        log_timezone = 'America/New_York' --> log_timezone = 'UTC'
+        timezone = 'America/New_York' --> timezone = 'UTC'
 
 6. Install Postico PostgreSQL Client App
   https://eggerapps.at/postico/

@@ -47,3 +47,12 @@ Don't forget to remove the previous bindings:
 Open the “Profiles” tab
 Click the sub-tab ”Keys”
 Remove the mappings for key combinations ⌥ + ← and ⌥ + →
+
+iterm Key Mappings for more mac-like: https://hiltmon.com/blog/2013/02/13/make-iterm-2-more-mac-like/
+⌥←: Go left one word (Send Escape Sequence: b)
+⌥→: Go right one word (Send Escape Sequence: f)
+⌘←: Go to start of line (Send Hex Code: 0x01)
+⌘→: Go to end of line (Send Hex Code: 0x05)
+⌘←Delete: Delete to start of line (Send Hex Code: 0x15)
+⌥←Delete: Delete to start of word (Send Hex Code: 0x1b 0x08)
+⌘z: Undo (Send Hex Code: 0x1f)

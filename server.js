@@ -52,7 +52,7 @@ function server() {
   io.adapter(redis(REDIS_URL));
 
   // enable ssl redirect in production
-  app.use(sslRedirect());
+  app.use(sslRedirect.default()); // !! dont know why we need a default here
 
   // need to enable this in production because Heroku uses a reverse proxy
   if (NODE_ENV === 'production')

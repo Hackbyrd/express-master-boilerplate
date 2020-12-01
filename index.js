@@ -48,8 +48,14 @@ async function startApp(processId) {
 }
 
 // run concurrent workers
+// throng({
+//   workers: PROCESSES, // Number of workers (cpu count)
+//   lifetime: Infinity, // ms to keep cluster alive (Infinity)
+//   grace: 5000 // ms grace period after worker SIGTERM (5000)
+// }, startApp);
 throng({
-  workers: PROCESSES, // Number of workers (cpu count)
+  worker: startApp,
+  count: PROCESSES, // Number of workers (cpu count)
   lifetime: Infinity, // ms to keep cluster alive (Infinity)
   grace: 5000 // ms grace period after worker SIGTERM (5000)
-}, startApp);
+});

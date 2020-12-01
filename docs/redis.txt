@@ -1,3 +1,6 @@
+Download Your Version of Redis Here:
+http://download.redis.io/releases/
+
 After downloading redis, set it up by running these commands:
 cd redis-x.x.x
 make
