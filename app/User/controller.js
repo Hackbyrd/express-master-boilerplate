@@ -21,9 +21,7 @@ module.exports = {
   V1UpdatePassword,
   V1ResetPassword,
   V1ConfirmPassword,
-  V1UpdateEmail,
-  V1ConfirmLogin,
-  V1GenerateToken
+  V1UpdateEmail
 };
 
 /**
@@ -201,38 +199,6 @@ async function V1UpdateEmail(req, res, next) {
     method = `V1UpdateEmailByUser`;
   else
     return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
-
-  // call correct method
-  const result = await service[method](req).catch(err => next(err));
-  return res.status(result.status).json(result);
-}
-
-/**
- * Confirm logging in to change settings
- *
- * /v1/users/confirmlogin
- *
- * Can be logged in or logged out
- * Roles: []
- */
-async function V1ConfirmLogin(req, res, next) {
-  let method = 'V1ConfirmLogin';
-
-  // call correct method
-  const result = await service[method](req).catch(err => next(err));
-  return res.status(result.status).json(result);
-}
-
-/**
- * Generate login confirmation token
- *
- * /v1/users/generatetoken
- *
- * Can be logged in or logged out
- * Roles: []
- */
-async function V1GenerateToken(req, res, next) {
-  let method = 'V1GenerateToken';
 
   // call correct method
   const result = await service[method](req).catch(err => next(err));

@@ -66,25 +66,17 @@ module.exports = {
  * Errors:
  *   400: BAD_REQUEST_INVALID_ARGUMENTS
  *   400: USER_BAD_REQUEST_INVALID_TIMEZONE
- *   400: USER_BAD_REQUEST_INVALID_LOGIN_CONFIRMATION_TOKEN
  *   401: UNAUTHORIZED
  *   500: INTERNAL_SERVER_ERROR
  */
 async function V1UpdateByUser(req) {
   const schema = joi.object({
-    email: joi.string().trim().lowercase().min(3).email().required(),
-    loginConfirmationToken: joi.string().required(),
     timezone: joi.string().trim().optional(),
+    locale: joi.string().trim().optional(),
+    company: joi.string().trim().min(1).optional(),
     firstName: joi.string().trim().min(1).optional(),
     lastName: joi.string().trim().min(1).optional(),
-    phone: joi.string().trim().optional(),
-    birthday: joi.string().trim().optional(),
-    countryCode: joi.string().trim().min(2).max(2).uppercase().optional(),
-    isEngineer: joi.boolean().optional(),
-    isDesigner: joi.boolean().optional(),
-    subscribedDailyContent: joi.boolean().optional(),
-    subscribedNewsletter: joi.boolean().optional(),
-    interests: joi.object().optional()
+    phone: joi.string().trim().optional()
   });
 
   // validate
@@ -101,24 +93,10 @@ async function V1UpdateByUser(req) {
     return Promise.resolve(errorResponse(req, ERROR_CODES.USER_BAD_REQUEST_INVALID_TIMEZONE));
 
   try {
-    // grab user
-    const getUser = await models.user.findOne({
-      where: {
-        loginConfirmationToken: req.args.loginConfirmationToken,
-        loginConfirmationExpire: {
-          [Op.gte]: new Date() // has not expired yet
-        }
-      }
-    });
-
-    // if user does not exists
-    if (!getUser)
-      return Promise.resolve(errorResponse(req, ERROR_CODES.USER_BAD_REQUEST_INVALID_LOGIN_CONFIRMATION_TOKEN));
-
     // update user
     await models.user.update(req.args, {
       where: {
-        id: getUser.id
+        id: req.user.id
       }
     });
 

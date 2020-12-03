@@ -14,17 +14,15 @@ const controller = require('./controller');
 module.exports = (passport, router) => {
 
   // routes
-  // router.all('/v1/users/login', controller.V1Login);
-  // router.all('/v1/users/resetpassword', controller.V1ResetPassword);
-  // router.all('/v1/users/confirmpassword', controller.V1ConfirmPassword);
-  router.all('/v1/users/confirmlogin', controller.V1ConfirmLogin);
-  // router.all('/v1/users/read', controller.V1Read);
+  router.all('/v1/users/login', controller.V1Login);
+  router.all('/v1/users/resetpassword', controller.V1ResetPassword);
+  router.all('/v1/users/confirmpassword', controller.V1ConfirmPassword);
+  router.all('/v1/users/read', controller.V1Read);
   router.all('/v1/users/register', controller.V1Register);
   router.all('/v1/users/update', controller.V1Update);
-  router.all('/v1/users/generatetoken', controller.V1GenerateToken);
-  // router.all('/v1/users/query', controller.V1Query);
-  // router.all('/v1/users/updatepassword', controller.V1UpdatePassword);
-  // router.all('/v1/users/updateemail', controller.V1UpdateEmail);
+  router.all('/v1/users/query', controller.V1Query);
+  router.all('/v1/users/updatepassword', controller.V1UpdatePassword);
+  router.all('/v1/users/updateemail', controller.V1UpdateEmail);
 
   // return router
   return router;

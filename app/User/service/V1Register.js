@@ -54,10 +54,17 @@ module.exports = {
  *
  * req.params = {}
  * req.args = {
+ *   @company - (STRING - REQUIRED): The name of the new company
  *   @firstName - (STRING - REQUIRED): The first name of the new user
  *   @lastName - (STRING - REQUIRED): The last name of the new user
+ *   @active - (BOOLEAN - REQUIRED): Whether user is active or not
  *   @email - (STRING - REQUIRED): The email of the user,
+ *   @phone - (STRING - REQUIRED): The phone of the user,
  *   @timezone - (STRING - REQUIRED): The timezone of the user,
+ *   @locale - (STRING - REQUIRED): The language of the user
+ *   @password1 - (STRING - REQUIRED): The unhashed password1 of the user
+ *   @password2 - (STRING - REQUIRED): The unhashed password2 of the user
+ *   @acceptedTerms - (BOOLEAN - REQUIRED): Whether terms is accepted or not
  * }
  *
  * Success: Return a user
@@ -71,10 +78,17 @@ module.exports = {
  */
 async function V1Register(req) {
   const schema = joi.object({
+    company: joi.string().trim().min(1).required(),
     firstName: joi.string().trim().min(1).required(),
     lastName: joi.string().trim().min(1).required(),
+    active: joi.boolean().required(),
     email: joi.string().trim().lowercase().min(3).email().required(),
-    timezone: joi.string().min(1).required()
+    phone: joi.string().trim().required(),
+    timezone: joi.string().min(1).required(),
+    locale: joi.string().min(1).required(),
+    password1: joi.string().min(PASSWORD_LENGTH_MIN).regex(PASSWORD_REGEX).required().error(new Error(req.__('USER[Invalid Password Format]'))),
+    password2: joi.string().min(PASSWORD_LENGTH_MIN).regex(PASSWORD_REGEX).required().error(new Error(req.__('USER[Invalid Password Format]'))),
+    acceptedTerms: joi.boolean().required()
   });
 
   // validate
@@ -82,6 +96,15 @@ async function V1Register(req) {
   if (error)
     return Promise.resolve(errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));
   req.args = value; // updated arguments with type conversion
+
+  // check passwords
+  if (req.args.password1 !== req.args.password2)
+    return Promise.resolve(errorResponse(req, ERROR_CODES.USER_BAD_REQUEST_PASSWORDS_NOT_EQUAL));
+  req.args.password = req.args.password1; // set password
+
+  // check terms of service
+  if (!req.args.acceptedTerms)
+    return Promise.resolve(errorResponse(req, ERROR_CODES.USER_BAD_REQUEST_TERMS_OF_SERVICE_NOT_ACCEPTED));
 
   try {
     // check if user email already exists
@@ -99,45 +122,37 @@ async function V1Register(req) {
     if (!isValidTimezone(req.args.timezone))
       return Promise.resolve(errorResponse(req, ERROR_CODES.USER_BAD_REQUEST_INVALID_TIMEZONE));
 
-    // preparing for reset
-    const loginConfirmationToken = randomString();
-    const loginConfirmationExpire = moment.tz('UTC').add(1, 'hours'); // add 1 hours from now
-
     // create user
     const newUser = await models.user.create({
       timezone: req.args.timezone,
+      locale: req.args.locale,
+      company: req.args.company,
       firstName: req.args.firstName,
       lastName: req.args.lastName,
+      active: req.args.active,
       email: req.args.email,
-      loginConfirmationToken: loginConfirmationToken,
-      loginConfirmationExpire: loginConfirmationExpire,
-      ipAddress: req.ip || req.ips, // get ip address
-      password: randomString(), // random password
-      acceptedTerms: true
+      phone: req.args.phone,
+      password: req.args.password,
+      acceptedTerms: req.args.acceptedTerms
     });
-  } catch (error) {
-    return Promise.reject(error);
-  }
 
-  // grab user without sensitive data
-  try {
+    // grab user without sensitive data
     const returnUser = await models.user.findByPk(newUser.id, {
       attributes: {
         exclude: models.user.getSensitiveData() // remove sensitive data
       }
+    }).catch(err => {
+      newUser.destroy(); // destroy if error
+      return Promise.reject(err);
     }); // END grab partner without sensitive data
-
-    const loginLink = `${USER_CLIENT_HOST}/settings?email=${req.args.email}&loginConfirmationToken=${loginConfirmationToken}`; // the settings page
 
     // return
     return Promise.resolve({
       status: 201,
       success: true,
-      user: returnUser,
-      loginLink: loginLink
+      user: returnUser
     });
   } catch (error) {
-    newUser.destroy(); // destroy if error
     return Promise.reject(error);
   }
 } // END V1Register

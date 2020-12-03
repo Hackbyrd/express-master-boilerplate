@@ -15,7 +15,5 @@ module.exports = {
   ...require('./V1UpdateEmail'),
   ...require('./V1UpdatePassword'),
   ...require('./V1ResetPassword'),
-  ...require('./V1ConfirmPassword'),
-  ...require('./V1ConfirmLogin'),
-  ...require('./V1GenerateToken')
+  ...require('./V1ConfirmPassword')
 }
