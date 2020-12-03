@@ -35,5 +35,8 @@ module.exports = {
   'USER[Email Already Taken]': 'The new email you entered is already taken.',
 
   // V1UpdatePassword
-  'USER[Password Authentication Failed]': 'Original password entered is incorrect.'
+  'USER[Password Authentication Failed]': 'Original password entered is incorrect.',
+
+  // V1ConfirmLogin
+  'USER[Invalid Login Confirmation Token]': 'Invalid login confirmation token or login confirmation token has expired.',
 };

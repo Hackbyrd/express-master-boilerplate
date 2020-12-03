@@ -1,11 +1,11 @@
 {
-  "name": "express-master-boilerplate",
+  "name": "hackuniversity-api",
   "version": "1.0.0",
-  "description": "Express Master Boilerplate",
+  "description": "Hack University API",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Hackbyrd/express-master-boilerplate.git"
+    "url": "https://github.com/TheHackUniversity/hackuniversity-api.git"
   },
   "author": "Hackbyrd",
   "license": "MIT",

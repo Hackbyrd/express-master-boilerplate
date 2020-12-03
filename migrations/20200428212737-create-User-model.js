@@ -64,10 +64,44 @@ module.exports = {
         defaultValue: null
       },
 
+      birthday: {
+        type: Sequelize.STRING,
+        allowNull: true,
+        defaultValue: null
+      },
+
       sex: {
         type: Sequelize.ENUM(constants.GENDER_LIST),
         allowNull: false,
         defaultValue: 'OTHER'
+      },
+
+      countryCode: {
+        type: Sequelize.STRING,
+        allowNull: true,
+        defaultValue: null
+      },
+
+      ipAddress: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+        defaultValue: null
+      },
+
+      loginConfirmationToken: {
+        type: Sequelize.STRING,
+        unique: true,
+        allowNull: true,
+        defaultValue: null
+      },
+
+      loginConfirmationExpire: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.NOW,
+        validate: {
+          isDate: true
+        }
       },
 
       // salt should be randomly generate
@@ -106,6 +140,36 @@ module.exports = {
         type: Sequelize.BOOLEAN,
         allowNull: false,
         defaultValue: true
+      },
+
+      subscribedDailyContent: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: true
+      },
+
+      subscribedNewsletter: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: true
+      },
+
+      isEngineer: {
+        type: Sequelize.BOOLEAN,
+        allowNull: true,
+        defaultValue: null
+      },
+
+      isDesigner: {
+        type: Sequelize.BOOLEAN,
+        allowNull: true,
+        defaultValue: null
+      },
+
+      interests: {
+        type: Sequelize.JSONB,
+        allowNull: true,
+        defaultValue: null
       },
 
       // The number of times the user has logged in

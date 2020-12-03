@@ -87,6 +87,12 @@ const LOCAL_ERROR_CODES = {
     error: 'USER.BAD_REQUEST_PASSWORD_AUTHENTICATION_FAILED',
     status: 400,
     messages: ['USER[Password Authentication Failed]']
+  },
+
+  USER_BAD_REQUEST_INVALID_LOGIN_CONFIRMATION_TOKEN: {
+    error: 'USER.BAD_REQUEST_INVALID_LOGIN_CONFIRMATION_TOKEN',
+    status: 400,
+    messages: ['USER[Invalid Login Confirmation Token]']
   }
 
   /* Place error codes below. Remember to prepend USER to the key and error value  */

@@ -14,7 +14,7 @@ const bcrypt = require('bcrypt');
 const { randomString } = require('../../helpers/logic');
 
 // sensitive data that should be be seen by any admins
-const sensitiveData = ['salt', 'password', 'passwordResetToken'];
+const sensitiveData = ['salt', 'password', 'passwordResetToken', 'ipAddress', 'loginConfirmationToken'];
 
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define('user', {
@@ -71,10 +71,44 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: null
     },
 
+    birthday: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: null
+    },
+
     sex: {
       type: DataTypes.ENUM(constants.GENDER_LIST),
       allowNull: false,
       defaultValue: 'OTHER'
+    },
+
+    countryCode: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: null
+    },
+
+    ipAddress: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      defaultValue: null
+    },
+
+    loginConfirmationToken: {
+      type: DataTypes.STRING,
+      unique: true,
+      allowNull: true,
+      defaultValue: null
+    },
+
+    loginConfirmationExpire: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+      validate: {
+        isDate: true
+      }
     },
 
     // salt should be randomly generate
@@ -113,6 +147,36 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: true
+    },
+
+    subscribedDailyContent: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true
+    },
+
+    subscribedNewsletter: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true
+    },
+
+    isEngineer: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: null
+    },
+
+    isDesigner: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: null
+    },
+
+    interests: {
+      type: DataTypes.JSONB,
+      allowNull: true,
+      defaultValue: null
     },
 
     // The number of times the user has logged in
